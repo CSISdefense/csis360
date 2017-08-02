@@ -1,5 +1,4 @@
-
-
+source("R\\ApplyLookups.R")
 
 #***********************Standardize Variable Names
 standardize_variable_names<- function(VAR.Path,VAR.df){
