@@ -1,19 +1,64 @@
-#************************************Remove NAs
-replace_nas_with_unlabeled<- function(VAR.df,VAR.column){
+#' Replace NAs in one column of a data frame with a specified valued
+#'
+#' @param VAR.df A data frame
+#' @param VAR.column The column to have NAs removed
+#' @param replacement Charater string that will replace NAs, by default "Unlabeled"
+#'
+#' @return Returns a data frame with the VAR.column values replaced with replacement,
+#' otherwise identical to the original data frame
+#'
+#' @section This function is intended for preparing columns for use.
+#' As far as the function creator understands it, NAs do not match to NAs. However,
+#' we often wish to include NAs in a graph under a proper name, such as Unlabeled
+#' and with a color of our choosing. One critical step in this process is the addition
+#' of the replacement term to the levels of the VAR.column factor. Which means we
+#' should probably add input protection when non factors are passed. I also haven't
+#' tested the handling if multiple columns are passed, I think it may not work.
+#'
+#' @examples VAR.long.DF<-replace_nas_with_unlabeled(VAR.df=data.DF
+#'   ,VAR.column="SubCustomer"),
+#'   replacement = "Uncategorized",
+#'   )
+#'
+#' @import
+#' @export
+replace_nas_with_unlabeled<- function(VAR.df,
+                                      VAR.column,
+                                      replacement="Unlabeled"){
   VAR.df<-as.data.frame(VAR.df)
   if(any(is.na(VAR.df[VAR.column,]))){
-    #Make sure unlabeled is within the list of levels
-    if (!("Unlabeled" %in% levels(VAR.df[,VAR.column]))){
+    #Make sure the replacement value is in the is within the list of levels
+    if (!(replacement %in% levels(VAR.df[,VAR.column]))){
       VAR.df[,VAR.column]<-addNA(VAR.df[,VAR.column],ifany=TRUE)
-      levels(VAR.df[,VAR.column])[is.na(levels(VAR.df[,VAR.column]))] <- "Unlabeled"
     }
+    levels(VAR.df[,VAR.column])[is.na(levels(VAR.df[,VAR.column]))] <- replacement
   }
   VAR.df
 }
 
 
 
-
+#' An internal function to check for NAs in columns after a join
+#'
+#' @param VAR.df A data frame
+#' @param VAR.input The column(s) that had been used to join
+#' @param VAR.output The column(s) that result from the join
+#' @param VAR.file The file used in the join
+#'
+#' @return None. Instead the function raises an error if there are NAs.
+#'
+#' @section This function is intended to catch gaps in lookup tables
+#' and to alert the developer before they can come into use. The core intent
+#' is to throw an error message that, if needed, will guide the developer to
+#' the file they need to update and the rows they need to add.
+#'
+#' @examples NA.check(VAR.existing.df,
+#'   VAR.input=by,
+#'   VAR.output=NA.check.columns,
+#'   VAR.file=VAR.file)
+#'
+#' @import
+#' @export
 NA.check<-function(VAR.df
   , VAR.input
   , VAR.output
@@ -23,7 +68,7 @@ NA.check<-function(VAR.df
   NA.check.df<-subset(VAR.df
     , select=c(VAR.input,VAR.output)
   )
-  #Drop all rows
+  #Drop all complete rows
   NA.check.df<-NA.check.df[!complete.cases(NA.check.df),]
 
   if(nrow(NA.check.df)>0){
@@ -38,6 +83,33 @@ NA.check<-function(VAR.df
 }
 
 
+#' Read in an external file and join it with an existing data frame.
+#'
+#' @param VAR.path The location of the lookup file
+#' @param VAR.file The name of the lookup file
+#' @param VAR.existing.df The data frame to be joined
+#' @param directory="Lookups\\" The directory within the path that holds the lookup
+#' @param by=NULL The columns used to join, if not provided, matching columns will be used
+#' @param ReplaceNAsColumns=NULL Before the join, these columns will have NAs values replaced
+#' @param LookupTrumps=TRUE Should the function replace for common columns not used to join?
+#' @param NA.check.columns=NULL, What new columns should be checked for NA values?
+#' @param OnlyKeepCheckedColumns=FALSE Should only checked new columns be kept?
+#'
+#' @return The data frame plus new columns from the lookup file. If OnlyKeepCheckedColumns is
+#' true and NA.check.columns is
+#'
+#' @section This function is intended to catch gaps in lookup tables
+#' and to alert the developer before they can come into use. The core intent
+#' is to throw an error message that, if needed, will guide the developer to
+#' the file they need to update and the rows they need to add.
+#'
+#' @examples NA.check(VAR.existing.df,
+#'   VAR.input=by,
+#'   VAR.output=NA.check.columns,
+#'   VAR.file=VAR.file)
+#'
+#' @import plyr
+#' @export
 read_and_join<-function(VAR.path,
   VAR.file,
   VAR.existing.df,
@@ -59,14 +131,13 @@ read_and_join<-function(VAR.path,
     stringsAsFactors=FALSE  #This can get weird when true, as sometimes it confuses numerical variables and factors
   )
 
-  #Remove nonsense characters sometimes added to start of files
+  #Remove nonsense characters sometimes added to start of the input file
   colnames(VAR.existing.df)[substring(colnames(VAR.existing.df),1,3)=="?.."]<-
     substring(colnames(VAR.existing.df)[substring(colnames(VAR.existing.df),1,3)=="?.."],4)
 
-  #Remove nonsense characters sometimes added to start of files
+  #Remove nonsense characters sometimes added to start of the lookup file
   colnames(lookup.file)[substring(colnames(lookup.file),1,3)=="?.."]<-
     substring(colnames(lookup.file)[substring(colnames(lookup.file),1,3)=="?.."],4)
-
 
   #Clear out any fields held in common not used in the joining
   if(!is.null(by)){

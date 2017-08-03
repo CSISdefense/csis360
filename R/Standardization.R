@@ -1,3 +1,29 @@
+#' Deflation using GitHub-based CSV file
+#'
+#' @param data_to_deflate A data frame
+#' @param money_var The quoted name of the dollar-value variable
+#' @param fy_var The quoted name of the fiscal year variable
+#' @param deflator_file The quoted file name of the deflators to use;
+#' must be a CSV with the columns "FY" and "Deflator."
+#' @param path The path or url for the deflator_file CSV.  By default, checks
+#' the CSISdefense Github lookups repository at CSISdefense/hamre_lookups/master
+#'
+#' @return Returns a data frame with the money_var deflated, otherwise identical
+#' to the original data frame
+#'
+#' @section Warning: This function should be used __in data processing only__,
+#' not in a live app.  It reads an external file from GitHub,
+#' which will slow down an app substantially if done repeatedly.
+#'
+#' @examples RDTE_data <- deflate(
+#'   data_to_deflate = RDTE_data,
+#'   money_var = "Millions",
+#'   fy_var = "fiscal_year")
+#'
+#' @import dplyr
+#' @export
+
+
 source("R\\ApplyLookups.R")
 
 #***********************Standardize Variable Names
