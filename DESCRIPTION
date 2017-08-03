@@ -1,11 +1,11 @@
 Package: csis360
 Type: Package
 Title: Toolkit for CSIS Data Processing and Visualization  (Title Case)
-Version: 0.0.0.9000
+Version: 0.0.0.9004
 Authors@R: person("Gregory","Sanders",email="gsanders@cssi.org",
                   role = c("aut", "cre"))
-Description: A range of tools for supporting CSIS research projects and 
-  Defense360 web graphics.
+Description: Tools for supporting CSIS quantitative research projects.
+Imports: plyr (>= 0.1.8.4)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

@@ -107,7 +107,7 @@ NA.check<-function(VAR.df
 #' @param directory="Lookups\\" The directory within the path that holds the lookup
 #' @param by=NULL The columns used to join, if not provided, matching columns will be used
 #' @param ReplaceNAsColumns=NULL Before the join, these columns will have NAs values replaced
-#' @param LookupTrumps=TRUE Should the function replace for common columns not used to join?
+#' @param NewColumnsTrump=TRUE Should the function replace for common columns not used to join?
 #' @param NA.check.columns=NULL, What new columns should be checked for NA values?
 #' @param OnlyKeepCheckedColumns=FALSE Should only checked new columns be kept?
 #'
@@ -134,7 +134,7 @@ read_and_join<-function(VAR.path,
   directory="Lookups\\",
   by=NULL,
   ReplaceNAsColumns=NULL,
-  LookupTrumps=TRUE,
+  NewColumnsTrump=TRUE,
   NA.check.columns=NULL,
   OnlyKeepCheckedColumns=FALSE){
 

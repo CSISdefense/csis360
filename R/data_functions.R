@@ -21,7 +21,7 @@
 #'   col_names = TRUE, col_types = "cccccccccc",na=c("NA","NULL"))
 #' PrepareLabelsAndColors(Coloration,FullData,"Customer")
 #'
-#' @import dplyr
+#' @import plyr
 #' @export
 deflate <- function(
   data_to_deflate,

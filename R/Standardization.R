@@ -17,9 +17,6 @@
 
 
 
-source("R\\ApplyLookups.R")
-
-
 #***********************Standardize Variable Names
 #' Standardize variable names
 #'
@@ -89,7 +86,7 @@ standardize_variable_names<- function(VAR.Path,VAR.df){
 #' @examples FullData<-standardize_variable_names(Path,
 #'   FullData)
 #'
-#' @import
+#' @import plyr
 #' @export
 PrepareLabelsAndColors<-function(VAR.path
   ,VAR.long.DF
@@ -116,7 +113,7 @@ PrepareLabelsAndColors<-function(VAR.path
     stringsAsFactors=FALSE
   )
 
-  Coloration<-ddply(Coloration
+  Coloration<-plyr::ddply(Coloration
     , c(.(R), .(G), .(B))
     , transform
     , ColorRGB=as.character(
@@ -124,8 +121,6 @@ PrepareLabelsAndColors<-function(VAR.path
       else {rgb(max(R),max(G),max(B),max=255)}
     )
   )
-
-
 
   #Translate the category name into the appropriate coloration.key
   #This is used because we have more category names than coloration.key
