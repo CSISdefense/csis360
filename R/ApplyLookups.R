@@ -1,3 +1,19 @@
+# This file contains functions to join data frames to pre-established CSIS
+# lookup files
+#
+# You can learn more about package authoring with RStudio at:
+#
+#   http://r-pkgs.had.co.nz/
+#
+# Some useful keyboard shortcuts for package authoring:
+#
+#   Build and Reload Package:  'Ctrl + Shift + B'
+#   Check Package:       'Ctrl + Shift + E'
+#   Test Package:        'Ctrl + Shift + T'
+
+
+
+
 #' Replace NAs in one column of a data frame with a specified valued
 #'
 #' @param VAR.df A data frame
@@ -96,12 +112,14 @@ NA.check<-function(VAR.df
 #' @param OnlyKeepCheckedColumns=FALSE Should only checked new columns be kept?
 #'
 #' @return The data frame plus new columns from the lookup file. If OnlyKeepCheckedColumns is
-#' true and NA.check.columns is
+#' true and only new columns listed in NA.check.columns will be kept. Note to self, should
+#' add input protection that throws an error if OnlyKeepCheckedColumns is set to true when
+#' NA.check.columns is false.
 #'
-#' @section This function is intended to catch gaps in lookup tables
-#' and to alert the developer before they can come into use. The core intent
-#' is to throw an error message that, if needed, will guide the developer to
-#' the file they need to update and the rows they need to add.
+#' @section This function is an elaborate join with various quality check measures thrown in.
+#' At its simplest, it just joins the existing data frame with the passed file. But along the way
+#' it will make some fixes to common CSV errors and also take advantage of some known facts about
+#' how CSIS data is organized.
 #'
 #' @examples NA.check(VAR.existing.df,
 #'   VAR.input=by,
