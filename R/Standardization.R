@@ -38,9 +38,12 @@
 #' @import
 #' @export
 standardize_variable_names<- function(data.df,
-                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/blob/master/data/style/"
+                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/"
 ){
   #Remove nonsense characters sometimes added to start of files
+  colnames(data.df)[substring(colnames(data.df),1,3)=="ï.."]<-
+    substring(colnames(data.df)[substring(colnames(data.df),1,3)=="ï.."],4)
+
   colnames(data.df)[substring(colnames(data.df),1,3)=="?.."]<-
     substring(colnames(data.df)[substring(colnames(data.df),1,3)=="?.."],4)
 
