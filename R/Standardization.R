@@ -20,10 +20,10 @@
 #***********************Standardize Variable Names
 #' Standardize variable names
 #'
+#' @param data.df The data frame to be joined
 #' @param path The location of the lookup file
-#' @param VAR.existing.data.df The data frame to be joined
 #'
-#' @return VAR.existing.data.df with standardized ColumnName names.
+#' @return data.df with standardized ColumnName names.
 #'
 #' @section This function is designed to prepare CSIS data files for lookup
 #' application. It primarily smooths out variation between different ways we've
@@ -31,15 +31,18 @@
 #' The ColumnName names are matched against that table in a case insensitive manner,
 #' though no other procedural standardization is applied at this time.
 #'
-#' @examples FullData<-standardize_variable_names(Path,
-#'   FullData)
+#' @examples FullData<-standardize_variable_names(
+#'   FullData,
+#'   Path)
 #'
 #' @import
 #' @export
-standardize_variable_names<- function(path,VAR.data.df){
+standardize_variable_names<- function(data.df,
+                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/blob/master/data/style/"
+){
   #Remove nonsense characters sometimes added to start of files
-  colnames(VAR.data.df)[substring(colnames(VAR.data.df),1,3)=="?.."]<-
-    substring(colnames(VAR.data.df)[substring(colnames(VAR.data.df),1,3)=="?.."],4)
+  colnames(data.df)[substring(colnames(data.df),1,3)=="?.."]<-
+    substring(colnames(data.df)[substring(colnames(data.df),1,3)=="?.."],4)
 
 
   #Consider removing non-alphanumerics _s .s etc.
@@ -48,21 +51,21 @@ standardize_variable_names<- function(path,VAR.data.df){
   NameList<-read.csv(
     paste(
       path,
-      "Lookups\\","Lookup_StandardizeVariableNames.csv",sep=""),
+      "Lookup_StandardizeVariableNames.csv",sep=""),
     header=TRUE, sep=",", na.strings=c("NA","NULL"), dec=".", strip.white=TRUE,
     stringsAsFactors=FALSE
   )
 
 
-  #     NameList<-subset(NameList,toupper(Original) %in% toupper(colnames(VAR.data.df)))
+  #     NameList<-subset(NameList,toupper(Original) %in% toupper(colnames(data.df)))
   for(x in 1:nrow(NameList)){
     #         if(toupper(NameList$Original[[x]]) %in% OldNameListUpper){
-    colnames(VAR.data.df)[toupper(colnames(VAR.data.df))==toupper(NameList$Original[[x]])]<-
+    colnames(data.df)[toupper(colnames(data.df))==toupper(NameList$Original[[x]])]<-
       NameList$Replacement[[x]]
     #         }
   }
 
-  VAR.data.df
+  data.df
 }
 
 
@@ -91,7 +94,7 @@ standardize_variable_names<- function(path,VAR.data.df){
 PrepareLabelsAndColors<-function(data.df
   ,ColumnName
   ,ReplaceNAs=FALSE
-  ,path="https://github.com/CSISdefense/Lookup-Tables/blob/master/data/style/"
+  ,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/blob/master/data/style/"
   #                                  ,VAR.override.coloration=NA
 )
 {
