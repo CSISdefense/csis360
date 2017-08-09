@@ -20,10 +20,10 @@
 #***********************Standardize Variable Names
 #' Standardize variable names
 #'
-#' @param data.df The data frame to be joined
+#' @param data The data frame to be joined
 #' @param path The location of the lookup file
 #'
-#' @return data.df with standardized ColumnName names.
+#' @return data with standardized ColumnName names.
 #'
 #' @section This function is designed to prepare CSIS data files for lookup
 #' application. It primarily smooths out variation between different ways we've
@@ -37,15 +37,15 @@
 #'
 #' @import
 #' @export
-standardize_variable_names<- function(data.df,
+standardize_variable_names<- function(data,
                                       path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/"
 ){
   #Remove nonsense characters sometimes added to start of files
-  colnames(data.df)[substring(colnames(data.df),1,3)=="ï.."]<-
-    substring(colnames(data.df)[substring(colnames(data.df),1,3)=="ï.."],4)
+  colnames(data)[substring(colnames(data),1,3)=="ï.."]<-
+    substring(colnames(data)[substring(colnames(data),1,3)=="ï.."],4)
 
-  colnames(data.df)[substring(colnames(data.df),1,3)=="?.."]<-
-    substring(colnames(data.df)[substring(colnames(data.df),1,3)=="?.."],4)
+  colnames(data)[substring(colnames(data),1,3)=="?.."]<-
+    substring(colnames(data)[substring(colnames(data),1,3)=="?.."],4)
 
 
   #Consider removing non-alphanumerics _s .s etc.
@@ -60,21 +60,21 @@ standardize_variable_names<- function(data.df,
   )
 
 
-  #     NameList<-subset(NameList,toupper(Original) %in% toupper(colnames(data.df)))
+  #     NameList<-subset(NameList,toupper(Original) %in% toupper(colnames(data)))
   for(x in 1:nrow(NameList)){
     #         if(toupper(NameList$Original[[x]]) %in% OldNameListUpper){
-    colnames(data.df)[toupper(colnames(data.df))==toupper(NameList$Original[[x]])]<-
+    colnames(data)[toupper(colnames(data))==toupper(NameList$Original[[x]])]<-
       NameList$Replacement[[x]]
     #         }
   }
 
-  data.df
+  data
 }
 
 
 #' Prepare Labels And Colors
 #'
-#' @param data.df The data frame to be joined
+#' @param data The data frame to be joined
 #' @param ColumnName Prepare colors for this columns
 #' @param ReplaceNAs If true, replace NAs for ColumnName before adding colors
 #' @param path The location of the lookup file
@@ -94,84 +94,85 @@ standardize_variable_names<- function(data.df,
 #'
 #' @import plyr
 #' @export
-PrepareLabelsAndColors<-function(data.df
+PrepareLabelsAndColors<-function(data
   ,ColumnName
   ,ReplaceNAs=FALSE
-  ,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/blob/master/data/style/"
+  ,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/"
   #                                  ,VAR.override.coloration=NA
 )
 {
   if(ReplaceNAs==TRUE){
-    data.df<-replace_nas_with_unlabeled(data.df,ColumnName)
+    data<-replace_nas_with_unlabeled(data,ColumnName)
   }
 
-  data.df<-as.data.frame(data.df)
+  data<-as.data.frame(data)
+
   #Confirm that the category is even available in the data set.
-  if(!ColumnName %in% names(data.df)){
+  if(!ColumnName %in% names(data)){
     stop(paste(ColumnName,"is not found in data frame passed to PrepareLabelsAndColors"))
   }
 
 
 
   Coloration<-read.csv(
-    paste(path,"lookup_coloration.csv",sep=""),
+    paste(path,"Lookup_Coloration.csv",sep=""),
     header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
     stringsAsFactors=FALSE
   )
 
   #Translate the category name into the appropriate coloration.key
   #This is used because we have more category names than coloration.key
-  Coloration.Key<-read.csv(
-    paste(path,"lookup_coloration_key.csv",sep=""),
+  Column_Key<-read.csv(
+    paste(path,"Lookup_Column_Key.csv",sep=""),
     header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
     stringsAsFactors=FALSE
   )
-  Coloration.Key<-subset(Coloration.Key, ColumnName==ColumnName)
+  Column_Key<-subset(Column_Key, column==ColumnName)
 
-  if(nrow(Coloration.Key)==0){
-    stop(paste(ColumnName,"is missing from Lookup_Coloration.Key.csv"))
+  if(nrow(Column_Key)==0){
+    stop(paste(ColumnName,"is missing from Lookup_Column_Key.csv"))
   }
 
 
   #Limit the lookup table to those series that match the variable
-  labels.category.data.df<-subset(Coloration, coloration.key==Coloration.Key$coloration.key[1] )
+  labels.category.data<-subset(Coloration, coloration.key==Column_Key$coloration.key[1] )
 
   #Fix oddities involving text
-  labels.category.data.df$variable <- gsub("\\\\n","\n",labels.category.data.df$variable)
-  labels.category.data.df$Label <- gsub("\\\\n","\n",labels.category.data.df$Label)
+  labels.category.data$variable <- gsub("\\\\n","\n",labels.category.data$variable)
+  labels.category.data$Label <- gsub("\\\\n","\n",labels.category.data$Label)
 
-  if(anyDuplicated(labels.category.data.df$variable)>0){
-    print(labels.category.data.df$variable[
-      duplicated(labels.category.data.df$variable)])
+  if(anyDuplicated(labels.category.data$variable)>0){
+    print(labels.category.data$variable[
+      duplicated(labels.category.data$variable)])
     stop(paste("Lookup_Coloration.csv has"
-      ,sum(duplicated(labels.category.data.df$variable))
+      ,sum(duplicated(labels.category.data$variable))
       ,"duplicate value(s) for category="
-      ,Coloration.Key$coloration.key[1], ". See above for a list of missing labels")
+      ,Column_Key$coloration.key[1], ". See above for a list of missing labels")
     )
   }
 
 
   #Check for any values in the ColumnName field that are not assigned a color.
-  NA.labels<-subset(data.df,!(data.frame(data.df)[,ColumnName] %in% labels.category.data.df$variable))
+  NA.labels<-subset(data,!(data.frame(data)[,ColumnName] %in% labels.category.data$variable))
 
   if (nrow(NA.labels)>0){
     print(unique(NA.labels[,ColumnName]))
     stop(paste("Lookup_Coloration.csv is missing"
       ,length(unique(NA.labels[,ColumnName]))
       ,"label(s) for category="
-      ,Coloration.Key$coloration.key[1], ". See above for a list of missing labels")
+      ,Column_Key$coloration.key[1], ". See above for a list of missing labels")
     )
   }
-  rm(NA.labels,Coloration.Key)
+  rm(NA.labels,Column_Key)
 
-  names.data.df<-subset(labels.category.data.df
-    , variable %in% unique(data.df[,ColumnName]))
+  names.data<-subset(labels.category.data
+    , variable %in% unique(data[,ColumnName]))
 
-  rm(labels.category.data.df)
+  rm(labels.category.data)
 
-  #Order the names.data.df and then pass on the same order to the actual data in data.df
-  names.data.df<-names.data.df[order(names.data.df$Display.Order),]
+  #Order the names.data and then pass on the same order to the actual data in data
+  names.data<-names.data[order(names.data$Display.Order),]
+  names.data$column<-ColumnName
 
-
-  names.data.df
+  names.data
 }

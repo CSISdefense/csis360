@@ -16,7 +16,7 @@
 
 #' Replace NAs in one column of a data frame with a specified valued
 #'
-#' @param VAR.df A data frame
+#' @param data A data frame
 #' @param VAR.column The column to have NAs removed
 #' @param replacement Charater string that will replace NAs, by default "Unlabeled"
 #'
@@ -31,32 +31,32 @@
 #' should probably add input protection when non factors are passed. I also haven't
 #' tested the handling if multiple columns are passed, I think it may not work.
 #'
-#' @examples VAR.long.DF<-replace_nas_with_unlabeled(VAR.df=data.DF
+#' @examples VAR.long.DF<-replace_nas_with_unlabeled(data=data.DF
 #'   ,VAR.column="SubCustomer"),
 #'   replacement = "Uncategorized",
 #'   )
 #'
 #' @import
 #' @export
-replace_nas_with_unlabeled<- function(VAR.df,
+replace_nas_with_unlabeled<- function(data,
                                       VAR.column,
                                       replacement="Unlabeled"){
-  VAR.df<-as.data.frame(VAR.df)
-  if(any(is.na(VAR.df[VAR.column,]))){
+  data<-as.data.frame(data)
+  if(any(is.na(data[VAR.column,]))){
     #Make sure the replacement value is in the is within the list of levels
-    if (!(replacement %in% levels(VAR.df[,VAR.column]))){
-      VAR.df[,VAR.column]<-addNA(VAR.df[,VAR.column],ifany=TRUE)
+    if (!(replacement %in% levels(data[,VAR.column]))){
+      data[,VAR.column]<-addNA(data[,VAR.column],ifany=TRUE)
     }
-    levels(VAR.df[,VAR.column])[is.na(levels(VAR.df[,VAR.column]))] <- replacement
+    levels(data[,VAR.column])[is.na(levels(data[,VAR.column]))] <- replacement
   }
-  VAR.df
+  data
 }
 
 
 
 #' An internal function to check for NAs in columns after a join
 #'
-#' @param VAR.df A data frame
+#' @param data A data frame
 #' @param VAR.input The column(s) that had been used to join
 #' @param VAR.output The column(s) that result from the join
 #' @param VAR.file The file used in the join
@@ -68,20 +68,20 @@ replace_nas_with_unlabeled<- function(VAR.df,
 #' is to throw an error message that, if needed, will guide the developer to
 #' the file they need to update and the rows they need to add.
 #'
-#' @examples NA.check(VAR.existing.df,
+#' @examples NA.check(data,
 #'   VAR.input=by,
 #'   VAR.output=NA.check.columns,
 #'   VAR.file=VAR.file)
 #'
 #' @import
 #' @export
-NA.check<-function(VAR.df
+NA.check<-function(data
   , VAR.input
   , VAR.output
   , VAR.file
 ){
   #Limit just to relevant columns
-  NA.check.df<-subset(VAR.df
+  NA.check.df<-subset(data
     , select=c(VAR.input,VAR.output)
   )
   #Drop all complete rows
@@ -103,7 +103,7 @@ NA.check<-function(VAR.df
 #'
 #' @param VAR.path The location of the lookup file
 #' @param VAR.file The name of the lookup file
-#' @param VAR.existing.df The data frame to be joined
+#' @param data The data frame to be joined
 #' @param directory="Lookups\\" The directory within the path that holds the lookup
 #' @param by=NULL The columns used to join, if not provided, matching columns will be used
 #' @param ReplaceNAsColumns=NULL Before the join, these columns will have NAs values replaced
@@ -121,7 +121,7 @@ NA.check<-function(VAR.df
 #' it will make some fixes to common CSV errors and also take advantage of some known facts about
 #' how CSIS data is organized.
 #'
-#' @examples NA.check(VAR.existing.df,
+#' @examples NA.check(data,
 #'   VAR.input=by,
 #'   VAR.output=NA.check.columns,
 #'   VAR.file=VAR.file)
@@ -130,7 +130,7 @@ NA.check<-function(VAR.df
 #' @export
 read_and_join<-function(VAR.path,
   VAR.file,
-  VAR.existing.df,
+  data,
   directory="Lookups\\",
   by=NULL,
   ReplaceNAsColumns=NULL,
@@ -139,7 +139,7 @@ read_and_join<-function(VAR.path,
   OnlyKeepCheckedColumns=FALSE){
 
   if(!is.null(ReplaceNAsColumns)){
-    VAR.existing.df<-replace_nas_with_unlabeled(VAR.existing.df,ReplaceNAsColumns)
+    data<-replace_nas_with_unlabeled(data,ReplaceNAsColumns)
   }
 
 
@@ -150,8 +150,8 @@ read_and_join<-function(VAR.path,
   )
 
   #Remove nonsense characters sometimes added to start of the input file
-  colnames(VAR.existing.df)[substring(colnames(VAR.existing.df),1,3)=="?.."]<-
-    substring(colnames(VAR.existing.df)[substring(colnames(VAR.existing.df),1,3)=="?.."],4)
+  colnames(data)[substring(colnames(data),1,3)=="?.."]<-
+    substring(colnames(data)[substring(colnames(data),1,3)=="?.."],4)
 
   #Remove nonsense characters sometimes added to start of the lookup file
   colnames(lookup.file)[substring(colnames(lookup.file),1,3)=="?.."]<-
@@ -159,21 +159,21 @@ read_and_join<-function(VAR.path,
 
   #Clear out any fields held in common not used in the joining
   if(!is.null(by)){
-    droplist<-names(lookup.file)[names(lookup.file) %in% names(VAR.existing.df)]
+    droplist<-names(lookup.file)[names(lookup.file) %in% names(data)]
     droplist<-droplist[droplist!=by]
     if(NewColumnsTrump)
-      VAR.existing.df<-VAR.existing.df[,!names(VAR.existing.df) %in% droplist]
+      data<-data[,!names(data) %in% droplist]
     else
       lookup.file<-lookup.file[,!names(lookup.file) %in% droplist]
   }
 
 
   #Fixes for Excel's penchant to drop leading 0s.
-  if("Contracting.Agency.ID" %in% names(lookup.file) & "VAR.existing.df" %in% names(lookup.file)){
+  if("Contracting.Agency.ID" %in% names(lookup.file) & "data" %in% names(lookup.file)){
     lookup.file$Contracting.Agency.ID<-factor(str_pad(lookup.file$Contracting.Agency.ID,4,side="left",pad="0"))
-    VAR.existing.df$Contracting.Agency.ID<-as.character(VAR.existing.df$Contracting.Agency.ID)
-    VAR.existing.df$Contracting.Agency.ID[is.na(VAR.existing.df$Contracting.Agency.ID=="")]<-"0000"
-    VAR.existing.df$Contracting.Agency.ID<-factor(str_pad(VAR.existing.df$Contracting.Agency.ID,4,side="left",pad="0"))
+    data$Contracting.Agency.ID<-as.character(data$Contracting.Agency.ID)
+    data$Contracting.Agency.ID[is.na(data$Contracting.Agency.ID=="")]<-"0000"
+    data$Contracting.Agency.ID<-factor(str_pad(data$Contracting.Agency.ID,4,side="left",pad="0"))
   }
 
   if("CSIScontractID" %in% colnames(lookup.file)){
@@ -183,15 +183,15 @@ read_and_join<-function(VAR.path,
   }
 
   if(is.null(by)){
-    VAR.existing.df<- plyr::join(
-      VAR.existing.df,
+    data<- plyr::join(
+      data,
       lookup.file,
       match="first"
     )
   }
   else{
-    VAR.existing.df<- plyr::join(
-      VAR.existing.df,
+    data<- plyr::join(
+      data,
       lookup.file,
       match="first",
       by=by
@@ -201,7 +201,7 @@ read_and_join<-function(VAR.path,
   }
 
   if(!is.null(by)&!is.null(NA.check.columns)){
-    NA.check(VAR.existing.df,
+    NA.check(data,
       VAR.input=by,
       VAR.output=NA.check.columns,
       VAR.file=VAR.file)
@@ -211,10 +211,10 @@ read_and_join<-function(VAR.path,
       droplist<-names(lookup.file)[!names(lookup.file) %in% by
         &!names(lookup.file) %in% NA.check.columns]
 
-      VAR.existing.df<-VAR.existing.df[,!names(VAR.existing.df) %in% droplist]
+      data<-data[,!names(data) %in% droplist]
     }
   }
 
-  VAR.existing.df
+  data
 }
 

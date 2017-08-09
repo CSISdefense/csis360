@@ -3,8 +3,8 @@ library(csis360)
 
 
 
-Path<-"C:\\Users\\gsand_000.ALPHONSE\\Documents\\Development\\R-scripts-and-data\\"
-
+# Path<-"C:\\Users\\gsand_000.ALPHONSE\\Documents\\Development\\R-scripts-and-data\\"
+Path<-"K:\\2007-01 PROFESSIONAL SERVICES\\R scripts and data\\"
 
 
 # read in data
@@ -14,6 +14,7 @@ FullData <- read.csv(
 
 
 context("standardize_variable_names")
+
 FullData<-standardize_variable_names(FullData)
 
 test_that("standardize_variable_names fixes ï..", {
@@ -95,21 +96,42 @@ FullData<-read_and_join(Path,
 save(FullData, file="2016_unaggregated_FPDS.Rda")
 
 LabelsAndColors<-PrepareLabelsAndColors(FullData,"SubCustomer")
-LabelsAndColors$Column<-"SubCustomer"
 
 FullData<-replace_nas_with_unlabeled(FullData,"PlatformPortfolio")
-# LabelsAndColors<-rbind(LabelsAndColors,
-# cbind(
-PrepareLabelsAndColors(Path,FullData,"PlatformPortfolio")
+LabelsAndColors<-rbind(LabelsAndColors,
+  PrepareLabelsAndColors(FullData,"PlatformPortfolio")
+)
 # ,"PlatformPortfolio")
 # )
 #Shiny.VendorSize is the new Vendor.Size
-PrepareLabelsAndColors(FullData,"Shiny.VendorSize")
-PrepareLabelsAndColors(Path,FullData,"Competition.sum")
-PrepareLabelsAndColors(Path,FullData,"Competition.multisum")
-PrepareLabelsAndColors(Path,FullData,"Competition.effective.only")
-PrepareLabelsAndColors(Path,FullData,"No.Competition.sum")
-PrepareLabelsAndColors(Path,FullData,"Customer")
-PrepareLabelsAndColors(Path,FullData,"ProductOrServiceArea")
-PrepareLabelsAndColors(Path,FullData,"ProductServiceOrRnDarea.sum")
+LabelsAndColors<-rbind(LabelsAndColors,
+  PrepareLabelsAndColors(FullData,"Shiny.VendorSize")
+)
 
+LabelsAndColors<-rbind(LabelsAndColors,
+  PrepareLabelsAndColors(FullData,"Competition.sum")
+)
+
+LabelsAndColors<-rbind(LabelsAndColors,
+  PrepareLabelsAndColors(FullData,"Competition.multisum")
+)
+
+LabelsAndColors<-rbind(LabelsAndColors,
+  PrepareLabelsAndColors(FullData,"Competition.effective.only")
+)
+
+LabelsAndColors<-rbind(LabelsAndColors,
+  PrepareLabelsAndColors(FullData,"No.Competition.sum")
+)
+
+LabelsAndColors<-rbind(LabelsAndColors,
+  PrepareLabelsAndColors(FullData,"Customer")
+)
+
+LabelsAndColors<-rbind(LabelsAndColors,
+  PrepareLabelsAndColors(FullData,"ProductOrServiceArea")
+)
+
+LabelsAndColors<-rbind(LabelsAndColors,
+  PrepareLabelsAndColors(FullData,"ProductServiceOrRnDarea.sum")
+)
