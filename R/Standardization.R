@@ -114,7 +114,7 @@ PrepareLabelsAndColors<-function(data.df
 
 
   Coloration<-read.csv(
-    paste(path,"data\\style\\","lookup_coloration.csv",sep=""),
+    paste(path,"lookup_coloration.csv",sep=""),
     header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
     stringsAsFactors=FALSE
   )
@@ -122,7 +122,7 @@ PrepareLabelsAndColors<-function(data.df
   #Translate the category name into the appropriate coloration.key
   #This is used because we have more category names than coloration.key
   Coloration.Key<-read.csv(
-    paste(path,"data\\style\\","lookup_coloration_key.csv",sep=""),
+    paste(path,"lookup_coloration_key.csv",sep=""),
     header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
     stringsAsFactors=FALSE
   )
