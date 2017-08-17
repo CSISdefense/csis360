@@ -40,15 +40,13 @@
 standardize_variable_names<- function(data,
                                       path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/"
 ){
-  #Remove nonsense characters sometimes added to start of files
-  colnames(data)[substring(colnames(data),1,3)=="ï.."]<-
-    substring(colnames(data)[substring(colnames(data),1,3)=="ï.."],4)
 
-  colnames(data)[substring(colnames(data),1,3)=="?.."]<-
-    substring(colnames(data)[substring(colnames(data),1,3)=="?.."],4)
 
+  #Remove nonsense characters sometimes added to start of the input file
+  data<-remove_bom(data)
 
   #Consider removing non-alphanumerics _s .s etc.
+
 
   #***Standardize variable names
   NameList<-read.csv(

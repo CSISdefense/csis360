@@ -3,23 +3,35 @@ library(csis360)
 
 
 
-# Path<-"C:\\Users\\gsand_000.ALPHONSE\\Documents\\Development\\R-scripts-and-data\\"
-Path<-"K:\\2007-01 PROFESSIONAL SERVICES\\R scripts and data\\"
-
-
 # read in data
 FullData <- read.csv(
   "data\\2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
   na.strings=c("NA","NULL"))
 
 
+context("remove_bom")
+
+FullData<-remove_bom(FullData)
+
+test_that("remove_bom fixes ï..", {
+  expect_equal(colnames(FullData)[1], "Fiscal.Year")
+})
+
+
+
 context("standardize_variable_names")
+
+
+FullData <- read.csv(
+  "data\\2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
+  na.strings=c("NA","NULL"))
 
 FullData<-standardize_variable_names(FullData)
 
 test_that("standardize_variable_names fixes ï..", {
   expect_equal(colnames(FullData)[1], "Fiscal.Year")
 })
+
 
 
 # coerce Amount to be a numeric variable
@@ -32,12 +44,11 @@ FullData <- subset(FullData,Fiscal.Year >= 2000)
 
 
 context("read_and_join")
-FullData<-read_and_join(Path,
+FullData<-read_and_join(FullData,
                         "LOOKUP_Deflators.csv",
-                        FullData,
                         by="Fiscal.Year",
-                        NA.check.columns="Deflator.2016",
-                        OnlyKeepCheckedColumns=TRUE
+                        na_check_columns="Deflator.2016",
+                        only_keep_checked_columns=TRUE
 )
 
 
@@ -47,49 +58,45 @@ FullData<-FullData[,colnames(FullData)!="Deflator.2016"]
 
 
 #Consolidate categories for Vendor Size
-FullData<-read_and_join(Path,
+FullData<-read_and_join(FullData,
                         "LOOKUP_Contractor_Size.csv",
-                        FullData,
                         by="Vendor.Size",
-                        NA.check.columns="Shiny.VendorSize",
-                        OnlyKeepCheckedColumns=TRUE
+                        na_check_columns="Shiny.VendorSize",
+                        only_keep_checked_columns=TRUE
 )
 
 
 
 # classify competition
-FullData<-read_and_join(Path,
+FullData<-read_and_join(FullData,
                         "Lookup_SQL_CompetitionClassification.csv",
-                        FullData,
                         by=c("CompetitionClassification","ClassifyNumberOfOffers"),
-                        ReplaceNAsColumns="ClassifyNumberOfOffers",
-                        NA.check.columns=c("Competition.sum",
+                        replace_na_column_name="ClassifyNumberOfOffers",
+                        na_check_columns=c("Competition.sum",
                                            "Competition.multisum",
                                            "Competition.effective.only",
                                            "No.Competition.sum"),
-                        OnlyKeepCheckedColumns=TRUE
+                        only_keep_checked_columns=TRUE
 )
 
 
 #Classify Product or Service Codes
-FullData<-read_and_join(Path,
+FullData<-read_and_join(FullData,
                         "LOOKUP_Buckets.csv",
-                        FullData,
                         by="ProductOrServiceArea",
-                        NA.check.columns="ProductServiceOrRnDarea.sum",
-                        OnlyKeepCheckedColumns=TRUE,
-                        ReplaceNAsColumns="ProductOrServiceArea"
+                        na_check_columns="ProductServiceOrRnDarea.sum",
+                        only_keep_checked_columns=TRUE,
+                        replace_na_column_name="ProductOrServiceArea"
 )
 
 context("replace_nas_with_unlabeled")
 FullData<-replace_nas_with_unlabeled(FullData,"SubCustomer","Uncategorized")
 
-FullData<-read_and_join(Path,
+FullData<-read_and_join(FullData,
                         "Lookup_SubCustomer.csv",
-                        FullData,
                         by=c("Customer","SubCustomer"),
-                        NA.check.columns="SubCustomer.platform",
-                        OnlyKeepCheckedColumns=TRUE
+                        na_check_columns="SubCustomer.platform",
+                        only_keep_checked_columns=TRUE
 )
 
 # write output to CleanedVendorSize.csv
