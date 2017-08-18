@@ -25,7 +25,7 @@ test_that("standardize_variable_names fixes ï..", {
 # coerce Amount to be a numeric variable
 FullData$Action.Obligation <- as.numeric(FullData$Action.Obligation)
 FullData$SumOfnumberOfActions <- as.numeric(FullData$SumOfnumberOfActions)
-
+FullData$Fiscal.Year <- as.numeric(FullData$Fiscal.Year)
 
 # discard pre-2000
 FullData <- subset(FullData,Fiscal.Year >= 2000)
@@ -92,8 +92,7 @@ FullData<-read_and_join(Path,
                         OnlyKeepCheckedColumns=TRUE
 )
 
-# write output to CleanedVendorSize.csv
-save(FullData, file="2016_unaggregated_FPDS.Rda")
+
 
 LabelsAndColors<-PrepareLabelsAndColors(FullData,"SubCustomer")
 
@@ -135,3 +134,6 @@ LabelsAndColors<-rbind(LabelsAndColors,
 LabelsAndColors<-rbind(LabelsAndColors,
   PrepareLabelsAndColors(FullData,"ProductServiceOrRnDarea.sum")
 )
+
+# write output to CleanedVendorSize.csv
+save(FullData,LabelsAndColors, file="2016_unaggregated_FPDS.Rda")
