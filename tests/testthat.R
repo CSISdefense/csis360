@@ -93,45 +93,45 @@ FullData<-read_and_join(FullData,
 
 
 
-LabelsAndColors<-PrepareLabelsAndColors(FullData,"SubCustomer")
+LabelsAndColors<-prepare_labels_and_colors(FullData,"SubCustomer")
 
 FullData<-replace_nas_with_unlabeled(FullData,"PlatformPortfolio")
 LabelsAndColors<-rbind(LabelsAndColors,
-  PrepareLabelsAndColors(FullData,"PlatformPortfolio")
+  prepare_labels_and_colors(FullData,"PlatformPortfolio")
 )
 # ,"PlatformPortfolio")
 # )
 #Shiny.VendorSize is the new Vendor.Size
 LabelsAndColors<-rbind(LabelsAndColors,
-  PrepareLabelsAndColors(FullData,"Shiny.VendorSize")
+  prepare_labels_and_colors(FullData,"Shiny.VendorSize")
 )
 
 LabelsAndColors<-rbind(LabelsAndColors,
-  PrepareLabelsAndColors(FullData,"Competition.sum")
+  prepare_labels_and_colors(FullData,"Competition.sum")
 )
 
 LabelsAndColors<-rbind(LabelsAndColors,
-  PrepareLabelsAndColors(FullData,"Competition.multisum")
+  prepare_labels_and_colors(FullData,"Competition.multisum")
 )
 
 LabelsAndColors<-rbind(LabelsAndColors,
-  PrepareLabelsAndColors(FullData,"Competition.effective.only")
+  prepare_labels_and_colors(FullData,"Competition.effective.only")
 )
 
 LabelsAndColors<-rbind(LabelsAndColors,
-  PrepareLabelsAndColors(FullData,"No.Competition.sum")
+  prepare_labels_and_colors(FullData,"No.Competition.sum")
 )
 
 LabelsAndColors<-rbind(LabelsAndColors,
-  PrepareLabelsAndColors(FullData,"Customer")
+  prepare_labels_and_colors(FullData,"Customer")
 )
 
 LabelsAndColors<-rbind(LabelsAndColors,
-  PrepareLabelsAndColors(FullData,"ProductOrServiceArea")
+  prepare_labels_and_colors(FullData,"ProductOrServiceArea")
 )
 
 LabelsAndColors<-rbind(LabelsAndColors,
-  PrepareLabelsAndColors(FullData,"ProductServiceOrRnDarea.sum")
+  prepare_labels_and_colors(FullData,"ProductServiceOrRnDarea.sum")
 )
 
 # write output to CleanedVendorSize.csv

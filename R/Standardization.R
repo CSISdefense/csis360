@@ -96,7 +96,7 @@ standardize_variable_names<- function(data,
 #'
 #' @import plyr
 #' @export
-PrepareLabelsAndColors<-function(data
+prepare_labels_and_colors<-function(data
   ,var=NULL
   ,na_replaced=FALSE
   ,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/"
