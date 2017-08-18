@@ -22,13 +22,14 @@
 #'
 #' @param data The data frame to be joined
 #' @param path The location of the lookup file
+#' @param var The names to standard, by default all will be done
 #'
-#' @return data with standardized ColumnName names.
+#' @return data with standardized var names.
 #'
 #' @section This function is designed to prepare CSIS data files for lookup
 #' application. It primarily smooths out variation between different ways we've
 #' written SQL statements. It relies on a pre-existing table of variant names.
-#' The ColumnName names are matched against that table in a case insensitive manner,
+#' The var names are matched against that table in a case insensitive manner,
 #' though no other procedural standardization is applied at this time.
 #'
 #' @examples FullData<-standardize_variable_names(
@@ -38,17 +39,17 @@
 #' @import
 #' @export
 standardize_variable_names<- function(data,
-                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/"
+                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/",
+                                      var=NULL
 ){
-  #Remove nonsense characters sometimes added to start of files
-  colnames(data)[substring(colnames(data),1,3)=="ï.."]<-
-    substring(colnames(data)[substring(colnames(data),1,3)=="ï.."],4)
 
-  colnames(data)[substring(colnames(data),1,3)=="?.."]<-
-    substring(colnames(data)[substring(colnames(data),1,3)=="?.."],4)
 
+  #Remove nonsense characters sometimes added to start of the input file
+  data<-remove_bom(data)
 
   #Consider removing non-alphanumerics _s .s etc.
+
+  if(is.null(var)) var<-colnames(data)
 
   #***Standardize variable names
   NameList<-read.csv(
@@ -62,10 +63,11 @@ standardize_variable_names<- function(data,
 
   #     NameList<-subset(NameList,toupper(Original) %in% toupper(colnames(data)))
   for(x in 1:nrow(NameList)){
-    #         if(toupper(NameList$Original[[x]]) %in% OldNameListUpper){
-    colnames(data)[toupper(colnames(data))==toupper(NameList$Original[[x]])]<-
-      NameList$Replacement[[x]]
-    #         }
+    #Limits it to names in var, if passed. By default, all will be covered.
+    if(toupper(NameList$Original[[x]]) %in% toupper(var)){
+      colnames(data)[toupper(colnames(data))==toupper(NameList$Original[[x]])]<-
+        NameList$Replacement[[x]]
+    }
   }
 
   data
@@ -75,15 +77,15 @@ standardize_variable_names<- function(data,
 #' Prepare Labels And Colors
 #'
 #' @param data The data frame to be joined
-#' @param ColumnName Prepare colors for this columns
-#' @param ReplaceNAs If true, replace NAs for ColumnName before adding colors
+#' @param var Prepare colors for this columns
+#' @param na_replaced If true, replace NAs for var before adding colors
 #' @param path The location of the lookup file
 #'
-#' @return A new data frame for build on the ColumnName ColumnName, it will
+#' @return A new data frame for build on the var var, it will
 #' include colors, and order, and proper name labels.
 #'
 #' @section This function applies standard colors and orders to a single
-#' data frame ColumnName. Colors and order are drawn from pre-existing lookup tables.
+#' data frame var. Colors and order are drawn from pre-existing lookup tables.
 #' When values are missing or wrong, these tables must be manually updated.
 #' This function is badly optimized, reading in multiple csvs every time.
 #' It is intend for use in data preparation source code and not to be used in a
@@ -95,24 +97,22 @@ standardize_variable_names<- function(data,
 #' @import plyr
 #' @export
 PrepareLabelsAndColors<-function(data
-  ,ColumnName
-  ,ReplaceNAs=FALSE
+  ,var=NULL
+  ,na_replaced=FALSE
   ,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/"
   #                                  ,VAR.override.coloration=NA
 )
 {
-  if(ReplaceNAs==TRUE){
-    data<-replace_nas_with_unlabeled(data,ColumnName)
+  if(na_replaced==TRUE){
+    data<-replace_nas_with_unlabeled(data,var)
   }
 
   data<-as.data.frame(data)
 
   #Confirm that the category is even available in the data set.
-  if(!ColumnName %in% names(data)){
-    stop(paste(ColumnName,"is not found in data frame passed to PrepareLabelsAndColors"))
+  if(!var %in% names(data)){
+    stop(paste(var,"is not found in data frame passed to PrepareLabelsAndColors"))
   }
-
-
 
   Coloration<-read.csv(
     paste(path,"Lookup_Coloration.csv",sep=""),
@@ -127,10 +127,12 @@ PrepareLabelsAndColors<-function(data
     header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
     stringsAsFactors=FALSE
   )
-  Column_Key<-subset(Column_Key, column==ColumnName)
+
+
+  Column_Key<-subset(Column_Key, column==var)
 
   if(nrow(Column_Key)==0){
-    stop(paste(ColumnName,"is missing from Lookup_Column_Key.csv"))
+    stop(paste(var,"is missing from Lookup_Column_Key.csv"))
   }
 
 
@@ -152,13 +154,13 @@ PrepareLabelsAndColors<-function(data
   }
 
 
-  #Check for any values in the ColumnName field that are not assigned a color.
-  NA.labels<-subset(data,!(data.frame(data)[,ColumnName] %in% labels.category.data$variable))
+  #Check for any values in the var field that are not assigned a color.
+  NA.labels<-subset(data,!(data.frame(data)[,var] %in% labels.category.data$variable))
 
   if (nrow(NA.labels)>0){
-    print(unique(NA.labels[,ColumnName]))
+    print(unique(NA.labels[,var]))
     stop(paste("Lookup_Coloration.csv is missing"
-      ,length(unique(NA.labels[,ColumnName]))
+      ,length(unique(NA.labels[,var]))
       ,"label(s) for category="
       ,Column_Key$coloration.key[1], ". See above for a list of missing labels")
     )
@@ -166,13 +168,13 @@ PrepareLabelsAndColors<-function(data
   rm(NA.labels,Column_Key)
 
   names.data<-subset(labels.category.data
-    , variable %in% unique(data[,ColumnName]))
+    , variable %in% unique(data[,var]))
 
   rm(labels.category.data)
 
   #Order the names.data and then pass on the same order to the actual data in data
   names.data<-names.data[order(names.data$Display.Order),]
-  names.data$column<-ColumnName
+  names.data$column<-var
 
   names.data
 }

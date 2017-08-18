@@ -2,24 +2,36 @@ library(testthat)
 library(csis360)
 
 
-
-# Path<-"C:\\Users\\gsand_000.ALPHONSE\\Documents\\Development\\R-scripts-and-data\\"
-Path<-"K:\\2007-01 PROFESSIONAL SERVICES\\R scripts and data\\"
-
-
 # read in data
 FullData <- read.csv(
   "data\\2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
   na.strings=c("NA","NULL"))
 
+context("remove_bom")
+FullData<-remove_bom(FullData)
+
+test_that("remove_bom fixes ï..", {
+  expect_equal(colnames(FullData)[1], "Fiscal.Year")
+})
+
+
 
 context("standardize_variable_names")
+
+FullData <- read.csv(
+  "data\\2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
+  na.strings=c("NA","NULL"))
 
 FullData<-standardize_variable_names(FullData)
 
 test_that("standardize_variable_names fixes ï..", {
   expect_equal(colnames(FullData)[1], "Fiscal.Year")
 })
+
+test_that("Rename the SumOfObligatedAmount Column", {
+  expect_equal(colnames(FullData)[9], "Action.Obligation")
+})
+
 
 
 # coerce Amount to be a numeric variable
@@ -31,65 +43,52 @@ FullData$Fiscal.Year <- as.numeric(FullData$Fiscal.Year)
 FullData <- subset(FullData,Fiscal.Year >= 2000)
 
 
-context("read_and_join")
-FullData<-read_and_join(Path,
-                        "LOOKUP_Deflators.csv",
-                        FullData,
-                        by="Fiscal.Year",
-                        NA.check.columns="Deflator.2016",
-                        OnlyKeepCheckedColumns=TRUE
+context("deflate")
+FullData<-deflate(FullData,
+  money_var = "Action.Obligation",
+  deflator_var="Deflator.2016"
 )
 
 
-FullData$Obligation.2016 <- FullData$Action.Obligation /
-  FullData$Deflator.2016
-FullData<-FullData[,colnames(FullData)!="Deflator.2016"]
-
+context("read_and_join")
 
 #Consolidate categories for Vendor Size
-FullData<-read_and_join(Path,
+FullData<-read_and_join(FullData,
                         "LOOKUP_Contractor_Size.csv",
-                        FullData,
                         by="Vendor.Size",
-                        NA.check.columns="Shiny.VendorSize",
-                        OnlyKeepCheckedColumns=TRUE
+                        add_var="Shiny.VendorSize"
 )
 
 
 
 # classify competition
-FullData<-read_and_join(Path,
+FullData<-read_and_join(FullData,
                         "Lookup_SQL_CompetitionClassification.csv",
-                        FullData,
                         by=c("CompetitionClassification","ClassifyNumberOfOffers"),
-                        ReplaceNAsColumns="ClassifyNumberOfOffers",
-                        NA.check.columns=c("Competition.sum",
+                        replace_na_var="ClassifyNumberOfOffers",
+                        add_var=c("Competition.sum",
                                            "Competition.multisum",
                                            "Competition.effective.only",
-                                           "No.Competition.sum"),
-                        OnlyKeepCheckedColumns=TRUE
+                                           "No.Competition.sum")
 )
 
 
 #Classify Product or Service Codes
-FullData<-read_and_join(Path,
+FullData<-read_and_join(FullData,
                         "LOOKUP_Buckets.csv",
-                        FullData,
                         by="ProductOrServiceArea",
-                        NA.check.columns="ProductServiceOrRnDarea.sum",
-                        OnlyKeepCheckedColumns=TRUE,
-                        ReplaceNAsColumns="ProductOrServiceArea"
+                        add_var="ProductServiceOrRnDarea.sum",
+                        replace_na_var="ProductOrServiceArea"
 )
 
 context("replace_nas_with_unlabeled")
 FullData<-replace_nas_with_unlabeled(FullData,"SubCustomer","Uncategorized")
 
-FullData<-read_and_join(Path,
+FullData<-read_and_join(FullData,
                         "Lookup_SubCustomer.csv",
-                        FullData,
                         by=c("Customer","SubCustomer"),
-                        NA.check.columns="SubCustomer.platform",
-                        OnlyKeepCheckedColumns=TRUE
+                        add_var="SubCustomer.platform",
+                        new_var_checked=TRUE
 )
 
 
