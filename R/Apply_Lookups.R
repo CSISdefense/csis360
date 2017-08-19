@@ -366,5 +366,7 @@ get_column_key <- function(
                 new_var_checked=FALSE
   )
 
+  #Set empty string coloration.keys equal to na
+  column_key$coloration.key[column_key$coloration.key==""]<-NA
   return(column_key)
 }
