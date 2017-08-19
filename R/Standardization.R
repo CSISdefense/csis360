@@ -122,55 +122,49 @@ prepare_labels_and_colors<-function(data
 
   #Translate the category name into the appropriate coloration.key
   #This is used because we have more category names than coloration.key
-  Column_Key<-read.csv(
-    paste(path,"Lookup_Column_Key.csv",sep=""),
-    header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
-    stringsAsFactors=FALSE
-  )
+  column_key<-get_column_key(data)
 
+  column_key<-subset(column_key, column==var)
 
-  Column_Key<-subset(Column_Key, column==var)
-
-  if(nrow(Column_Key)==0){
-    stop(paste(var,"is missing from Lookup_Column_Key.csv"))
+  if(nrow(column_key)==0){
+    stop(paste(var,"is missing from Lookup_column_key.csv"))
   }
 
-
   #Limit the lookup table to those series that match the variable
-  labels.category.data<-subset(Coloration, coloration.key==Column_Key$coloration.key[1] )
+  labels_category_data<-subset(Coloration, coloration.key==column_key$coloration.key[1] )
 
   #Fix oddities involving text
-  labels.category.data$variable <- gsub("\\\\n","\n",labels.category.data$variable)
-  labels.category.data$Label <- gsub("\\\\n","\n",labels.category.data$Label)
+  labels_category_data$variable <- gsub("\\\\n","\n",labels_category_data$variable)
+  labels_category_data$Label <- gsub("\\\\n","\n",labels_category_data$Label)
 
-  if(anyDuplicated(labels.category.data$variable)>0){
-    print(labels.category.data$variable[
-      duplicated(labels.category.data$variable)])
+  if(anyDuplicated(labels_category_data$variable)>0){
+    print(labels_category_data$variable[
+      duplicated(labels_category_data$variable)])
     stop(paste("Lookup_Coloration.csv has"
-      ,sum(duplicated(labels.category.data$variable))
+      ,sum(duplicated(labels_category_data$variable))
       ,"duplicate value(s) for category="
-      ,Column_Key$coloration.key[1], ". See above for a list of missing labels")
+      ,column_key$coloration.key[1], ". See above for a list of missing labels")
     )
   }
 
 
   #Check for any values in the var field that are not assigned a color.
-  NA.labels<-subset(data,!(data.frame(data)[,var] %in% labels.category.data$variable))
+  NA.labels<-subset(data,!(data.frame(data)[,var] %in% labels_category_data$variable))
 
   if (nrow(NA.labels)>0){
     print(unique(NA.labels[,var]))
     stop(paste("Lookup_Coloration.csv is missing"
       ,length(unique(NA.labels[,var]))
       ,"label(s) for category="
-      ,Column_Key$coloration.key[1], ". See above for a list of missing labels")
+      ,column_key$coloration.key[1], ". See above for a list of missing labels")
     )
   }
-  rm(NA.labels,Column_Key)
+  rm(NA.labels,column_key)
 
-  names.data<-subset(labels.category.data
+  names.data<-subset(labels_category_data
     , variable %in% unique(data[,var]))
 
-  rm(labels.category.data)
+  rm(labels_category_data)
 
   #Order the names.data and then pass on the same order to the actual data in data
   names.data<-names.data[order(names.data$Display.Order),]

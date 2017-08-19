@@ -91,8 +91,6 @@ full_data<-read_and_join(full_data,
                         new_var_checked=TRUE
 )
 
-
-
 labels_and_colors<-prepare_labels_and_colors(full_data,"SubCustomer")
 
 full_data<-replace_nas_with_unlabeled(full_data,"PlatformPortfolio")
