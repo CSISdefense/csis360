@@ -3,48 +3,48 @@ library(csis360)
 
 
 # read in data
-FullData <- read.csv(
+full_data <- read.csv(
   "data\\2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
   na.strings=c("NA","NULL"))
 
 context("remove_bom")
-FullData<-remove_bom(FullData)
+full_data<-remove_bom(full_data)
 
 test_that("remove_bom fixes ï..", {
-  expect_equal(colnames(FullData)[1], "Fiscal.Year")
+  expect_equal(colnames(full_data)[1], "Fiscal.Year")
 })
 
 
 
 context("standardize_variable_names")
 
-FullData <- read.csv(
+full_data <- read.csv(
   "data\\2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
   na.strings=c("NA","NULL"))
 
-FullData<-standardize_variable_names(FullData)
+full_data<-standardize_variable_names(full_data)
 
 test_that("standardize_variable_names fixes ï..", {
-  expect_equal(colnames(FullData)[1], "Fiscal.Year")
+  expect_equal(colnames(full_data)[1], "Fiscal.Year")
 })
 
 test_that("Rename the SumOfObligatedAmount Column", {
-  expect_equal(colnames(FullData)[9], "Action.Obligation")
+  expect_equal(colnames(full_data)[9], "Action.Obligation")
 })
 
 
 
 # coerce Amount to be a numeric variable
-FullData$Action.Obligation <- as.numeric(FullData$Action.Obligation)
-FullData$SumOfnumberOfActions <- as.numeric(FullData$SumOfnumberOfActions)
-FullData$Fiscal.Year <- as.numeric(FullData$Fiscal.Year)
+full_data$Action.Obligation <- as.numeric(full_data$Action.Obligation)
+full_data$SumOfnumberOfActions <- as.numeric(full_data$SumOfnumberOfActions)
+full_data$Fiscal.Year <- as.numeric(full_data$Fiscal.Year)
 
 # discard pre-2000
-FullData <- subset(FullData,Fiscal.Year >= 2000)
+full_data <- subset(full_data,Fiscal.Year >= 2000)
 
 
 context("deflate")
-FullData<-deflate(FullData,
+full_data<-deflate(full_data,
   money_var = "Action.Obligation",
   deflator_var="Deflator.2016"
 )
@@ -53,7 +53,7 @@ FullData<-deflate(FullData,
 context("read_and_join")
 
 #Consolidate categories for Vendor Size
-FullData<-read_and_join(FullData,
+full_data<-read_and_join(full_data,
                         "LOOKUP_Contractor_Size.csv",
                         by="Vendor.Size",
                         add_var="Shiny.VendorSize"
@@ -62,7 +62,7 @@ FullData<-read_and_join(FullData,
 
 
 # classify competition
-FullData<-read_and_join(FullData,
+full_data<-read_and_join(full_data,
                         "Lookup_SQL_CompetitionClassification.csv",
                         by=c("CompetitionClassification","ClassifyNumberOfOffers"),
                         replace_na_var="ClassifyNumberOfOffers",
@@ -74,7 +74,7 @@ FullData<-read_and_join(FullData,
 
 
 #Classify Product or Service Codes
-FullData<-read_and_join(FullData,
+full_data<-read_and_join(full_data,
                         "LOOKUP_Buckets.csv",
                         by="ProductOrServiceArea",
                         add_var="ProductServiceOrRnDarea.sum",
@@ -82,9 +82,9 @@ FullData<-read_and_join(FullData,
 )
 
 context("replace_nas_with_unlabeled")
-FullData<-replace_nas_with_unlabeled(FullData,"SubCustomer","Uncategorized")
+full_data<-replace_nas_with_unlabeled(full_data,"SubCustomer","Uncategorized")
 
-FullData<-read_and_join(FullData,
+full_data<-read_and_join(full_data,
                         "Lookup_SubCustomer.csv",
                         by=c("Customer","SubCustomer"),
                         add_var="SubCustomer.platform",
@@ -93,46 +93,46 @@ FullData<-read_and_join(FullData,
 
 
 
-LabelsAndColors<-prepare_labels_and_colors(FullData,"SubCustomer")
+labels_and_colors<-prepare_labels_and_colors(full_data,"SubCustomer")
 
-FullData<-replace_nas_with_unlabeled(FullData,"PlatformPortfolio")
-LabelsAndColors<-rbind(LabelsAndColors,
-  prepare_labels_and_colors(FullData,"PlatformPortfolio")
+full_data<-replace_nas_with_unlabeled(full_data,"PlatformPortfolio")
+labels_and_colors<-rbind(labels_and_colors,
+  prepare_labels_and_colors(full_data,"PlatformPortfolio")
 )
 # ,"PlatformPortfolio")
 # )
 #Shiny.VendorSize is the new Vendor.Size
-LabelsAndColors<-rbind(LabelsAndColors,
-  prepare_labels_and_colors(FullData,"Shiny.VendorSize")
+labels_and_colors<-rbind(labels_and_colors,
+  prepare_labels_and_colors(full_data,"Shiny.VendorSize")
 )
 
-LabelsAndColors<-rbind(LabelsAndColors,
-  prepare_labels_and_colors(FullData,"Competition.sum")
+labels_and_colors<-rbind(labels_and_colors,
+  prepare_labels_and_colors(full_data,"Competition.sum")
 )
 
-LabelsAndColors<-rbind(LabelsAndColors,
-  prepare_labels_and_colors(FullData,"Competition.multisum")
+labels_and_colors<-rbind(labels_and_colors,
+  prepare_labels_and_colors(full_data,"Competition.multisum")
 )
 
-LabelsAndColors<-rbind(LabelsAndColors,
-  prepare_labels_and_colors(FullData,"Competition.effective.only")
+labels_and_colors<-rbind(labels_and_colors,
+  prepare_labels_and_colors(full_data,"Competition.effective.only")
 )
 
-LabelsAndColors<-rbind(LabelsAndColors,
-  prepare_labels_and_colors(FullData,"No.Competition.sum")
+labels_and_colors<-rbind(labels_and_colors,
+  prepare_labels_and_colors(full_data,"No.Competition.sum")
 )
 
-LabelsAndColors<-rbind(LabelsAndColors,
-  prepare_labels_and_colors(FullData,"Customer")
+labels_and_colors<-rbind(labels_and_colors,
+  prepare_labels_and_colors(full_data,"Customer")
 )
 
-LabelsAndColors<-rbind(LabelsAndColors,
-  prepare_labels_and_colors(FullData,"ProductOrServiceArea")
+labels_and_colors<-rbind(labels_and_colors,
+  prepare_labels_and_colors(full_data,"ProductOrServiceArea")
 )
 
-LabelsAndColors<-rbind(LabelsAndColors,
-  prepare_labels_and_colors(FullData,"ProductServiceOrRnDarea.sum")
+labels_and_colors<-rbind(labels_and_colors,
+  prepare_labels_and_colors(full_data,"ProductServiceOrRnDarea.sum")
 )
 
 # write output to CleanedVendorSize.csv
-save(FullData,LabelsAndColors, file="2016_unaggregated_FPDS.Rda")
+save(full_data,labels_and_colors, file="2016_unaggregated_FPDS.Rda")
