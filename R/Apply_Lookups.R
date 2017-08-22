@@ -197,10 +197,12 @@ read_and_join<-function(
   if(!is.null(by)){
     droplist<-names(lookup)[names(lookup) %in% names(data)]
     droplist<-droplist[!droplist %in% by]
-    if(overlap_var_replaced)
-      data<-data[,!names(data) %in% droplist]
-    else
-      lookup<-lookup[,!names(lookup) %in% droplist]
+    if(length(droplist)>0){
+      if(overlap_var_replaced)
+        data<-data[,!names(data) %in% droplist]
+      else
+        lookup<-lookup[,!names(lookup) %in% droplist]
+    }
   }
 
   #Fixes for Excel's penchant to drop leading 0s.
@@ -326,6 +328,7 @@ deflate <- function(
 }
 
 
+<<<<<<< HEAD
 #' Get Column Key
 #' Take a dataframe and pass back a data frame with a matching column key
 #'
@@ -352,4 +355,48 @@ get_column_key<-function(data
   )
 
   column_key
+=======
+
+#' Get Column Key based on the names in a data frame
+#'
+#' @param data A data frame
+#' @param path The path or url for the column key.  By default, checks
+#' the CSISdefense Github lookups repository at CSISdefense/csis360/master/data/style/
+#'
+#' @return A data frame of the column names from data joined up to the column key
+#'
+#' @section Warning: This function should be used in data processing only,
+#' not in a live app.  It reads an external file from GitHub,
+#' which will slow down an app substantially if done repeatedly. Works best
+#' when standardize_names has already been run on the data frame in question.
+#'
+#' @examples
+#'
+#' FullData <- read_csv("2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
+#'   col_names = TRUE, col_types = "cccccccccc",na=c("NA","NULL"))
+#' PrepareLabelsAndColors(Coloration,FullData,"Customer")
+#'
+#' @import
+#' @export
+get_column_key <- function(
+  data,
+  path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/"
+){
+  column_key<-colnames(full_data)
+  column_key<-as.data.frame(column_key)
+  colnames(column_key)[1]<-"column"
+
+  #Join up the files
+  column_key<-read_and_join(column_key,
+                "Lookup_Column_Key.csv",
+                path=path,
+                directory="",
+                by="column",
+                new_var_checked=FALSE
+  )
+
+  #Set empty string coloration.keys equal to na
+  column_key$coloration.key[column_key$coloration.key==""]<-NA
+  return(column_key)
+>>>>>>> 48bc4af5277536d845f354cf308ebbf9510a0cda
 }
