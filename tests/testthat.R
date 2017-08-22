@@ -134,5 +134,9 @@ LabelsAndColors<-rbind(LabelsAndColors,
   prepare_labels_and_colors(FullData,"ProductServiceOrRnDarea.sum")
 )
 
+column_key<-get_column_key(FullData)
+
 # write output to CleanedVendorSize.csv
 save(FullData,LabelsAndColors, file="2016_unaggregated_FPDS.Rda")
+
+

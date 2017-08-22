@@ -135,7 +135,8 @@ remove_bom<-function(data
 #'
 #' @param data The data frame to be joined
 #' @param lookup_file The name of the lookup file
-#' @param path="K:\\2007-01 PROFESSIONAL SERVICES\\R scripts and data\\", The location of the lookup file
+#' @param path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
+#' The location of the lookup file
 #' @param directory="Lookups\\" The directory within the path that holds the lookup
 #' @param by=NULL The columns used to join, if not provided, matching columns will be used
 #' @param replace_na_var=NULL Before the join, these columns will have NAs values replaced
@@ -322,4 +323,33 @@ deflate <- function(
                                paste(money_var,deflator_var,sep="_")))
 
   return(data)
+}
+
+
+#' Get Column Key
+#' Take a dataframe and pass back a data frame with a matching column key
+#'
+#' @param data A /code(data.frame)
+#'
+#' @return Takes /code(colname(data)) and matches with column key information.
+#'
+#' @section The column key provides relevant information from an existing lookup
+#' table that gives axis-title and coloration-keys for each of the columns in a
+#' data frame.
+#'
+#' @examples get_column_key(data)
+#'
+#' @import
+#' @export
+get_column_key<-function(data
+){
+  column_key<-as.data.frame(colnames(FullData))
+  colnames(column_key)[1]<-"column"
+  column_key<-read_and_join(column_key,
+    "Lookup_Column_Key.csv",
+    directory="data/style/",
+    path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/"
+  )
+
+  column_key
 }
