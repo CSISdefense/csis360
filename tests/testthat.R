@@ -8,10 +8,10 @@ full_data <- read.csv(
   na.strings=c("NA","NULL"))
 
 context("remove_bom")
-full_data<-remove_bom(full_data)
+bom_data<-remove_bom(full_data)
 
 test_that("remove_bom fixes ï..", {
-  expect_equal(colnames(full_data)[1], "Fiscal.Year")
+  expect_equal(colnames(bom_data)[1], "Fiscal.Year")
 })
 
 
@@ -21,30 +21,30 @@ context("standardize_variable_names")
 full_data <- read.csv(
   "data\\2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
   na.strings=c("NA","NULL"))
-
-full_data<-standardize_variable_names(full_data)
+std_data<-standardize_variable_names(full_data)
 
 test_that("standardize_variable_names fixes ï..", {
-  expect_equal(colnames(full_data)[1], "Fiscal.Year")
+  expect_equal(colnames(std_data)[1], "Fiscal.Year")
 })
 
 test_that("Rename the SumOfObligatedAmount Column", {
-  expect_equal(colnames(full_data)[9], "Action.Obligation")
+  expect_equal(colnames(std_data)[9], "Action.Obligation")
 })
 
 
 
 # coerce Amount to be a numeric variable
-full_data$Action.Obligation <- as.numeric(full_data$Action.Obligation)
-full_data$SumOfnumberOfActions <- as.numeric(full_data$SumOfnumberOfActions)
-full_data$Fiscal.Year <- as.numeric(full_data$Fiscal.Year)
+std_data$Action.Obligation <- as.numeric(std_data$Action.Obligation)
+std_data$Number.Of.Actions <- as.numeric(std_data$Number.Of.Actions)
+std_data$Fiscal.Year <- as.numeric(std_data$Fiscal.Year)
 
 # discard pre-2000
-full_data <- subset(full_data,Fiscal.Year >= 2000)
+std_data <- subset(std_data,Fiscal.Year >= 2000)
 
 
 context("deflate")
-full_data<-deflate(full_data,
+
+def_data<-deflate(std_data,
   money_var = "Action.Obligation",
   deflator_var="Deflator.2016"
 )
@@ -53,7 +53,7 @@ full_data<-deflate(full_data,
 context("read_and_join")
 
 #Consolidate categories for Vendor Size
-full_data<-read_and_join(full_data,
+def_data<-read_and_join(def_data,
                         "LOOKUP_Contractor_Size.csv",
                         by="Vendor.Size",
                         add_var="Shiny.VendorSize"
@@ -62,7 +62,7 @@ full_data<-read_and_join(full_data,
 
 
 # classify competition
-full_data<-read_and_join(full_data,
+def_data<-read_and_join(def_data,
                         "Lookup_SQL_CompetitionClassification.csv",
                         by=c("CompetitionClassification","ClassifyNumberOfOffers"),
                         replace_na_var="ClassifyNumberOfOffers",
@@ -74,7 +74,7 @@ full_data<-read_and_join(full_data,
 
 
 #Classify Product or Service Codes
-full_data<-read_and_join(full_data,
+def_data<-read_and_join(def_data,
                         "LOOKUP_Buckets.csv",
                         by="ProductOrServiceArea",
                         add_var="ProductServiceOrRnDarea.sum",
@@ -82,29 +82,25 @@ full_data<-read_and_join(full_data,
 )
 
 context("replace_nas_with_unlabeled")
-full_data<-replace_nas_with_unlabeled(full_data,"SubCustomer","Uncategorized")
+def_data<-replace_nas_with_unlabeled(def_data,"SubCustomer","Uncategorized")
 
-full_data<-read_and_join(full_data,
+def_data<-read_and_join(def_data,
                         "Lookup_SubCustomer.csv",
                         by=c("Customer","SubCustomer"),
                         add_var="SubCustomer.platform",
                         new_var_checked=TRUE
 )
 
-labels_and_colors<-prepare_labels_and_colors(full_data,"SubCustomer")
+labels_and_colors<-prepare_labels_and_colors(def_data,"SubCustomer")
 
-full_data<-replace_nas_with_unlabeled(full_data,"PlatformPortfolio")
+def_data<-replace_nas_with_unlabeled(def_data,"PlatformPortfolio")
 
-labels_and_colors<-prepare_labels_and_colors(full_data)
+labels_and_colors<-prepare_labels_and_colors(def_data)
 
 
-column_key<-get_column_key(FullData)
+column_key<-get_column_key(def_data)
 
 # write output to CleanedVendorSize.csv
-<<<<<<< HEAD
-save(FullData,LabelsAndColors, file="2016_unaggregated_FPDS.Rda")
 
+save(def_data,labels_and_colors, file="2016_unaggregated_FPDS.Rda")
 
-=======
-save(full_data,labels_and_colors, file="2016_unaggregated_FPDS.Rda")
->>>>>>> 48bc4af5277536d845f354cf308ebbf9510a0cda

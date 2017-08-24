@@ -42,6 +42,9 @@ standardize_variable_names<- function(data,
                                       path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/",
                                       var=NULL
 ){
+  #V
+  if(!is.null(var) & any(!var %in% colnames(data)))
+    stop(paste(var," is not present in colnames(data)."))
 
 
   #Remove nonsense characters sometimes added to start of the input file

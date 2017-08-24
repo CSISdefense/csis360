@@ -35,7 +35,7 @@
 #'
 #' @examples VAR.long.DF<-replace_nas_with_unlabeled(data=data.DF
 #'   ,var="SubCustomer"),
-#'   replacement = "Uncategorized",
+#'   replacement = "Uncategorized"
 #'   )
 #'
 #' @import
@@ -75,13 +75,15 @@ replace_nas_with_unlabeled<- function(data,
 #'   output_var=add_var,
 #'   lookup_file=lookup_file)
 #'
-#' @import
+#' @import stats
 #' @export
 na_check<-function(data
   , input_var
   , output_var
   , lookup_file
 ){
+
+
   #Limit just to relevant columns
   na_check.df<-subset(data
     , select=c(input_var,output_var)
@@ -160,6 +162,7 @@ remove_bom<-function(data
 #'   lookup_file=lookup_file)
 #'
 #' @import plyr
+#' @import utils
 #' @export
 read_and_join<-function(
   data,
@@ -171,6 +174,7 @@ read_and_join<-function(
   overlap_var_replaced=TRUE,
   add_var=NULL,
   new_var_checked=TRUE){
+
 
   #Replace NAs in input column if requested
   if(!is.null(replace_na_var)){
@@ -298,6 +302,21 @@ deflate <- function(
   deflator_dropped=TRUE
   ){
 
+  std_data[,money_var] <- as.numeric(std_data[,money_var])
+  if(!fy_var %in% colnames(data))
+    stop(paste(fy_var," is not present in data."))
+
+  if(!money_var %in% colnames(data)){
+    if((paste(money_var,"Then.Year",sep=".") %in% colnames(data)) &
+        (paste(money_var,deflator_var,sep=".") %in% colnames(data))){
+      warning(paste(money_var," is not present in data, due to prior run of deflate with money_var=",money_var,".",sep=""))
+      return(data)
+    }
+    else{
+      stop(paste(money_var,"is not present in data."))
+    }
+  }
+
   cat(paste("\n Applying\n", deflator_var, "\n in \n", deflator_file, "\n from\n", path, "\n"))
   deflators_retrieved <- readr::read_csv(paste0(path, directory,deflator_file))
 
@@ -313,49 +332,22 @@ deflate <- function(
     data[[money_var]])) /
     data[[deflator_var]]
 
-  colnames(data)[colnames(data)==money_var]<-paste(money_var,"Current",sep=".")
+  colnames(data)[colnames(data)==money_var]<-paste(money_var,"Then.Year",sep=".")
 
   #Drop the deflator var unless deflator_dropped = FALSE
   if(deflator_dropped)
     data<-data[,colnames(data)!=deflator_var]
 
   #Standardize the newly created names
-  standardize_variable_names(data,
-                             var=c(paste(money_var,"current",sep="_"),
-                               paste(money_var,deflator_var,sep="_")))
+  data<-standardize_variable_names(data,
+                             var=c(paste(money_var,"Then.Year",sep="."),
+                               paste(money_var,deflator_var,sep=".")))
 
   return(data)
 }
 
 
-<<<<<<< HEAD
-#' Get Column Key
-#' Take a dataframe and pass back a data frame with a matching column key
-#'
-#' @param data A /code(data.frame)
-#'
-#' @return Takes /code(colname(data)) and matches with column key information.
-#'
-#' @section The column key provides relevant information from an existing lookup
-#' table that gives axis-title and coloration-keys for each of the columns in a
-#' data frame.
-#'
-#' @examples get_column_key(data)
-#'
-#' @import
-#' @export
-get_column_key<-function(data
-){
-  column_key<-as.data.frame(colnames(FullData))
-  colnames(column_key)[1]<-"column"
-  column_key<-read_and_join(column_key,
-    "Lookup_Column_Key.csv",
-    directory="data/style/",
-    path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/"
-  )
 
-  column_key
-=======
 
 #' Get Column Key based on the names in a data frame
 #'
@@ -382,7 +374,7 @@ get_column_key <- function(
   data,
   path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/"
 ){
-  column_key<-colnames(full_data)
+  column_key<-colnames(data)
   column_key<-as.data.frame(column_key)
   colnames(column_key)[1]<-"column"
 
@@ -398,5 +390,4 @@ get_column_key <- function(
   #Set empty string coloration.keys equal to na
   column_key$coloration.key[column_key$coloration.key==""]<-NA
   return(column_key)
->>>>>>> 48bc4af5277536d845f354cf308ebbf9510a0cda
 }
