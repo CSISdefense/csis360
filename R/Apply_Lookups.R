@@ -145,6 +145,7 @@ remove_bom<-function(data
 #' @param overlap_var_replaced=TRUE Should the function replace for common columns not used to join?
 #' @param add_var=NULL, What new columns should be checked for NA values?
 #' @param new_var_checked=FALSE Should only checked new columns be kept?
+#' @param skip_check_var=NULL List of vars that should not be checked for NA values.
 #'
 #' @return The data frame plus new columns from the lookup file. If new_var_checked is
 #' true and only new columns listed in add_var will be kept. Note to self, should
@@ -173,7 +174,8 @@ read_and_join<-function(
   replace_na_var=NULL,
   overlap_var_replaced=TRUE,
   add_var=NULL,
-  new_var_checked=TRUE){
+  new_var_checked=TRUE,
+  skip_check_var=NULL){
 
 
   #Replace NAs in input column if requested
@@ -253,6 +255,10 @@ read_and_join<-function(
   }
 
   if(!is.null(by)&new_var_checked==TRUE){
+    if(!is.null(skip_check_var)){
+      add_var<-add_var[!add_var %in% skip_check_var]
+    }
+
     na_check(data,
       input_var=by,
       output_var=add_var,

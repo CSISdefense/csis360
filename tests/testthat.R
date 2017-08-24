@@ -1,6 +1,6 @@
 library(testthat)
 library(csis360)
-
+library(ggplot2)
 
 # read in data
 full_data <- read.csv(
@@ -106,3 +106,26 @@ column_key<-get_column_key(def_data)
 
 save(def_data,labels_and_colors, file="2016_unaggregated_FPDS.Rda")
 
+debug(get_plot_theme)
+ggplot(data = subset(def_data),
+  aes(x=Fiscal.Year,
+    y=Action.Obligation.2016,
+    fill = SubCustomer)) +
+  geom_bar(width=.7,stat="identity") +
+  ggtitle("Contract Obligations") +
+  # facet_wrap(~ Faceting, ncol = 2, scales="free_y",
+  #   drop = TRUE) +
+  # scale_fill_manual(
+  #   values = structure(as.character(Pricing.Mechanism.sum$ColorRGB), names = as.character(Pricing.Mechanism.sum$Label)))+
+  # c(
+  #     # "AllPrimes" = "#33FF66",
+  #     "PrimeNotReportInFSRS" =  "#33FF66",
+  #     "PrimeReportInFSRS" =  "#0066FF",
+  #     "SubReportInFSRS" = "#FF6699")) +
+  get_plot_theme() +
+  xlab("Fiscal Year") +
+  ylab("DoD Contract Obligated Amount in billion $") +
+  theme(plot.caption = element_text(
+    size = 12, face = "bold", color = "#554449", family = "Open Sans"
+  )) +
+  labs(caption = "Source: FPDS; CSIS analysis", size = 30, family= "Open Sans")
