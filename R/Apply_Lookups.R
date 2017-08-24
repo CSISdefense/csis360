@@ -302,7 +302,6 @@ deflate <- function(
   deflator_dropped=TRUE
   ){
 
-  std_data[,money_var] <- as.numeric(std_data[,money_var])
   if(!fy_var %in% colnames(data))
     stop(paste(fy_var," is not present in data."))
 
@@ -316,6 +315,9 @@ deflate <- function(
       stop(paste(money_var,"is not present in data."))
     }
   }
+
+
+  data[[money_var]] <- as.numeric(data[[money_var]])
 
   cat(paste("\n Applying\n", deflator_var, "\n in \n", deflator_file, "\n from\n", path, "\n"))
   deflators_retrieved <- readr::read_csv(paste0(path, directory,deflator_file))

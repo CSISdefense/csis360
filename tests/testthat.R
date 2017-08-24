@@ -49,6 +49,10 @@ def_data<-deflate(std_data,
   deflator_var="Deflator.2016"
 )
 
+expect_true("Action.Obligation.2016" %in% colnames(def_data))
+expect_true("Action.Obligation.Then.Year" %in% colnames(def_data))
+expect_false("Action.Obligationr" %in% colnames(def_data))
+
 
 context("read_and_join")
 
@@ -58,8 +62,6 @@ def_data<-read_and_join(def_data,
                         by="Vendor.Size",
                         add_var="Shiny.VendorSize"
 )
-
-
 
 # classify competition
 def_data<-read_and_join(def_data,
