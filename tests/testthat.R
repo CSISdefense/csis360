@@ -106,7 +106,6 @@ column_key<-get_column_key(def_data)
 
 save(def_data,labels_and_colors, file="2016_unaggregated_FPDS.Rda")
 
-debug(get_plot_theme)
 ggplot(data = subset(def_data),
   aes(x=Fiscal.Year,
     y=Action.Obligation.2016,
