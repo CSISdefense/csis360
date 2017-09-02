@@ -1,11 +1,16 @@
 Package: csis360
 Type: Package
 Title: Toolkit for CSIS Data Processing and Visualization
-Version: 0.0.0.9028
-Authors@R: person("Gregory","Sanders",email="gsanders@cssi.org",
+Version: 0.0.0.9029
+Authors@R: person("Gregory","Sanders",email="gsanders@csis.org",
                   role = c("aut", "cre"))
 Description: Tools for supporting CSIS quantitative research projects.
 Imports: plyr (>= 0.1.8.4)
+Imports: ggplot2
+Imports: magrittr
+Imports: dplyr
+Imports: lazyeval
+Imports: forcats
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
