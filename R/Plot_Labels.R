@@ -1,4 +1,73 @@
+#' Get Preassigned Scales
+#'
+#' @return plot with added color and fill scales for the column passed.
+#'
+#' @section labels_and_colors is a data.frame produced by
+#' the csis360 package, see prepare_labels_and_colors drawing
+#' from lookup table that preassign labels, order, and color
+#' to the expected values of a column.
+#'
+#' @examples plot<-get_preasssigned_scales(plot,labels_and_colors,"pricing.mechanism.sum")
+#'
+#' @import ggplot2
+#' @export
+add_preassigned_scales<-function(
+  plot,
+  labels_and_colors,
+  var="None"
+){
 
+  BarPalette <- scale_fill_manual(
+    values = c(
+      "#004165",
+      "#0065a4",
+      "#0095AB",
+      "#66c6cb",
+      "#75c596",
+      "#0faa91",
+      "#51746d",
+      "#607a81",
+      "#252d3a",
+      "#353535",
+      "#797979"))
+
+  LinePalette <- scale_color_manual(
+    values = c(
+      "#004165",
+      "#75c596",
+      "#b24f94",
+      "#0095ab",
+      "#0a8672",
+      "#e22129",
+      "#66c6cb",
+      "#51746d",
+      "#797979",
+      "#788ca8",
+      "#353535"))
+  #If a column name is passed and it is in labels_and_colors
+  if(var!="None" & any(labels_and_colors$column==var)){
+    plot<-plot+scale_color_manual(
+      values = subset(labels_and_colors,column==var)$RGB,
+      limits=c(subset(labels_and_colors,column==var)$variable),
+      labels=c(subset(labels_and_colors,column==var)$Label)
+    )+scale_fill_manual(
+      values = subset(labels_and_colors,column==var)$RGB,
+      limits=c(subset(labels_and_colors,column==var)$variable),
+      labels=c(subset(labels_and_colors,column==var)$Label)
+    )
+  }
+  else{
+    #This doesn't work yet
+    if(var!="None")
+      warning(paste(var,"not found in labels_and_colors"))
+    # plot<-plot+scale_color_manual(
+    #   values = LinePalette$values
+    #  )+scale_fill_manual(
+    #   values = BarPalette$values
+    # )
+  }
+  return(plot)
+}
 
 format_data_for_plot <- function(
   # Returns data in the appropriate format for the user-specified plot
