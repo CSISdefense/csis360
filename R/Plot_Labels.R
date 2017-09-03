@@ -69,6 +69,49 @@ add_preassigned_scales<-function(
   return(plot)
 }
 
+
+group_data_for_plot <-function(
+  # Returns data in the appropriate format for the user-specified plot
+  #
+  # Args:
+  data,   # data to format for the plot, as a tibble
+  x_var,
+  y_var,
+  breakout
+  #
+  # Returns:
+  #   a tibble of formatted data
+){
+  # account for potential spaces in breakout and x_var
+  if(grepl(" ", x_var)) x_var <- paste0("`", x_var, "`")
+  if(length(breakout) >= 1){
+    if(grepl(" ", breakout[1])) breakout[1] <- paste0("`", breakout[1], "`")
+  }
+  if(length(breakout) == 2){
+    if(grepl(" ", breakout[2])) breakout[2] <- paste0("`", breakout[2], "`")
+  }
+
+  # aggregate to the level of [fiscal year x breakout]
+  # the evaluation for dplyr::summarize_ was a pain in the ass to figure out;
+  # see stack overflow at https://tinyurl.com/z82ywf3
+
+  if(length(breakout) == 0){
+    data %<>%
+      group_by_(x_var) %>%
+      summarize_(
+        sum_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
+  } else {
+    data %<>%
+      group_by_(.dots = c(x_var, breakout)) %>%
+      summarize_(
+        sum_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
+  }
+
+  names(data)[which(names(data) == "sum_val")] <- y_var
+  return(data)
+}
+
+
 format_data_for_plot <- function(
   # Returns data in the appropriate format for the user-specified plot
   #
@@ -86,36 +129,19 @@ format_data_for_plot <- function(
   breakouts <- c(input$color_var, input$facet_var)
   breakouts <- breakouts[breakouts != "None"]
 
-  # account for potential spaces in breakouts and fy_var
-  if(grepl(" ", fy_var)) fy_var <- paste0("`", fy_var, "`")
-  if(length(breakouts) >= 1){
-    if(grepl(" ", breakouts[1])) breakouts[1] <- paste0("`", breakouts[1], "`")
-  }
-  if(length(breakouts) == 2){
-    if(grepl(" ", breakouts[2])) breakouts[2] <- paste0("`", breakouts[2], "`")
-  }
+  shown_data<-group_data_for_plot(
+    shown_data,
+    fy_var,
+    input$y_var,
+    breakouts
+  )
+
   # filter by year - see https://tinyurl.com/lm2u8xs
   shown_data %<>%
     filter_(paste0(fy_var, ">=", as.character(input$year[1]), "&", fy_var,
                    "<=", as.character(input$year[2])))
 
-  # aggregate to the level of [fiscal year x breakouts]
-  # the evaluation for dplyr::summarize_ was a pain in the ass to figure out;
-  # see stack overflow at https://tinyurl.com/z82ywf3
 
-  if(length(breakouts) == 0){
-    shown_data %<>%
-      group_by_(fy_var) %>%
-      summarize_(
-        sum_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(input$y_var)))
-  } else {
-    shown_data %<>%
-      group_by_(.dots = c(fy_var, breakouts)) %>%
-      summarize_(
-        sum_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(input$y_var)))
-  }
-
-  names(shown_data)[which(names(shown_data) == "sum_val")] <- input$y_var
 
   #
   # NOTE: NAs replaced with 0 here; potential data quality issue
