@@ -1,5 +1,9 @@
 #' Get Preassigned Scales
 #'
+#' @param plot The existing ggplot, needed to add more than one scale
+#' @param labels_and_colors A csis360 lookup data.frame with factor information
+#' @param var The names of the column, default of none for generic colors
+#'
 #' @return plot with added color and fill scales for the column passed.
 #'
 #' @section labels_and_colors is a data.frame produced by
@@ -109,6 +113,35 @@ group_data_for_plot <-function(
 
   names(data)[which(names(data) == "sum_val")] <- y_var
   return(data)
+}
+
+
+#' Get Label
+#'
+#' @return character string with the label corresponding to a column
+#'
+#' @param column_key A csis360 lookup data.frame with column information
+#' @param var The names of the column, default of none for generic colors
+#'
+#' @section column_key is a data.frame produced by
+#' the csis360 package, see get_column_key drawing
+#' from lookup table that preassigns labels and describes column
+#' characteristics. This function returns the appropriate label if
+#' present, otherwise it returns the name of the variable.
+#'
+#' @examples plot<-get_preasssigned_scales(plot,labels_and_colors,"pricing.mechanism.sum")
+#'
+#' @import
+#' @export
+get_label <- function(
+  var,
+  column_key
+){
+  if(is.null(var)) stop("Null var passed to get_label.")
+  title<-subset(column_key,column==var)$title
+  label<-ifelse(is.na(title),var,title)
+  return(label)
+
 }
 
 

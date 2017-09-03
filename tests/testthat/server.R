@@ -59,13 +59,8 @@ shinyServer(function(input, output, session) {
 
     mainplot <- build_plot_from_input(plot_data, input)
     mainplot <- add_preassigned_scales(mainplot,labels_and_colors,input$color_var)+
-      labs(
-        x=ifelse( is.na(subset(column_key,column==vars$fiscal_year)$title),
-          vars$fiscal_year,
-          subset(column_key,column==vars$fiscal_year)$title),
-        y=ifelse( is.na(subset(column_key,column==input$y_var)$title),
-           input$y_var,
-          subset(column_key,column==input$y_var)$title)
+      labs(        x=get_label(vars$fiscal_year,column_key),
+        y=get_label(input$y_var,column_key)
       )
 
     # add overall visual settings to the plot
