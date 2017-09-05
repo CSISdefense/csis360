@@ -278,7 +278,7 @@ server <- function(input, output, session){
       geom_line(size = 1) +
       ylab("Market Share of Contrats Reporting in FSRS") +
       # scale_y_log10()
-      csis360::get_plot_theme()
+      csis360::get_plot_theme()+
       scale_y_continuous(labels = scales::percent)
 
       all_prime<-subset(shown,Faceting %in% c("PrimeNotReportInFSRS","PrimeReportInFSRS" ))
