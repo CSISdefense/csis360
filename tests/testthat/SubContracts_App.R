@@ -35,8 +35,6 @@ load("subcontract_full_data.RData")
 # Visual settings for user interface
 ################################################################################
 
-load(file="labels.RData")
-grid.newpage()
 
 # c("AllPrimes",
 #               "PrimeReportInFSRS",
@@ -97,10 +95,10 @@ ui <- fluidPage(
                        step = 1, width = '100%', sep = ""),
 
            selectInput("PlatformPortfolio","Platform Portfolio",
-                       PlatformPortfolio$variable,
+                       labels_and_colors$variable[labels_and_colors$column=="PlatformPortfolio"],
                        multiple = TRUE,
                        selectize = FALSE,
-                       selected = PlatformPortfolio$variable,
+                       selected = labels_and_colors$variable[labels_and_colors$column=="PlatformPortfolio"],
                        width = '100%'),
 #           selectInput("IsSubContract","Sub or Prime Contract",
 #                       IsSubContract,
@@ -109,10 +107,10 @@ ui <- fluidPage(
 #                       selected = IsSubContract,
 #                       width = '100%'),
           selectInput("SubCustomer.sum", "Customer",
-                       SubCustomer.sum$variable,
+                       labels_and_colors$variable[labels_and_colors$column=="SubCustomer.sum"],
                        multiple = TRUE,
                        selectize = FALSE,
-                       selected = SubCustomer.sum$variable,
+                       selected = labels_and_colors$variable[labels_and_colors$column=="SubCustomer.sum"],
                        width = '100%')),
 
     # left column - column sizes should add up to 12, this one is 9 so
