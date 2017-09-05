@@ -173,7 +173,7 @@ prepare_labels_and_colors<-function(data
       stop(paste("Lookup_Coloration.csv is missing"
                  ,length(unique(NA.labels[,c]))
                  ,"label(s) for category="
-                 ,column_key$coloration.key[1], ". See above for a list of missing labels")
+                 ,c, ". See above for a list of missing labels")
       )
     }
 
