@@ -128,3 +128,8 @@ ggplot(data = subset(def_data),
     size = 12, face = "bold", color = "#554449", family = "Open Sans"
   )) +
   labs(caption = "Source: FPDS; CSIS analysis", size = 30, family= "Open Sans")
+
+
+load("tests//testthat//Crisis_Funding.RData")
+FullData<-replace_nas_with_unlabeled(FullData,"Theater")
+labels_and_colors<-prepare_labels_and_colors(FullData,"Theater")

@@ -1,7 +1,7 @@
 Package: csis360
 Type: Package
 Title: Toolkit for CSIS Data Processing and Visualization
-Version: 0.0.0.9033
+Version: 0.0.0.9034
 Authors@R: person("Gregory","Sanders",email="gsanders@csis.org",
                   role = c("aut", "cre"))
 Description: Tools for supporting CSIS quantitative research projects.

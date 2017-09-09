@@ -100,10 +100,10 @@ standardize_variable_names<- function(data,
 #' @import plyr
 #' @export
 prepare_labels_and_colors<-function(data
-  ,var=NULL
-  ,na_replaced=FALSE
-  ,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/"
-  #                                  ,VAR.override.coloration=NA
+                                    ,var=NULL
+                                    ,na_replaced=FALSE
+                                    ,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/"
+                                    #                                  ,VAR.override.coloration=NA
 )
 {
   if(na_replaced==TRUE){
@@ -115,7 +115,7 @@ prepare_labels_and_colors<-function(data
   #Confirm that the category is even available in the data set.
   if(!is.null(var)){
     if(!var %in% names(data)){
-    stop(paste(var,"is not found in data frame passed to PrepareLabelsAndColors"))
+      stop(paste(var,"is not found in data frame passed to PrepareLabelsAndColors"))
     }
   }
 
@@ -168,17 +168,40 @@ prepare_labels_and_colors<-function(data
     #Check for any values in the current field that are not assigned a color.
     NA.labels<-subset(data,!(data.frame(data)[,c] %in% labels_category_data$variable))
 
+
+
     if (nrow(NA.labels)>0){
-      print(unique(NA.labels[,c]))
-      stop(paste("Lookup_Coloration.csv is missing"
-                 ,length(unique(NA.labels[,c]))
-                 ,"label(s) for category="
-                 ,c, ". See above for a list of missing labels")
-      )
+      #Unlabeled is highly standardized, adding automatically
+      if(length(unique(NA.labels[,c]))==1 &
+         !is.na(unique(NA.labels[1,c]))&
+         unique(NA.labels[1,c])=="Unlabeled")
+      {
+
+        labels_category_data<-rbind(labels_category_data,
+                                    data.frame(coloration.key=column_key$coloration.key[v],
+                                               variable="Unlabeled",
+                                               Label="Unlabeled",
+                                               Display.Order= 999,
+                                               Color="reddish gray",
+                                               RGB= "#967878",
+                                               shape=NA,
+                                               size=NA,
+                                               alpha=NA
+                                    ))
+      }
+      else{
+        #Otherwise create an error.
+        print(unique(NA.labels[,c]))
+        stop(paste("Lookup_Coloration.csv is missing"
+                   ,length(unique(NA.labels[,c]))
+                   ,"label(s) for category="
+                   ,c, ". See above for a list of missing labels")
+        )
+      }
     }
 
     labels_category_data<-subset(labels_category_data
-                       , variable %in% unique(data[,c]))
+                                 , variable %in% unique(data[,c]))
 
 
     #Order the names.data and then pass on the same order to the actual data in data
