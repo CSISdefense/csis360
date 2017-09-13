@@ -88,6 +88,10 @@ na_check<-function(data
   na_check.df<-subset(data
     , select=c(input_var,output_var)
   )
+
+  #Drop cases where there is an na in the input_var
+  na_check.df<-na_check.df[complete.cases(na_check.df[,input_var]),]
+
   #Drop all complete rows
   na_check.df<-na_check.df[!complete.cases(na_check.df),]
 
@@ -184,6 +188,8 @@ read_and_join<-function(
                                      replace_na_var)
   }
 
+
+
   #Read in the lookup file
   lookup<-read.csv(
     paste(path,directory,lookup_file,sep=""),
@@ -194,6 +200,16 @@ read_and_join<-function(
     strip.white=TRUE,
     stringsAsFactors=FALSE  #This can get weird when true, as sometimes it confuses numerical variables and factors
   )
+
+  #Raise an error if by is missing from either file
+  if(any(!by %in% colnames(lookup))){
+    by<-by[!by %in% colnames(lookup)]
+    stop(paste(paste(by,collapse=" & "), "not present in lookup"))
+  }
+  if(any(!by %in% colnames(data))){
+    by<-by[!by %in% colnames(data)]
+    stop(paste(paste(by,collapse=" & "),"not present in data"))
+  }
 
   #Remove byte order marks sometimes added to start of a  file
   data<-remove_bom(data)

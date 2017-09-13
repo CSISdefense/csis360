@@ -3,8 +3,9 @@ library(csis360)
 library(ggplot2)
 
 # read in data
-full_data <- read.csv(
-  "data\\2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
+full_data <- read.csv(system.file("extdata",
+                                  "2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
+                                  package = "csis360")  ,
   na.strings=c("NA","NULL"))
 
 context("remove_bom")
@@ -18,9 +19,11 @@ test_that("remove_bom fixes ï..", {
 
 context("standardize_variable_names")
 
-full_data <- read.csv(
-  "data\\2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
+full_data <- read.csv(system.file("extdata",
+                                  "2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
+                                  package = "csis360"),
   na.strings=c("NA","NULL"))
+
 std_data<-standardize_variable_names(full_data)
 
 test_that("standardize_variable_names fixes ï..", {
@@ -133,3 +136,31 @@ ggplot(data = subset(def_data),
 load("tests//testthat//Crisis_Funding.RData")
 FullData<-replace_nas_with_unlabeled(FullData,"Theater")
 labels_and_colors<-prepare_labels_and_colors(FullData,"Theater")
+
+
+
+
+
+DLApblScore  <- read.csv(system.file("extdata",
+                                     "DLA_Contract_SP_ContractPBLscoreSubCustomerProdServOffice.txt",
+                                     package = "csis360"),
+  header = TRUE, sep = "\t", dec = ".", strip.white = TRUE, row.names=NULL,
+  na.strings = c("NULL","NA",""),
+  stringsAsFactors = TRUE
+)
+#Error message test for by missing
+test_that("read_and_join na special cases", {
+expect_error(read_and_join(DLApblScore,
+                               "Defense_Major_Command_Codes_and_Offices.csv",
+                               by=c("Fiscal.Year",
+                                    "ContractingAgencyID",
+                                    "ContractingOfficeID"),
+                               new_var_checked=FALSE))
+})
+
+#Test for the handling of na in the inputs
+DLApblScore<-read_and_join(DLApblScore,
+                               "Lookup_MajorCommandID.csv",
+                               by="MajorCommandID",
+                               skip_check_var=c("ContractingOfficeCode",
+                                                "ContractingOfficeName"))
