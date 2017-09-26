@@ -377,7 +377,7 @@ deflate <- function(
 #'
 #' @param data A data frame
 #' @param path The path or url for the column key.  By default, checks
-#' the CSISdefense Github lookups repository at CSISdefense/csis360/master/data/style/
+#' the CSISdefense Github lookups repository at CSISdefense/csis360/master/style/
 #'
 #' @return A data frame of the column names from data joined up to the column key
 #'
@@ -396,7 +396,7 @@ deflate <- function(
 #' @export
 get_column_key <- function(
   data,
-  path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/"
+  path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/"
 ){
   column_key<-colnames(data)
   column_key<-as.data.frame(column_key)

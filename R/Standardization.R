@@ -39,7 +39,7 @@
 #' @import
 #' @export
 standardize_variable_names<- function(data,
-                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/",
+                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/",
                                       var=NULL
 ){
   #V
@@ -102,7 +102,7 @@ standardize_variable_names<- function(data,
 prepare_labels_and_colors<-function(data
                                     ,var=NULL
                                     ,na_replaced=FALSE
-                                    ,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/style/"
+                                    ,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/"
                                     #                                  ,VAR.override.coloration=NA
 )
 {
