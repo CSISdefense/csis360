@@ -115,7 +115,7 @@ prepare_labels_and_colors<-function(data
   #Confirm that the category is even available in the data set.
   if(!is.null(var)){
     if(!var %in% names(data)){
-      stop(paste(var,"is not found in lookup_column_key."))
+      stop(paste(var,"column is not found in data."))
     }
   }
 
@@ -195,7 +195,7 @@ prepare_labels_and_colors<-function(data
         stop(paste("Lookup_Coloration.csv is missing"
                    ,length(unique(NA.labels[,c]))
                    ,"label(s) for category="
-                   ,c, ". See above for a list of missing labels")
+                   ,c, ". See above for a list of missing labels.")
         )
       }
     }
