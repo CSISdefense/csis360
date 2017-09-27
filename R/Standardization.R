@@ -109,52 +109,52 @@ prepare_labels_and_colors<-function(data
   if(na_replaced==TRUE){
     data<-replace_nas_with_unlabeled(data,var)
   }
-  
+
   data<-as.data.frame(data)
-  
+
   #Confirm that the category is even available in the data set.
   if(!is.null(var)){
     if(!var %in% names(data)){
       stop(paste(var,"is not found in data frame passed to PrepareLabelsAndColors"))
     }
   }
-  
+
   #Read in coloration
   coloration<-read.csv(
     paste(path,"Lookup_Coloration.csv",sep=""),
     header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
     stringsAsFactors=FALSE
   )
-  
+
   #Fix oddities involving coloration text
   coloration$variable <- gsub("\\\\n","\n",coloration$variable)
   coloration$Label <- gsub("\\\\n","\n",coloration$Label)
-  
-  
+
+
   #Translate the category name into the appropriate coloration.key
   #This is used because we have more category names than coloration.key
   column_key<-get_column_key(data)
-  
+
   #If a column has been passed
   if(!is.null(var)){
     column_key<-subset(column_key, column==var)
-    
+
     #Should adjust this to give proper errors for multiple vars
     #when only one is missing
-    if(nrow(column_key)<length(var)){
+    if(any(is.na(column_key$coloration.key))){
       stop(paste(var,"is missing from Lookup_column_key.csv"))
     }
   }
   else {
     column_key<-subset(column_key, !is.na(coloration.key))
   }
-  
+
   names.data<-NULL
   for(v in (1:nrow(column_key))){
     #Limit the lookup table to those series that match the variable
     labels_category_data<-subset(coloration, coloration.key==
                                    column_key$coloration.key[v] )
-    
+
     if(anyDuplicated(labels_category_data$variable)>0){
       print(labels_category_data$variable[
         duplicated(labels_category_data$variable)])
@@ -167,16 +167,16 @@ prepare_labels_and_colors<-function(data
     c<-as.character(column_key$column[v])
     #Check for any values in the current field that are not assigned a color.
     NA.labels<-subset(data,!(data.frame(data)[,c] %in% labels_category_data$variable))
-    
-    
-    
+
+
+
     if (nrow(NA.labels)>0){
       #Unlabeled is highly standardized, adding automatically
       if(length(unique(NA.labels[,c]))==1 &
          !is.na(unique(NA.labels[1,c]))&
          unique(NA.labels[1,c])=="Unlabeled")
       {
-        
+
         labels_category_data<-rbind(labels_category_data,
                                     data.frame(coloration.key=column_key$coloration.key[v],
                                                variable="Unlabeled",
@@ -199,11 +199,11 @@ prepare_labels_and_colors<-function(data
         )
       }
     }
-    
+
     labels_category_data<-subset(labels_category_data
                                  , variable %in% unique(data[,c]))
-    
-    
+
+
     #Order the names.data and then pass on the same order to the actual data in data
     labels_category_data<-labels_category_data[order(labels_category_data$Display.Order),]
     labels_category_data$column<-c
