@@ -141,7 +141,7 @@ prepare_labels_and_colors<-function(data
 
     #Should adjust this to give proper errors for multiple vars
     #when only one is missing
-    if(nrow(column_key)<length(var)){
+    if(any(is.na(column_key$coloration.key))){
       stop(paste(var,"is missing from Lookup_column_key.csv"))
     }
   }
