@@ -200,12 +200,12 @@ read_and_join<-function(
     strip.white=TRUE,
     stringsAsFactors=FALSE  #This can get weird when true, as sometimes it confuses numerical variables and factors
   )
-  
+
   #Remove byte order marks present in UTF encoded files
   data<-remove_bom(data)
   lookup<-remove_bom(lookup)
-  
-  
+
+
   #Raise an error if by is missing from either file
   if(any(!by %in% colnames(lookup))){
     by<-by[!by %in% colnames(lookup)]
@@ -216,7 +216,7 @@ read_and_join<-function(
     stop(paste(paste(by,collapse=" & "),"not present in data"))
   }
 
-  
+
   #Handle any fields in both data and lookup held in common not used in the joining
   if(!is.null(by)){
     droplist<-names(lookup)[names(lookup) %in% names(data)]
@@ -286,6 +286,151 @@ read_and_join<-function(
   data
 }
 
+
+
+#' Read in an external file and join it with an existing data frame.
+#'
+#' @param data The data frame to be joined
+#' @param lookup_file The name of the lookup file
+#' @param path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
+#' The location of the lookup file
+#' @param directory="Lookups\\" The directory within the path that holds the lookup
+#' @param by=NULL The columns used to join, if not provided, matching columns will be used
+#' @param replace_na_var=NULL Before the join, these columns will have NAs values replaced
+#' @param overlap_var_replaced=TRUE Should the function replace for common columns not used to join?
+#' @param add_var=NULL, What new columns should be checked for NA values?
+#' @param new_var_checked=FALSE Should only checked new columns be kept?
+#' @param skip_check_var=NULL List of vars that should not be checked for NA values.
+#'
+#' @return The data frame plus new columns from the lookup file. If new_var_checked is
+#' true and only new columns listed in add_var will be kept. Note to self, should
+#' add input protection that throws an error if new_var_checked is set to true when
+#' add_var is false.
+#'
+#' @section This function is an elaborate join with various quality check measures thrown in.
+#' At its simplest, it just joins the existing data frame with the passed file. But along the way
+#' it will make some fixes to common CSV errors and also take advantage of some known facts about
+#' how CSIS data is organized.
+#'
+#' @examples na_check(data,
+#'   input_var=by,
+#'   output_var=add_var,
+#'   lookup_file=lookup_file)
+#'
+#' @import plyr
+#' @import utils
+#' @export
+read_and_join_experiment<-function(
+    data,
+    lookup_file,
+    path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
+    directory="Lookups\\",
+    by=NULL,
+    replace_na_var=NULL,
+    overlap_var_replaced=TRUE,
+    add_var=NULL,
+    new_var_checked=TRUE,
+    skip_check_var=NULL){
+
+
+    #Replace NAs in input column if requested
+    if(!is.null(replace_na_var)){
+      data<-replace_nas_with_unlabeled(data,
+                                       replace_na_var)
+    }
+
+
+
+    #Read in the lookup file
+    lookup<-read_csv(
+      paste(path,directory,lookup_file,sep=""),
+      header=TRUE,
+      delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
+      na=c("NA","NULL")
+    )
+
+    #Remove byte order marks present in UTF encoded files
+    data<-remove_bom(data)
+    lookup<-remove_bom(lookup)
+
+
+    #Raise an error if by is missing from either file
+    if(any(!by %in% colnames(lookup))){
+      by<-by[!by %in% colnames(lookup)]
+      stop(paste(paste(by,collapse=" & "), "not present in lookup"))
+    }
+    if(any(!by %in% colnames(data))){
+      by<-by[!by %in% colnames(data)]
+      stop(paste(paste(by,collapse=" & "),"not present in data"))
+    }
+
+
+    #Handle any fields in both data and lookup held in common not used in the joining
+    if(!is.null(by)){
+      droplist<-names(lookup)[names(lookup) %in% names(data)]
+      droplist<-droplist[!droplist %in% by]
+      if(length(droplist)>0){
+        if(overlap_var_replaced)
+          data<-data[,!names(data) %in% droplist]
+        else
+          lookup<-lookup[,!names(lookup) %in% droplist]
+      }
+    }
+
+    #Fixes for Excel's penchant to drop leading 0s.
+    if("Contracting.Agency.ID" %in% names(lookup) & "data" %in% names(lookup)){
+      lookup$Contracting.Agency.ID<-factor(str_pad(lookup$Contracting.Agency.ID,4,side="left",pad="0"))
+      data$Contracting.Agency.ID<-as.character(data$Contracting.Agency.ID)
+      data$Contracting.Agency.ID[is.na(data$Contracting.Agency.ID=="")]<-"0000"
+      data$Contracting.Agency.ID<-factor(str_pad(data$Contracting.Agency.ID,4,side="left",pad="0"))
+    }
+
+    #Make sure CSIScontractIDs are numeric and not a factor
+    if("CSIScontractID" %in% colnames(lookup)){
+      if(!is.numeric(lookup$CSIScontractID)){
+        lookup$CSIScontractID<-as.numeric(as.character(lookup$CSIScontractID))
+      }
+    }
+
+    #Conduct the join
+    if(is.null(by)){
+      data<- data.table::merge(
+        data,
+        lookup
+      )
+    }
+    else{
+      data<- data.table::merge(
+        data,
+        lookup,
+        by=by
+      )
+    }
+
+    #If add_var is specified, dropped new fields not in add_var
+    if(!is.null(add_var)){
+      droplist<-names(lookup)[!names(lookup) %in% by
+                              &!names(lookup) %in% add_var]
+      data<-data[,!names(data) %in% droplist]
+    }
+    #If add_var is not specified, set it equal to all new vars
+    else{
+      add_var<-colnames(lookup)[!colnames(lookup) %in% by]
+    }
+
+    if(!is.null(by)&new_var_checked==TRUE){
+      if(!is.null(skip_check_var)){
+        add_var<-add_var[!add_var %in% skip_check_var]
+      }
+
+      na_check(data,
+               input_var=by,
+               output_var=add_var,
+               lookup_file = lookup_file)
+    }
+
+    data
+  }
 
 
 #' Deflation using GitHub-based CSV file
