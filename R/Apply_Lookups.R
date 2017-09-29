@@ -342,7 +342,7 @@ read_and_join_experiment<-function(
 
 
     #Read in the lookup file
-    lookup<-read_csv(
+    lookup<-readr::read_csv(
       paste(path,directory,lookup_file,sep=""),
       header=TRUE,
       delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
@@ -394,15 +394,17 @@ read_and_join_experiment<-function(
 
     #Conduct the join
     if(is.null(by)){
-      data<- data.table::merge(
+      data<- plyr::join(
         data,
-        lookup
+        lookup,
+        match="first"
       )
     }
     else{
-      data<- data.table::merge(
+      data<- plyr::join(
         data,
         lookup,
+        match="first",
         by=by
       )
     }
