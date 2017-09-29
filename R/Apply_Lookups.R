@@ -200,7 +200,12 @@ read_and_join<-function(
     strip.white=TRUE,
     stringsAsFactors=FALSE  #This can get weird when true, as sometimes it confuses numerical variables and factors
   )
-
+  
+  #Remove byte order marks present in UTF encoded files
+  data<-remove_bom(data)
+  lookup<-remove_bom(lookup)
+  
+  
   #Raise an error if by is missing from either file
   if(any(!by %in% colnames(lookup))){
     by<-by[!by %in% colnames(lookup)]
@@ -211,10 +216,7 @@ read_and_join<-function(
     stop(paste(paste(by,collapse=" & "),"not present in data"))
   }
 
-  #Remove byte order marks sometimes added to start of a  file
-  data<-remove_bom(data)
-  lookup<-remove_bom(lookup)
-
+  
   #Handle any fields in both data and lookup held in common not used in the joining
   if(!is.null(by)){
     droplist<-names(lookup)[names(lookup) %in% names(data)]
