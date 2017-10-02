@@ -47,6 +47,12 @@ standardize_variable_names<- function(data,
     stop(paste(var," is not present in colnames(data)."))
 
 
+  if(is.data.frame(path))
+    stop("path parameter is a data frame, it should be a file path, e.g. 'https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/'.")
+
+  if(!is.data.frame(data))
+    stop("data parameter is a not data frame, it should be.")
+
   #Remove nonsense characters sometimes added to start of the input file
   data<-remove_bom(data)
 
@@ -104,6 +110,7 @@ prepare_labels_and_colors<-function(data
                                     ,na_replaced=FALSE
                                     ,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/"
                                     #                                  ,VAR.override.coloration=NA
+  ,missing_allowed=FALSE
 )
 {
   if(na_replaced==TRUE){
@@ -121,6 +128,7 @@ prepare_labels_and_colors<-function(data
 
   #Read in coloration
   coloration<-read.csv(
+    
     paste(path,"Lookup_Coloration.csv",sep=""),
     header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
     stringsAsFactors=FALSE
@@ -142,8 +150,12 @@ prepare_labels_and_colors<-function(data
     #Should adjust this to give proper errors for multiple vars
     #when only one is missing
     if(any(is.na(column_key$coloration.key))){
-      stop(paste(var,"is missing from Lookup_column_key.csv"))
+      if(missing_allowed)
+        return(NA)
+      else
+        stop(paste(var,"is missing from Lookup_column_key.csv"))
     }
+
   }
   else {
     column_key<-subset(column_key, !is.na(coloration.key))
@@ -190,13 +202,18 @@ prepare_labels_and_colors<-function(data
                                     ))
       }
       else{
+        if(missing_allowed)
+          return(NA)
+        else{
         #Otherwise create an error.
         print(unique(NA.labels[,c]))
         stop(paste("Lookup_Coloration.csv is missing"
                    ,length(unique(NA.labels[,c]))
                    ,"label(s) for category="
                    ,c, ". See above for a list of missing labels.")
+
         )
+        }
       }
     }
 

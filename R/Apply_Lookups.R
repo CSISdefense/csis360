@@ -46,9 +46,9 @@ replace_nas_with_unlabeled<- function(data,
   data<-as.data.frame(data)
   if(any(is.na(data[var,]))){
     #Make sure the replacement value is in the is within the list of levels
-    if (!(replacement %in% levels(data[,var]))){
+    # if (!(replacement %in% levels(data[,var]))){
       data[,var]<-addNA(data[,var],ifany=TRUE)
-    }
+    # }
     levels(data[,var])[is.na(levels(data[,var]))] <- replacement
   }
   data
@@ -181,6 +181,9 @@ read_and_join<-function(
   new_var_checked=TRUE,
   skip_check_var=NULL){
 
+
+  if(is.data.frame(lookup_file))
+    stop("lookup_file parameter is a data frame, it should be a filename, e.g. 'lookup_customer.csv'.")
 
   #Replace NAs in input column if requested
   if(!is.null(replace_na_var)){
@@ -339,14 +342,16 @@ read_and_join_experiment<-function(
                                        replace_na_var)
     }
 
-
+  if(is.data.frame(lookup_file))
+    stop("lookup_file parameter is a data frame, it should be a filename, e.g. 'lookup_customer.csv'.")
 
     #Read in the lookup file
-    lookup<-readr::read_csv(
+    lookup<-readr::read_delim(
       paste(path,directory,lookup_file,sep=""),
-      header=TRUE,
+      col_names=TRUE,
       delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
-      na=c("NA","NULL")
+      na=c("NA","NULL"),
+      trim_ws=TRUE
     )
 
     #Remove byte order marks present in UTF encoded files
