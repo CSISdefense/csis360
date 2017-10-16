@@ -201,6 +201,7 @@ read_and_join<-function(
     na.strings=c("NA","NULL"),
     dec=".",
     strip.white=TRUE,
+    quote="\"",#Necessary because there are some 's in the names.
     stringsAsFactors=FALSE  #This can get weird when true, as sometimes it confuses numerical variables and factors
   )
 
