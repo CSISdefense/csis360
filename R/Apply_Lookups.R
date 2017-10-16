@@ -199,6 +199,7 @@ read_and_join<-function(
     header=TRUE,
     sep=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
     na.strings=c("NA","NULL"),
+    quote = "\"",
     dec=".",
     strip.white=TRUE,
     stringsAsFactors=FALSE  #This can get weird when true, as sometimes it confuses numerical variables and factors
