@@ -14,7 +14,7 @@
 #' @export
 get_plot_theme<-function(){
 
-t<-theme(panel.border = element_blank(),
+t<-theme(
       panel.background = element_rect(fill = "white"),
       plot.background = element_rect(fill = "white", color="white"),
       panel.grid.major.x = element_blank(),
