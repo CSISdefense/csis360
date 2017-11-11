@@ -174,7 +174,7 @@ prepare_labels_and_colors<-function(data
                  ,sum(duplicated(labels_category_data$variable))
                  ,"duplicate value(s) for category="
                  ,column_key$coloration.key[1], ". See above for a list of missing labels")
-      )
+      
     }
     c<-as.character(column_key$column[v])
     #Check for any values in the current field that are not assigned a color.
