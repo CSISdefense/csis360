@@ -10,9 +10,8 @@ full_data <- read.csv(system.file("extdata",
 
 context("remove_bom")
 bom_data<-remove_bom(full_data)
-
-test_that("remove_bom fixes ï..", {
-  expect_equal(colnames(bom_data)[1], "Fiscal.Year")
+  test_that("remove_bom fixes ï..", {
+    expect_equal(colnames(bom_data)[1], "Fiscal.Year")
 })
 
 
@@ -132,9 +131,13 @@ ggplot(data = subset(def_data),
   )) +
   labs(caption = "Source: FPDS; CSIS analysis", size = 30, family= "Open Sans")
 
+load(system.file("extdata",
+  "Crisis_Funding.RData",
+  package = "csis360"))
 
-load("tests//testthat//Crisis_Funding.RData")
+  # "tests//testthat//Crisis_Funding.RData")
 FullData<-replace_nas_with_unlabeled(FullData,"Theater")
+
 labels_and_colors<-prepare_labels_and_colors(FullData,"Theater")
 
 

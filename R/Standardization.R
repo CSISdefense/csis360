@@ -198,7 +198,9 @@ prepare_labels_and_colors<-function(data
                                                RGB= "#967878",
                                                shape=NA,
                                                size=NA,
-                                               alpha=NA
+                                               alpha=NA,
+                                      text.color="default grey",
+                                      text.RGB="#554449"
                                     ))
       }
       else{
