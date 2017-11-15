@@ -173,7 +173,7 @@ prepare_labels_and_colors<-function(data
       stop(paste("Lookup_Coloration.csv has"
                  ,sum(duplicated(labels_category_data$variable))
                  ,"duplicate value(s) for category="
-                 ,column_key$coloration.key[1], ". See above for a list of missing labels")
+                 ,column_key$coloration.key[v], ". See above for a list of missing labels")
       )
     }
     c<-as.character(column_key$column[v])
