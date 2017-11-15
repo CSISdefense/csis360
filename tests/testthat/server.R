@@ -24,10 +24,12 @@ library(csis360)
 shinyServer(function(input, output, session) {
   options(scipen = 99)
   options(shiny.maxRequestSize=1000*1024^2)
-  # source("FPDS_breakdowns_functions.R")
 
   # read data
-  load("2016_unaggregated_FPDS.Rda")
+  load(system.file("extdata",
+    "2016_unaggregated_FPDS.Rda",
+    package = "csis360"))
+
   original_data<-full_data
   # original_data <- read_csv("2016_unaggregated_FPDS.csv")
 
@@ -44,7 +46,6 @@ shinyServer(function(input, output, session) {
   # fill the variable lists in the ui with variables from current_data
   populate_ui_var_lists(current_data)
 
-
   mainplot <- reactive({
     # Builds a ggplot based on user settings, for display on the main panel.
     # Reactive binding will cause the ggplot to update when the user changes any
@@ -54,24 +55,99 @@ shinyServer(function(input, output, session) {
     #   a fully built ggplot object
 
     # get appropriately formatted data to use in the plot
-    plot_data <- format_data_for_plot(current_data, vars$fiscal_year, input)
+    total_data <- format_data_for_plot(current_data, vars$fiscal_year, input)
+    share_data <- format_share_data_for_plot(current_data, vars$fiscal_year, input)
+
     # build plot with user-specified geoms
+    if(input$chart_geom == "Double Stacked"){
+      # make the stacked plot
+      # produce the single bar plot and line plot
+      bar_plot <- build_bar_plot_from_input(total_data,input) +
+        scale_color_manual(
+          values = subset(labels_and_colors,column==input$color_var)$RGB,
+          limits=c(subset(labels_and_colors,column==input$color_var)$variable),
+          labels=c(subset(labels_and_colors,column==input$color_var)$Label)
+        )+
+        scale_fill_manual(
+          values = subset(labels_and_colors,column==input$color_var)$RGB,
+          limits=c(subset(labels_and_colors,column==input$color_var)$variable),
+          labels=c(subset(labels_and_colors,column==input$color_var)$Label)
+        )+labs(
+          x=ifelse( is.na(subset(column_key,column==vars$fiscal_year)$title),
+            vars$fiscal_year,
+            subset(column_key,column==vars$fiscal_year)$title),
+          y=ifelse( is.na(subset(column_key,column==input$y_var)$title),
+            input$y_var,
+            subset(column_key,column==input$y_var)$title)
+        )
 
-    mainplot <- build_plot_from_input(plot_data, input)
-    mainplot <- add_preassigned_scales(mainplot,labels_and_colors,input$color_var)+
-      labs(        x=get_label(vars$fiscal_year,column_key),
-        y=get_label(input$y_var,column_key)
-      )
+      line_plot <- build_line_plot_from_input(share_data,input) +
+        scale_color_manual(
+          values = subset(labels_and_colors,column==input$color_var)$RGB,
+          limits=c(subset(labels_and_colors,column==input$color_var)$variable),
+          labels=c(subset(labels_and_colors,column==input$color_var)$Label)
+        )+
+        scale_fill_manual(
+          values = subset(labels_and_colors,column==input$color_var)$RGB,
+          limits=c(subset(labels_and_colors,column==input$color_var)$variable),
+          labels=c(subset(labels_and_colors,column==input$color_var)$Label)
+        )+labs(
+          x=ifelse( is.na(subset(column_key,column==vars$fiscal_year)$title),
+            vars$fiscal_year,
+            subset(column_key,column==vars$fiscal_year)$title),
+          y=ifelse( is.na(subset(column_key,column==input$y_var)$title),
+            input$y_var,
+            subset(column_key,column==input$y_var)$title)
+        )
+      # lay the stacked plots
+      lay <- rbind(c(1,1,1),
+        c(1,1,1),
+        c(2,2,2),
+        c(2,2,2),
+        c(2,2,2))
+      grid.arrange(bar_plot,
+        line_plot,
+        layout_matrix = lay)
 
-    # add overall visual settings to the plot
-    mainplot <- mainplot + get_plot_theme()
+    } else {
+      # make the bar plot or line plot (total or share)
+      # set the dataset for plot
+      if(input$y_total_or_share == "As Share"){
+        plot_data <- share_data
+      } else {plot_data <- total_data}
+      # build bar plot or line plot
+      mainplot <- build_plot_from_input(plot_data, input)+
 
-    if(input$show_title == TRUE){
-      mainplot <- mainplot + ggtitle(input$title_text)
-    }
+        scale_color_manual(
+          values = subset(labels_and_colors,column==input$color_var)$RGB,
+          limits=c(subset(labels_and_colors,column==input$color_var)$variable),
+          labels=c(subset(labels_and_colors,column==input$color_var)$Label)
+        )+
+        scale_fill_manual(
+          values = subset(labels_and_colors,column==input$color_var)$RGB,
+          limits=c(subset(labels_and_colors,column==input$color_var)$variable),
+          labels=c(subset(labels_and_colors,column==input$color_var)$Label)
+        )+labs(
+          x=ifelse( is.na(subset(column_key,column==vars$fiscal_year)$title),
+            vars$fiscal_year,
+            subset(column_key,column==vars$fiscal_year)$title),
+          y=ifelse( is.na(subset(column_key,column==input$y_var)$title),
+            input$y_var,
+            subset(column_key,column==input$y_var)$title)
+        )
 
-    # return the built plot
-    return(mainplot)
+      # add overall visual settings to the plot
+      mainplot <- mainplot +  get_plot_theme()
+      #diigtheme1:::diiggraph()
+
+      if(input$show_title == TRUE){
+        mainplot <- mainplot + ggtitle(input$title_text)
+      }
+
+      # return the built plot
+      mainplot
+    } # END OF ELSE(bar or line plot)
+
   })
 
   # calls mainplot(), defined above, to create a plot for the plot output area
@@ -91,20 +167,33 @@ shinyServer(function(input, output, session) {
   output$download_plot <- downloadHandler(
     filename = "plot_data.csv",
     content = function(file){
-      write_csv(format_data_for_plot(current_data, vars$fiscal_year, input), file)
+      if(input$chart_geom == "Double Stacked") {
+        plotdata <- format_data_for_plot(current_data, vars$fiscal_year, input)
+        sharedata <- format_share_data_for_plot(current_data, vars$fiscal_year, input)
+        joinkey <- names(sharedata)[1:ncol(sharedata)-1]
+        plot_data <- left_join(plotdata, sharedata, by=joinkey)
+        names(plot_data)[ncol(plot_data)] <- paste(input$y_var, ".Sharamout")
+      } else{
+        if(input$y_total_or_share == "As Share") {
+          plot_data <- format_share_data_for_plot(current_data, vars$fiscal_year, input)
+        } else{
+          plot_data <- format_data_for_plot(current_data, vars$fiscal_year, input)
+        }
+      }
+      write_csv(plot_data, file)
     }
   )
 
-  # runs the download JPG button
+  # runs the download PNG button
   output$download_image <- downloadHandler(
-    filename = "plot_image.jpg",
+    filename = "plot_image.png",
     content = function(file){
       ggsave(
-      filename = file,
-      plot = mainplot(),
-      width = input$save_plot_width,
-      height = input$save_plot_height,
-      units = "in")
+        filename = file,
+        plot = mainplot(),
+        width = input$save_plot_width,
+        height = input$save_plot_height,
+        units = "in")
     }
   )
 
@@ -170,7 +259,7 @@ shinyServer(function(input, output, session) {
       session,
       inputId = "current_tab",
       selected = "Charts"
-      )
+    )
     update_title(current_data, input, vars$user_title)
   })
 
@@ -232,11 +321,11 @@ shinyServer(function(input, output, session) {
     }
   })
 
-   # renames the selected factor level to whatever is in the text box, when
-   # the user clicks the factor level rename button
+  # renames the selected factor level to whatever is in the text box, when
+  # the user clicks the factor level rename button
   observeEvent(input$rename_value_btn, {
     if(input$rename_value_txt != "" &
-    input$edit_value != "*Not a Category Variable*") {
+        input$edit_value != "*Not a Category Variable*") {
 
       changed_data <<- rename_value(changed_data, input)
 
@@ -274,8 +363,8 @@ shinyServer(function(input, output, session) {
         which(tolower(colnames(original_data)) == "Action.Obligation")
 
       original_data <- deflate(original_data,
-                               fy_var = vars$fiscal_year,
-                               money_var = colnames(original_data)[sum_index]
+        fy_var = vars$fiscal_year,
+        money_var = colnames(original_data)[sum_index]
       )
 
     }

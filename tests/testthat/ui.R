@@ -1,6 +1,6 @@
 ################################################################################
 # FPDS breakdowns 2.0 app - March 2017
-#
+# V4 Add stacked plots and drawdown period lines - Oct 2017
 # ui.R
 ################################################################################
 
@@ -10,7 +10,7 @@ library(dplyr)
 library(ggplot2)
 
 shinyUI(fluidPage(
-  
+
   sidebarLayout(
     sidebarPanel(
       titlePanel("FPDS Charts"),
@@ -28,7 +28,7 @@ shinyUI(fluidPage(
         radioButtons(
           inputId = "chart_geom",
           label = NULL,
-          choices = c("Bar Chart", "Line Chart"),
+          choices = c("Bar Chart", "Line Chart","Double Stacked"),
           selected = "Line Chart"
         ),
         selectInput(
@@ -57,11 +57,22 @@ shinyUI(fluidPage(
           width = "100%",
           selectize = TRUE
         ),
+        conditionalPanel(
+          condition = "input.chart_geom == 'Bar Chart' | input.chart_geom == 'Line Chart'",
+          radioButtons(
+            inputId = "y_total_or_share",
+            label = NULL,
+            choices = c("As Total", "As Share"),
+            selected = "As Total"
+          )
+        )
+      ),
+      wellPanel(
         radioButtons(
-          inputId = "y_total_or_share",
-          label = NULL,
-          choices = c("As Total", "As Share"),
-          selected = "As Total"
+          inputId = "show_period",
+          label = "Show Drawdown Periods",
+          choices = c("Yes", "No"),
+          selected = "No"
         )
       )
     ),
@@ -80,7 +91,7 @@ shinyUI(fluidPage(
               wellPanel(
                 downloadButton(
                   outputId = "download_image",
-                  label = "Save Plot as JPG (300 DPI)",
+                  label = "Save Plot as PNG (300 DPI)",
                   width = "100%"
                 ),
                 br(),
@@ -212,9 +223,9 @@ shinyUI(fluidPage(
                 "file_upload",
                 "Upload CSV File",
                 accept = c(
-                "text/csv",
-                "text/comma-separated-values,text/plain",
-                ".csv")
+                  "text/csv",
+                  "text/comma-separated-values,text/plain",
+                  ".csv")
               ),
               tags$div(id = "edit_value_placeholder"),
               textInput(
