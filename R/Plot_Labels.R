@@ -150,13 +150,15 @@ format_data_for_plot <- function(
   #
   # Args:
   data,   # data to format for the plot, as a tibble
-  share = FALSE, #True or false as to whether to calculate the share
   fy_var,          # name of fiscal year variable, as string
+  y_var, #Name of variable to plot on y-axis
+  share = FALSE, #True or false as to whether to calculate the share
   start_fy = NA, #End fiscal year
   end_fy = NA, #Start fiscal Year
-  y_var, #Name of variable to plot on y-axis
   color_var="None",       # name of coloration variable, as string
-  facet_var="None"        # name of facet variable, as string
+  facet_var="None",        # name of facet variable, as string
+  labels_and_colors=NULL#Style information for the
+
   #
   # Returns:
   #   a tibble of formatted data
@@ -173,6 +175,22 @@ format_data_for_plot <- function(
     y_var,
     breakouts
   )
+  shown_data<-as.data.frame(shown_data)
+  if(!is.null(labels_and_colors)){
+    if(color_var!="None"){
+      shown_data[,colnames(shown_data)==color_var]<-
+        ordered(shown_data[,colnames(shown_data)==color_var],
+          levels=subset(labels_and_colors,column==color_var)$variable,
+          labels=subset(labels_and_colors,column==color_var)$Label)
+    }
+    if(facet_var!="None"){
+      shown_data[,colnames(shown_data)==facet_var]<-
+        ordered(shown_data[,colnames(shown_data)==facet_var],
+          levels=subset(labels_and_colors,column==facet_var)$variable,
+          labels=subset(labels_and_colors,column==facet_var)$Label
+          )
+    }
+  }
 
   # filter by year - see https://tinyurl.com/lm2u8xs
   shown_data %<>%
@@ -279,7 +297,6 @@ build_plot_from_input <- function(
   # Returns:
   #   A ggplot object including user-specified geom layer
 ){
-
   mainplot <- ggplot(data = data)
 
   # add a line layer, broken out by color if requested

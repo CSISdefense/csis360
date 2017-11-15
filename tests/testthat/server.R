@@ -24,7 +24,6 @@ library(gridExtra)
 shinyServer(function(input, output, session) {
   options(scipen = 99)
   options(shiny.maxRequestSize=1000*1024^2)
-
   # read data
   load(system.file("extdata",
     "2016_unaggregated_FPDS.Rda",
@@ -62,7 +61,8 @@ shinyServer(function(input, output, session) {
       end_fy=input$year[2],
       y_var=input$y_var,
       color_var=input$color_var,
-      facet_var=input$facet_var)
+      facet_var=input$facet_var,
+      labels_and_colors=labels_and_colors)
     share_data <- format_data_for_plot(data=current_data,
       share=TRUE,
       fy_var=vars$fiscal_year,
@@ -70,7 +70,8 @@ shinyServer(function(input, output, session) {
       end_fy=input$year[2],
       y_var=input$y_var,
       color_var=input$color_var,
-      facet_var=input$facet_var)
+      facet_var=input$facet_var,
+      labels_and_colors=labels_and_colors)
 
     # build plot with user-specified geoms
     if(input$chart_geom == "Double Stacked"){
@@ -158,14 +159,12 @@ shinyServer(function(input, output, session) {
 
         scale_color_manual(
           values = subset(labels_and_colors,column==input$color_var)$RGB,
-          limits=c(subset(labels_and_colors,column==input$color_var)$variable),
-          labels=c(subset(labels_and_colors,column==input$color_var)$Label)
+          limits=c(subset(labels_and_colors,column==input$color_var)$Label)
         )+
         scale_fill_manual(
           values = subset(labels_and_colors,column==input$color_var)$RGB,
-          limits=c(subset(labels_and_colors,column==input$color_var)$variable),
-          labels=c(subset(labels_and_colors,column==input$color_var)$Label)
-        )+labs(
+          limits=c(subset(labels_and_colors,column==input$color_var)$Label)
+          )+labs(
           x=ifelse( is.na(subset(column_key,column==vars$fiscal_year)$title),
             vars$fiscal_year,
             subset(column_key,column==vars$fiscal_year)$title),
@@ -213,7 +212,8 @@ shinyServer(function(input, output, session) {
           end_fy=input$year[2],
           y_var=input$y_var,
           color_var=input$color_var,
-          facet_var=input$facet_var)
+          facet_var=input$facet_var,
+          labels_and_colors=labels_and_colors)
 
         sharedata <-   format_data_for_plot(data=current_data,
           share=TRUE,
@@ -222,7 +222,8 @@ shinyServer(function(input, output, session) {
           end_fy=input$year[2],
           y_var=input$y_var,
           color_var=input$color_var,
-          facet_var=input$facet_var)
+          facet_var=input$facet_var,
+          labels_and_colors=labels_and_colors)
 
         joinkey <- names(sharedata)[1:ncol(sharedata)-1]
         plot_data <- left_join(plotdata, sharedata, by=joinkey)
@@ -235,7 +236,8 @@ shinyServer(function(input, output, session) {
           end_fy=input$year[2],
           y_var=input$y_var,
           color_var=input$color_var,
-          facet_var=input$facet_var)
+          facet_var=input$facet_var,
+          labels_and_colors=labels_and_colors)
       }
       write_csv(plot_data, file)
     }
