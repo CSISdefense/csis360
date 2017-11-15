@@ -150,8 +150,13 @@ format_data_for_plot <- function(
   #
   # Args:
   data,   # data to format for the plot, as a tibble
+  share = FALSE, #True or false as to whether to calculate the share
   fy_var,          # name of fiscal year variable, as string
-  input           # shiny input object
+  start_fy = NA, #End fiscal year
+  end_fy = NA, #Start fiscal Year
+  y_var, #Name of variable to plot on y-axis
+  color_var="None",       # name of coloration variable, as string
+  facet_var="None"        # name of facet variable, as string
   #
   # Returns:
   #   a tibble of formatted data
@@ -159,20 +164,20 @@ format_data_for_plot <- function(
 
   shown_data <- data
 
-  breakouts <- c(input$color_var, input$facet_var)
+  breakouts <- c(color_var, facet_var)
   breakouts <- breakouts[breakouts != "None"]
 
   shown_data<-group_data_for_plot(
     shown_data,
     fy_var,
-    input$y_var,
+    y_var,
     breakouts
   )
 
   # filter by year - see https://tinyurl.com/lm2u8xs
   shown_data %<>%
-    filter_(paste0(fy_var, ">=", as.character(input$year[1]), "&", fy_var,
-                   "<=", as.character(input$year[2])))
+    filter_(paste0(fy_var, ">=", as.character(start_fy), "&", fy_var,
+                   "<=", as.character(end_fy)))
 
 
 
@@ -182,164 +187,61 @@ format_data_for_plot <- function(
   shown_data[is.na(shown_data)] <- 0
 
   # calculate shares if share checkbox is checked
-  if(input$y_total_or_share == "As Share" & input$color_var != "None"){
+  if(share == TRUE){
+    if (color_var != "None"){
 
-    # share_vars indicates which columns are being used to calculate the shares.
-    # If there's only one breakout, it's set to -1:
-    # "everything except fiscal year."
-    # With two breakouts, it's set to c(-1, -2):
-    # "everything except fiscal year and the facet variable."
-    share_vars <- c(-1, -length(breakouts))
+      # share_vars indicates which columns are being used to calculate the shares.
+      # If there's only one breakout, it's set to -1:
+      # "everything except fiscal year."
+      # With two breakouts, it's set to c(-1, -2):
+      # "everything except fiscal year and the facet variable."
+      share_vars <- c(-1, -length(breakouts))
 
-    # spread the shares breakout variable across multiple columns
-    shown_data %<>%
-      spread_(input$color_var, input$y_var)
+      # spread the shares breakout variable across multiple columns
+      shown_data %<>%
+        spread_(color_var, y_var)
 
-    #
-    # NOTE: NAs replaced with 0 here; potential data quality issue
-    #
-    shown_data[is.na(shown_data)] <- 0
+      #
+      # NOTE: NAs replaced with 0 here; potential data quality issue
+      #
+      shown_data[is.na(shown_data)] <- 0
 
-    # calculate a total for each row - i.e. the total for the shares breakout
-    # variable for each fiscal year,
-    # or for each [fiscal year x facet variable] combo
-    shown_data$total <- rowSums(shown_data[share_vars])
+      # calculate a total for each row - i.e. the total for the shares breakout
+      # variable for each fiscal year,
+      # or for each [fiscal year x facet variable] combo
+      shown_data$total <- rowSums(shown_data[share_vars])
 
-    # divide each column by the total column, to get each column as shares
-    shown_data[share_vars] <-
-      sapply(shown_data[share_vars], function(x){x / shown_data$total})
-    shown_data %<>% select(-total)
+      # divide each column by the total column, to get each column as shares
+      shown_data[share_vars] <-
+        sapply(shown_data[share_vars], function(x){x / shown_data$total})
+      shown_data %<>% select(-total)
 
-    # gather the data back to long form
-    shown_data <- gather_(
-      data = shown_data,
-      key_col = input$color_var,
-      value_col = input$y_var,
-      gather_cols = names(shown_data[share_vars])
-    )
+      # gather the data back to long form
+      shown_data <- gather_(
+        data = shown_data,
+        key_col = color_var,
+        value_col = y_var,
+        gather_cols = names(shown_data[share_vars])
+      )
+    }
+
+    # For the case where the user displays shares not broken out by any variable.
+    # This is going to make a very boring chart of 100% shares,b
+    # but it's handled here to avoid displaying an error.
+    if(color_var == "None"){
+      shown_data %<>%
+        mutate(total = 1)
+      shown_data <- shown_data[which(names(shown_data) != y_var)]
+      names(shown_data)[which(names(shown_data) == "total")] <- y_var
+    }
   }
-
-  # For the case where the user displays shares not broken out by any variable.
-  # This is going to make a very boring chart of 100% shares,b
-  # but it's handled here to avoid displaying an error.
-  if(input$y_total_or_share == "As Share" & input$color_var == "None"){
-    shown_data %<>%
-      mutate(total = 1)
-    shown_data <- shown_data[which(names(shown_data) != input$y_var)]
-    names(shown_data)[which(names(shown_data) == "total")] <- input$y_var
-  }
-
   # return the ggplot-ready data
   return(shown_data)
 }
 
 
 
-format_share_data_for_plot <- function(
-  # Returns data in the appropriate format for the user-specified plot
-  #
-  # Args:
-  incoming_data,   # data to format for the plot, as a tibble
-  fy_var,          # name of fiscal year variable, as string
-  input,           # shiny input object
-  session = getDefaultReactiveDomain()  # shiny app session
-  #
-  # Returns:
-  #   a tibble of formatted data
-){
-  shown_data <- incoming_data
 
-  breakouts <- c(input$color_var, input$facet_var)
-  breakouts <- breakouts[breakouts != "None"]
-
-  # account for potential spaces in breakouts and fy_var
-  if(grepl(" ", fy_var)) fy_var <- paste0("`", fy_var, "`")
-  if(length(breakouts) >= 1){
-    if(grepl(" ", breakouts[1])) breakouts[1] <- paste0("`", breakouts[1], "`")
-  }
-  if(length(breakouts) == 2){
-    if(grepl(" ", breakouts[2])) breakouts[2] <- paste0("`", breakouts[2], "`")
-  }
-  # filter by year - see https://tinyurl.com/lm2u8xs
-  shown_data %<>%
-    filter_(paste0(fy_var, ">=", as.character(input$year[1]), "&", fy_var,
-      "<=", as.character(input$year[2])))
-
-  # aggregate to the level of [fiscal year x breakouts]
-  # the evaluation for dplyr::summarize_ was a pain in the ass to figure out;
-  # see stack overflow at https://tinyurl.com/z82ywf3
-
-  if(length(breakouts) == 0){
-    shown_data %<>%
-      group_by_(fy_var) %>%
-      summarize_(
-        sum_val = interp(~sum(var, na.rm = TRUE), var = as.name(input$y_var)))
-  } else {
-    shown_data %<>%
-      group_by_(.dots = c(fy_var, breakouts)) %>%
-      summarize_(
-        sum_val = interp(~sum(var, na.rm = TRUE), var = as.name(input$y_var)))
-  }
-
-  names(shown_data)[which(names(shown_data) == "sum_val")] <- input$y_var
-
-  #
-  # NOTE: NAs replaced with 0 here; potential data quality issue
-  #
-  shown_data[is.na(shown_data)] <- 0
-
-  # calculate shares if share checkbox is checked
-  if(input$color_var != "None"){
-
-    # share_vars indicates which columns are being used to calculate the shares.
-    # If there's only one breakout, it's set to -1:
-    # "everything except fiscal year."
-    # With two breakouts, it's set to c(-1, -2):
-    # "everything except fiscal year and the facet variable."
-    share_vars <- c(-1, -length(breakouts))
-
-    # spread the shares breakout variable across multiple columns
-    shown_data %<>%
-      spread_(input$color_var, input$y_var)
-
-    #
-    # NOTE: NAs replaced with 0 here; potential data quality issue
-    #
-    shown_data[is.na(shown_data)] <- 0
-
-    # calculate a total for each row - i.e. the total for the shares breakout
-    # variable for each fiscal year,
-    # or for each [fiscal year x facet variable] combo
-    shown_data$total <- rowSums(shown_data[share_vars])
-
-    # divide each column by the total column, to get each column as shares
-    shown_data[share_vars] <-
-      sapply(shown_data[share_vars], function(x){x / shown_data$total})
-    shown_data %<>% select(-total)
-
-    # gather the data back to long form
-    shown_data <- gather_(
-      data = shown_data,
-      key_col = input$color_var,
-      value_col = input$y_var,
-      gather_cols = names(shown_data[share_vars])
-    )
-  }
-
-  # For the case where the user displays shares not broken out by any variable.
-  # This is going to make a very boring chart of 100% shares,
-  # but it's handled here to avoid displaying an error.
-  # if(input$color_var == "None")
-  else{
-    shown_data %<>%
-      mutate(total = 1)
-    shown_data <- shown_data[which(names(shown_data) != input$y_var)]
-    names(shown_data)[which(names(shown_data) == "total")] <- input$y_var
-  }
-
-  # return the ggplot-ready data
-  return(shown_data)
-}
 
 rename_value <- function(
   # Renames a factor level to user-specified name, in the passed data frame
@@ -364,29 +266,36 @@ build_plot_from_input <- function(
   # Settings that apply universally should be added in server.R
   #
   # Args:
-  plot_data,    # tibble of formatted data for the ggplot
-  input        # shiny input object
+  data,    # tibble of formatted data for the ggplot
+  chart_geom = "Line Chart",
+  share = FALSE, #True or false as to whether to calculate the share
+  fy_var,          # name of fiscal year variable, as string
+  start_fy = NA, #End fiscal year
+  end_fy = NA, #Start fiscal Year
+  y_var, #Name of variable to plot on y-axis
+  color_var="None",       # name of coloration variable, as string
+  facet_var="None"        # name of facet variable, as string
   #
   # Returns:
   #   A ggplot object including user-specified geom layer
 ){
 
-  mainplot <- ggplot(data = plot_data)
+  mainplot <- ggplot(data = data)
 
   # add a line layer, broken out by color if requested
-  if(input$chart_geom == "Line Chart"){
-    if(input$color_var == "None"){
+  if(chart_geom == "Line Chart"){
+    if(color_var == "None"){
       mainplot <- mainplot +
         geom_line(aes_q(
-          x = as.name(names(plot_data)[1]),
-          y = as.name(input$y_var)
+          x = as.name(names(data)[1]),
+          y = as.name(y_var)
         ))
     } else {
       mainplot <- mainplot +
         geom_line(aes_q(
-          x = as.name(names(plot_data)[1]),
-          y = as.name(input$y_var),
-          color = as.name(input$color_var)
+          x = as.name(names(data)[1]),
+          y = as.name(y_var),
+          color = as.name(color_var)
         )) +
         guides(color = guide_legend(override.aes = list(size = 1)))+
         theme(legend.key = element_rect(fill = "white"))
@@ -394,46 +303,46 @@ build_plot_from_input <- function(
   }
 
   # add a bar layer, broken out by color if requested
-  if(input$chart_geom == "Bar Chart"){
-    if(input$color_var == "None"){
+  if(chart_geom == "Bar Chart"){
+    if(color_var == "None"){
       mainplot <- mainplot +
         geom_bar(aes_q(
-          x = as.name(names(plot_data)[1]),
-          y = as.name(input$y_var)
+          x = as.name(names(data)[1]),
+          y = as.name(y_var)
         ),
         stat = "identity")
     } else {
       mainplot <- mainplot +
         geom_bar(aes_q(
-          x = as.name(names(plot_data)[1]),
-          y = as.name(input$y_var),
-          fill = as.name(input$color_var)
+          x = as.name(names(data)[1]),
+          y = as.name(y_var),
+          fill = as.name(color_var)
         ),
         stat = "identity")
     }
   }
 
   # add faceting if requested, and x-axis labeling
-  if(input$facet_var != "None"){
+  if(facet_var != "None"){
     mainplot <- mainplot +
-      facet_wrap(as.formula(paste0("~ `",input$facet_var, "`"))) +
+      facet_wrap(as.formula(paste0("~ `",facet_var, "`"))) +
       theme(strip.background = element_rect(fill = "white")) +
       scale_x_continuous(
-        breaks = function(x) {seq(input$year[1], input$year[2], by = 2)},
+        breaks = function(x) {seq(start_fy, end_fy, by = 2)},
         labels = function(x){str_sub(as.character(x), -2, -1)}
       )
   } else {
     mainplot <- mainplot +
       scale_x_continuous(
-        breaks = function(x){seq(input$year[1], input$year[2], by = 1)},
+        breaks = function(x){seq(start_fy, end_fy, by = 1)},
         labels = function(x){str_sub(as.character(x), -2, -1)}
       )
   }
 
   # add y-axis labeling
-  if(input$y_total_or_share == "As Share"){
+  if(share == TRUE){
     mainplot <- mainplot + scale_y_continuous(labels = scales::percent) +
-      ylab(label = paste("Share of", input$y_var))
+      ylab(label = paste("Share of", y_var))
   } else {
     mainplot <- mainplot + scale_y_continuous(
       labels = function(x){

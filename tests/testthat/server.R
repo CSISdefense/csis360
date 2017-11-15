@@ -17,7 +17,7 @@ library(readr)
 library(tidyr)
 library(data.table)
 library(csis360)
-
+library(gridExtra)
 
 
 
@@ -55,14 +55,36 @@ shinyServer(function(input, output, session) {
     #   a fully built ggplot object
 
     # get appropriately formatted data to use in the plot
-    total_data <- format_data_for_plot(current_data, vars$fiscal_year, input)
-    share_data <- format_share_data_for_plot(current_data, vars$fiscal_year, input)
+    total_data <- format_data_for_plot(data=current_data,
+      share=FALSE,
+      fy_var=vars$fiscal_year,
+      start_fy=input$year[1],
+      end_fy=input$year[2],
+      y_var=input$y_var,
+      color_var=input$color_var,
+      facet_var=input$facet_var)
+    share_data <- format_data_for_plot(data=current_data,
+      share=TRUE,
+      fy_var=vars$fiscal_year,
+      start_fy=input$year[1],
+      end_fy=input$year[2],
+      y_var=input$y_var,
+      color_var=input$color_var,
+      facet_var=input$facet_var)
 
     # build plot with user-specified geoms
     if(input$chart_geom == "Double Stacked"){
       # make the stacked plot
       # produce the single bar plot and line plot
-      bar_plot <- build_bar_plot_from_input(total_data,input) +
+      bar_plot <-  build_plot_from_input(data=total_data,
+        chart_geom="Bar Chart",
+        share=FALSE,
+        fy_var=vars$fiscal_year,
+        start_fy=input$year[1],
+        end_fy=input$year[2],
+        y_var=input$y_var,
+        color_var=input$color_var,
+        facet_var=input$facet_var) +
         scale_color_manual(
           values = subset(labels_and_colors,column==input$color_var)$RGB,
           limits=c(subset(labels_and_colors,column==input$color_var)$variable),
@@ -81,7 +103,15 @@ shinyServer(function(input, output, session) {
             subset(column_key,column==input$y_var)$title)
         )
 
-      line_plot <- build_line_plot_from_input(share_data,input) +
+      line_plot <- build_plot_from_input(data=share_data,
+        chart_geom="Line Chart",
+        share=TRUE,
+        fy_var=vars$fiscal_year,
+        start_fy=input$year[1],
+        end_fy=input$year[2],
+        y_var=input$y_var,
+        color_var=input$color_var,
+        facet_var=input$facet_var) +
         scale_color_manual(
           values = subset(labels_and_colors,column==input$color_var)$RGB,
           limits=c(subset(labels_and_colors,column==input$color_var)$variable),
@@ -116,7 +146,15 @@ shinyServer(function(input, output, session) {
         plot_data <- share_data
       } else {plot_data <- total_data}
       # build bar plot or line plot
-      mainplot <- build_plot_from_input(plot_data, input)+
+      mainplot <- build_plot_from_input(data=plot_data,
+        chart_geom=input$chart_geom,
+        share=FALSE,
+        fy_var=vars$fiscal_year,
+        start_fy=input$year[1],
+        end_fy=input$year[2],
+        y_var=input$y_var,
+        color_var=input$color_var,
+        facet_var=input$facet_var)+
 
         scale_color_manual(
           values = subset(labels_and_colors,column==input$color_var)$RGB,
@@ -168,17 +206,36 @@ shinyServer(function(input, output, session) {
     filename = "plot_data.csv",
     content = function(file){
       if(input$chart_geom == "Double Stacked") {
-        plotdata <- format_data_for_plot(current_data, vars$fiscal_year, input)
-        sharedata <- format_share_data_for_plot(current_data, vars$fiscal_year, input)
+        plotdata <- format_data_for_plot(data=current_data,
+          share=FALSE,
+          fy_var=vars$fiscal_year,
+          start_fy=input$year[1],
+          end_fy=input$year[2],
+          y_var=input$y_var,
+          color_var=input$color_var,
+          facet_var=input$facet_var)
+
+        sharedata <-   format_data_for_plot(data=current_data,
+          share=TRUE,
+          fy_var=vars$fiscal_year,
+          start_fy=input$year[1],
+          end_fy=input$year[2],
+          y_var=input$y_var,
+          color_var=input$color_var,
+          facet_var=input$facet_var)
+
         joinkey <- names(sharedata)[1:ncol(sharedata)-1]
         plot_data <- left_join(plotdata, sharedata, by=joinkey)
         names(plot_data)[ncol(plot_data)] <- paste(input$y_var, ".Sharamout")
       } else{
-        if(input$y_total_or_share == "As Share") {
-          plot_data <- format_share_data_for_plot(current_data, vars$fiscal_year, input)
-        } else{
-          plot_data <- format_data_for_plot(current_data, vars$fiscal_year, input)
-        }
+        format_data_for_plot(data=current_data,
+          share=ifelse(input$y_total_or_share == "As Share",TRUE,FALSE),
+          fy_var=vars$fiscal_year,
+          start_fy=input$year[1],
+          end_fy=input$year[2],
+          y_var=input$y_var,
+          color_var=input$color_var,
+          facet_var=input$facet_var)
       }
       write_csv(plot_data, file)
     }
