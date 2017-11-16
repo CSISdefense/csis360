@@ -15,11 +15,12 @@
 get_plot_theme<-function(){
 
 t<-theme(
-      #panel.background = element_rect(fill = "white"),
+      panel.background = element_rect(fill = "#F4F4F4"),
+      strip.background = element_rect(fill ="#E0E0E0"),
       plot.background = element_rect(fill = "white", color="white"),
       panel.grid.major.x = element_blank(),
       panel.grid.minor.x = element_blank(),
-      panel.grid.major.y = element_line(size=.1, color="lightgray"),
+      panel.grid.major.y = element_line(size=.1, color="gray"),
       panel.grid.minor.y = element_line(size=.1, color="lightgray"),
       axis.ticks = element_blank()
 )
