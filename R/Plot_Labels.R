@@ -52,12 +52,12 @@ add_preassigned_scales<-function(
   if(var!="None" & any(labels_and_colors$column==var)){
     plot<-plot+scale_color_manual(
       values = subset(labels_and_colors,column==var)$RGB,
-      limits=c(subset(labels_and_colors,column==var)$variable),
-      labels=c(subset(labels_and_colors,column==var)$Label)
+      # limits=c(subset(labels_and_colors,column==var)$variable),
+      limits=c(subset(labels_and_colors,column==var)$Label)
     )+scale_fill_manual(
       values = subset(labels_and_colors,column==var)$RGB,
-      limits=c(subset(labels_and_colors,column==var)$variable),
-      labels=c(subset(labels_and_colors,column==var)$Label)
+      # limits=c(subset(labels_and_colors,column==var)$variable),
+      limits=c(subset(labels_and_colors,column==var)$Label)
     )
   }
   else{
@@ -183,11 +183,11 @@ format_data_for_plot <- function(
           levels=subset(labels_and_colors,column==color_var)$variable,
           labels=subset(labels_and_colors,column==color_var)$Label)
     }
-    if(facet_var!="None"){
+    if(facet_var!="None" & color_var != facet_var){
       shown_data[,colnames(shown_data)==facet_var]<-
         ordered(shown_data[,colnames(shown_data)==facet_var],
           levels=subset(labels_and_colors,column==facet_var)$variable,
-          labels=subset(labels_and_colors,column==facet_var)$Label
+          labels=c(subset(labels_and_colors,column==facet_var)$Label)
           )
     }
   }
@@ -213,7 +213,10 @@ format_data_for_plot <- function(
       # "everything except fiscal year."
       # With two breakouts, it's set to c(-1, -2):
       # "everything except fiscal year and the facet variable."
-      share_vars <- c(-1, -length(breakouts))
+      if(facet_var=="None" | facet_var == color_var)
+        share_vars <- c(-1)
+      else
+        share_vars <- c(-1,-2)
 
       # spread the shares breakout variable across multiple columns
       shown_data %<>%

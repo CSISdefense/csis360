@@ -52,7 +52,7 @@ shinyServer(function(input, output, session) {
     #
     # Returns:
     #   a fully built ggplot object
-
+  # browser()
     # get appropriately formatted data to use in the plot
     total_data <- format_data_for_plot(data=current_data,
       share=FALSE,
