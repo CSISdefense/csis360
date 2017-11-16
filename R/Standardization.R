@@ -110,7 +110,7 @@ prepare_labels_and_colors<-function(data
                                     ,na_replaced=FALSE
                                     ,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/"
                                     #                                  ,VAR.override.coloration=NA
-  ,missing_allowed=FALSE
+                                    ,missing_allowed=FALSE
 )
 {
   if(na_replaced==TRUE){
@@ -199,22 +199,22 @@ prepare_labels_and_colors<-function(data
                                                shape=NA,
                                                size=NA,
                                                alpha=NA,
-                                      text.color="default grey",
-                                      text.RGB="#554449"
+                                               text.color="default grey",
+                                               text.RGB="#554449"
                                     ))
       }
       else{
         if(missing_allowed)
           return(NA)
         else{
-        #Otherwise create an error.
-        print(unique(NA.labels[,c]))
-        stop(paste("Lookup_Coloration.csv is missing"
-                   ,length(unique(NA.labels[,c]))
-                   ,"label(s) for category="
-                   ,c, ". See above for a list of missing labels.")
+          #Otherwise create an error.
+          print(unique(NA.labels[,c]))
+          stop(paste("Lookup_Coloration.csv is missing"
+                     ,length(unique(NA.labels[,c]))
+                     ,"label(s) for category="
+                     ,c, ". See above for a list of missing labels.")
 
-        )
+          )
         }
       }
     }

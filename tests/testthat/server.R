@@ -77,59 +77,25 @@ shinyServer(function(input, output, session) {
     if(input$chart_geom == "Double Stacked"){
       # make the stacked plot
       # produce the single bar plot and line plot
-      bar_plot <-  build_plot_from_input(data=total_data,
+      bar_plot <-  build_plot(data=total_data,
         chart_geom="Bar Chart",
         share=FALSE,
-        fy_var=vars$fiscal_year,
-        start_fy=input$year[1],
-        end_fy=input$year[2],
+        x_var=vars$fiscal_year,
         y_var=input$y_var,
         color_var=input$color_var,
-        facet_var=input$facet_var) +
-        scale_color_manual(
-          values = subset(labels_and_colors,column==input$color_var)$RGB,
-          limits=c(subset(labels_and_colors,column==input$color_var)$variable),
-          labels=c(subset(labels_and_colors,column==input$color_var)$Label)
-        )+
-        scale_fill_manual(
-          values = subset(labels_and_colors,column==input$color_var)$RGB,
-          limits=c(subset(labels_and_colors,column==input$color_var)$variable),
-          labels=c(subset(labels_and_colors,column==input$color_var)$Label)
-        )+labs(
-          x=ifelse( is.na(subset(column_key,column==vars$fiscal_year)$title),
-            vars$fiscal_year,
-            subset(column_key,column==vars$fiscal_year)$title),
-          y=ifelse( is.na(subset(column_key,column==input$y_var)$title),
-            input$y_var,
-            subset(column_key,column==input$y_var)$title)
-        )
+        facet_var=input$facet_var,
+        labels_and_colors=labels_and_colors,
+        column_key=column_key)
 
-      line_plot <- build_plot_from_input(data=share_data,
+      line_plot <- build_plot(data=share_data,
         chart_geom="Line Chart",
         share=TRUE,
-        fy_var=vars$fiscal_year,
-        start_fy=input$year[1],
-        end_fy=input$year[2],
+        x_var=vars$fiscal_year,
         y_var=input$y_var,
         color_var=input$color_var,
-        facet_var=input$facet_var) +
-        scale_color_manual(
-          values = subset(labels_and_colors,column==input$color_var)$RGB,
-          limits=c(subset(labels_and_colors,column==input$color_var)$variable),
-          labels=c(subset(labels_and_colors,column==input$color_var)$Label)
-        )+
-        scale_fill_manual(
-          values = subset(labels_and_colors,column==input$color_var)$RGB,
-          limits=c(subset(labels_and_colors,column==input$color_var)$variable),
-          labels=c(subset(labels_and_colors,column==input$color_var)$Label)
-        )+labs(
-          x=ifelse( is.na(subset(column_key,column==vars$fiscal_year)$title),
-            vars$fiscal_year,
-            subset(column_key,column==vars$fiscal_year)$title),
-          y=ifelse( is.na(subset(column_key,column==input$y_var)$title),
-            input$y_var,
-            subset(column_key,column==input$y_var)$title)
-        )
+        facet_var=input$facet_var,
+        labels_and_colors=labels_and_colors,
+        column_key=column_key)
       # lay the stacked plots
       lay <- rbind(c(1,1,1),
         c(1,1,1),
@@ -147,31 +113,15 @@ shinyServer(function(input, output, session) {
         plot_data <- share_data
       } else {plot_data <- total_data}
       # build bar plot or line plot
-      mainplot <- build_plot_from_input(data=plot_data,
+      mainplot <- build_plot(data=plot_data,
         chart_geom=input$chart_geom,
         share=FALSE,
-        fy_var=vars$fiscal_year,
-        start_fy=input$year[1],
-        end_fy=input$year[2],
+        x_var=vars$fiscal_year,
         y_var=input$y_var,
         color_var=input$color_var,
-        facet_var=input$facet_var)+
-
-        scale_color_manual(
-          values = subset(labels_and_colors,column==input$color_var)$RGB,
-          limits=c(subset(labels_and_colors,column==input$color_var)$Label)
-        )+
-        scale_fill_manual(
-          values = subset(labels_and_colors,column==input$color_var)$RGB,
-          limits=c(subset(labels_and_colors,column==input$color_var)$Label)
-          )+labs(
-          x=ifelse( is.na(subset(column_key,column==vars$fiscal_year)$title),
-            vars$fiscal_year,
-            subset(column_key,column==vars$fiscal_year)$title),
-          y=ifelse( is.na(subset(column_key,column==input$y_var)$title),
-            input$y_var,
-            subset(column_key,column==input$y_var)$title)
-        )
+        facet_var=input$facet_var,
+        labels_and_colors=labels_and_colors,
+        column_key=column_key)
 
       # add overall visual settings to the plot
       mainplot <- mainplot +  get_plot_theme()
