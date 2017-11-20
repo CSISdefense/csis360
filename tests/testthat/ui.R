@@ -28,7 +28,7 @@ shinyUI(fluidPage(
         radioButtons(
           inputId = "chart_geom",
           label = NULL,
-          choices = c("Bar Chart", "Line Chart","Double Stacked"),
+          choices = c("Bar Chart", "Line Chart","Double Stacked","Period Stacked"),
           selected = "Line Chart"
         ),
         selectInput(

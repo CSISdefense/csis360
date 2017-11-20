@@ -87,6 +87,8 @@ group_data_for_plot <-function(
   #   a tibble of formatted data
 ){
   # account for potential spaces in breakout and x_var
+  # note that this doesn't test for whether quotes already exist
+
   if(grepl(" ", x_var)) x_var <- paste0("`", x_var, "`")
   if(length(breakout) >= 1){
     if(grepl(" ", breakout[1])) breakout[1] <- paste0("`", breakout[1], "`")

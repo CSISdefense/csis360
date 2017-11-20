@@ -264,6 +264,8 @@ format_data_for_plot <- function(
     breakouts
   )
 
+
+
   # filter by year - see https://tinyurl.com/lm2u8xs
   shown_data %<>%
     filter_(paste0(fy_var, ">=", as.character(start_fy), "&", fy_var,

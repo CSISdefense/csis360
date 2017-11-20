@@ -14,48 +14,48 @@
 #' @export
 get_plot_theme<-function(){
 
-t<-theme(
-      panel.background = element_rect(fill = "#F4F4F4"),
-      strip.background = element_rect(fill ="#E0E0E0"),
-      plot.background = element_rect(fill = "white", color="white"),
-      panel.grid.major.x = element_blank(),
-      panel.grid.minor.x = element_blank(),
-      panel.grid.major.y = element_line(size=.1, color="gray"),
-      panel.grid.minor.y = element_line(size=.1, color="lightgray"),
-      axis.ticks = element_blank()
-)
-t<-t+theme(plot.title = element_text(
+  t<-theme(
+    panel.background = element_rect(fill = "#F4F4F4"),
+    strip.background = element_rect(fill ="#E0E0E0"),
+    plot.background = element_rect(fill = "white", color="white"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_line(size=.1, color="gray"),
+    panel.grid.minor.y = element_line(size=.1, color="lightgray"),
+    axis.ticks = element_blank()
+  )
+  t<-t+theme(plot.title = element_text(
     family = "Open Sans",
     color = "#554449",
     face="bold",
     margin=margin(20,0,20,0),
     hjust = 0.5))
-t<-t+theme(axis.text.x = element_text(
+  t<-t+theme(axis.text.x = element_text(
     family = "Open Sans",
     vjust = 7,
     margin = margin(0,0,0,0)))
-t<-t+theme(axis.text.y = element_text(
+  t<-t+theme(axis.text.y = element_text(
     family = "Open Sans",
     color ="#554449",
     margin = margin(0,5,0,0))) +
-  theme(axis.title.x = element_text(
-    face = "bold",
-    color = "#554449",
-    family = "Open Sans",
-    margin = margin(15,0,0,60)))
-t<-t+theme(axis.title.y = element_text(
+    theme(axis.title.x = element_text(
+      face = "bold",
+      color = "#554449",
+      family = "Open Sans",
+      margin = margin(15,0,0,60)))
+  t<-t+theme(axis.title.y = element_text(
     face = "bold",
     color = "#554449",
     family = "Open Sans",
     margin = margin(0,15,0,0))) +
-  theme(legend.text = element_text(
-    family = "Open Sans",
-    color ="#554449"))
-t<-t+theme(legend.title = element_blank()) +
-  theme(legend.position = 'bottom') +
-  theme(legend.background = element_rect(fill = "white")
-  )
-        return(t)
+    theme(legend.text = element_text(
+      family = "Open Sans",
+      color ="#554449"))
+  t<-t+theme(legend.title = element_blank()) +
+    theme(legend.position = 'bottom') +
+    theme(legend.background = element_rect(fill = "white")
+    )
+  return(t)
 }
 
 
@@ -74,8 +74,11 @@ build_plot <- function(
   y_var, #Name of variable to plot on y-axis
   color_var="None",       # name of coloration variable, as string
   facet_var="None",        # name of facet variable, as string
+  legend=TRUE, #Include a legend
+  caption=TRUE, #Include a source caption
   labels_and_colors=NULL,
   column_key=NULL
+
   #
   # Returns:
   #   A ggplot object including user-specified geom layer
@@ -172,17 +175,32 @@ build_plot <- function(
     )
   }
 
-    mainplot<-add_preassigned_scales(
-      mainplot,
-      labels_and_colors,
-      var=color_var
+  mainplot<-add_preassigned_scales(
+    mainplot,
+    labels_and_colors,
+    var=color_var
+  )
+  if(!is.null(column_key)){
+    mainplot<-mainplot+labs(
+      x=get_label(x_var,column_key),
+      y=get_label(y_var,column_key)
     )
-    if(!is.null(column_key)){
-      mainplot<-mainplot+labs(
-        x=get_label(x_var,column_key),
-        y=get_label(y_var,column_key)
-        )
   }
+
+
+  # add overall visual settings to the plot
+  mainplot <- mainplot +  get_plot_theme()
+  #diigtheme1:::diiggraph()
+
+  if(legend==FALSE)
+    mainplot<-mainplot+theme(legend.position = "none")
+
+  if(caption==TRUE)
+    #+labs(y="Share Contract $",
+    mainplot<-mainplot+labs(caption = "Source: FPDS; CSIS analysis"
+    )+ theme(plot.caption = element_text(size=7, face = "italic", vjust= -0.15, color = "gray25"))
+
+
   # return the plot to server.R
   return(mainplot)
 }

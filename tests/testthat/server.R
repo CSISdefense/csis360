@@ -85,7 +85,9 @@ shinyServer(function(input, output, session) {
         color_var=input$color_var,
         facet_var=input$facet_var,
         labels_and_colors=labels_and_colors,
-        column_key=column_key)
+        column_key=column_key,
+        legend=FALSE,
+        caption=FALSE)
 
       line_plot <- build_plot(data=share_data,
         chart_geom="Line Chart",
@@ -99,7 +101,7 @@ shinyServer(function(input, output, session) {
       # lay the stacked plots
       lay <- rbind(c(1,1,1),
         c(1,1,1),
-        c(2,2,2),
+        c(1,1,1),
         c(2,2,2),
         c(2,2,2))
       grid.arrange(bar_plot,
@@ -122,10 +124,6 @@ shinyServer(function(input, output, session) {
         facet_var=input$facet_var,
         labels_and_colors=labels_and_colors,
         column_key=column_key)
-
-      # add overall visual settings to the plot
-      mainplot <- mainplot +  get_plot_theme()
-      #diigtheme1:::diiggraph()
 
       if(input$show_title == TRUE){
         mainplot <- mainplot + ggtitle(input$title_text)
