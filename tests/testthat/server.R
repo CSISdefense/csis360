@@ -26,8 +26,8 @@ shinyServer(function(input, output, session) {
   options(shiny.maxRequestSize=1000*1024^2)
   # read data
   load(system.file("extdata",
-    "2016_unaggregated_FPDS.Rda",
-    package = "csis360"))
+                   "2016_unaggregated_FPDS.Rda",
+                   package = "csis360"))
 
   original_data<-full_data
   # original_data <- read_csv("2016_unaggregated_FPDS.csv")
@@ -55,23 +55,23 @@ shinyServer(function(input, output, session) {
 
     # get appropriately formatted data to use in the plot
     total_data <- format_data_for_plot(data=current_data,
-      share=FALSE,
-      fy_var=vars$fiscal_year,
-      start_fy=input$year[1],
-      end_fy=input$year[2],
-      y_var=input$y_var,
-      color_var=input$color_var,
-      facet_var=input$facet_var,
-      labels_and_colors=labels_and_colors)
+                                       share=FALSE,
+                                       fy_var=vars$fiscal_year,
+                                       start_fy=input$year[1],
+                                       end_fy=input$year[2],
+                                       y_var=input$y_var,
+                                       color_var=input$color_var,
+                                       facet_var=input$facet_var,
+                                       labels_and_colors=labels_and_colors)
     share_data <- format_data_for_plot(data=current_data,
-      share=TRUE,
-      fy_var=vars$fiscal_year,
-      start_fy=input$year[1],
-      end_fy=input$year[2],
-      y_var=input$y_var,
-      color_var=input$color_var,
-      facet_var=input$facet_var,
-      labels_and_colors=labels_and_colors)
+                                       share=TRUE,
+                                       fy_var=vars$fiscal_year,
+                                       start_fy=input$year[1],
+                                       end_fy=input$year[2],
+                                       y_var=input$y_var,
+                                       color_var=input$color_var,
+                                       facet_var=input$facet_var,
+                                       labels_and_colors=labels_and_colors)
 
     # build plot with user-specified geoms
     if(input$chart_geom == "Period Stacked"){
@@ -95,7 +95,7 @@ shinyServer(function(input, output, session) {
 
       #If there is a breakout, extract the legend
       if(input$color_var!="None"){
-        bar_legend<-g_legend(bar_plot+theme(legend.position = "bottom"))
+        bar_legend<-get_legend(bar_plot+theme(legend.position = "bottom"))
       }
 
       bar_plot<-bar_plot+theme(legend.position = "none")
@@ -115,14 +115,54 @@ shinyServer(function(input, output, session) {
       #   line_plot <-  add_period(line_plot,share_data,"Line Chart",
       #                            text=FALSE)
 
-      OG <-full_data
 
-      # PD <-ddply(full_data, c("Period"), summarise,
-      # mean = mean(Action.Obligation.2016))
 
-      # format_period_average(data,
-                            # "sequestration.period")
-      # P1 <- ggplot(data=PD, aes(x=Period, y=mean),fill = as.name(input$color_var)) +geom_bar(stat="identity")
+
+
+      #Consolidate categories for Vendor Size
+      period_data<-read_and_join(total_data,
+                                 "Lookup_Fiscal_Year_Period.csv",
+                                 directory="economic/",
+                                 path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                 by="Fiscal.Year",
+                                 add_var="sequestration.period"
+      )
+
+      period_data <-format_period_average(data=period_data,
+                                          period_var="sequestration.period",
+                                          y_var=input$y_var,
+                                          breakout=c(input$color_var,input$facet_var),
+                                          labels_and_colors=labels_and_colors)
+
+
+      #Doing this manually for now
+      period_data<-as.data.frame(period_data)
+      period_data[,"sequestration.period"] <- ordered(period_data[,"sequestration.period"],
+                                                      levels=c("Out of Period",
+                                                               "Pre-drawdown",
+                                                        "Start of Drawdown",
+                                                        "BCA decline period",
+                                                        "Current")
+                                                      )
+
+
+
+      period_plot<-build_plot(data=period_data,
+                              chart_geom="Bar Chart",
+                              share=FALSE,
+                              x_var="sequestration.period",
+                              y_var=input$y_var,
+                              color_var=input$color_var,
+                              facet_var=input$facet_var,
+                              labels_and_colors=labels_and_colors,
+                              column_key=column_key,
+                              legend=FALSE,
+                              caption=TRUE
+      )+labs(
+        y="Average Constant 2016 $",
+        x="Period"
+      )
+
 
       if(input$color_var!="None"){
         # lay the stacked plots
@@ -134,9 +174,7 @@ shinyServer(function(input, output, session) {
                      c(4,4,4,4))
         grid.arrange(bar_plot,
                      line_plot,
-                     line_plot+
-                       labs(caption = "Source: FPDS; CSIS analysis"
-                       ), #P1,
+                     period_plot,
                      bar_legend,
                      layout_matrix = lay)
       }
@@ -149,9 +187,7 @@ shinyServer(function(input, output, session) {
                      c(2,2,3,3))
         grid.arrange(bar_plot,
                      line_plot,
-                     line_plot+
-                       labs(caption = "Source: FPDS; CSIS analysis"
-                       ), #P1,
+                     period_plot,
                      layout_matrix = lay)
 
       }
@@ -160,40 +196,40 @@ shinyServer(function(input, output, session) {
       # make the stacked plot
       # produce the single bar plot and line plot
       bar_plot <-  build_plot(data=total_data,
-        chart_geom="Bar Chart",
-        share=FALSE,
-        x_var=vars$fiscal_year,
-        y_var=input$y_var,
-        color_var=input$color_var,
-        facet_var=input$facet_var,
-        labels_and_colors=labels_and_colors,
-        column_key=column_key,
-        legend=FALSE,
-        caption=FALSE)
+                              chart_geom="Bar Chart",
+                              share=FALSE,
+                              x_var=vars$fiscal_year,
+                              y_var=input$y_var,
+                              color_var=input$color_var,
+                              facet_var=input$facet_var,
+                              labels_and_colors=labels_and_colors,
+                              column_key=column_key,
+                              legend=FALSE,
+                              caption=FALSE)
 
       line_plot <- build_plot(data=share_data,
-        chart_geom="Line Chart",
-        share=TRUE,
-        x_var=vars$fiscal_year,
-        y_var=input$y_var,
-        color_var=input$color_var,
-        facet_var=input$facet_var,
-        labels_and_colors=labels_and_colors,
-        column_key=column_key)+         scale_x_continuous(
-          limits = c(input$year[1]-0.5, input$year[2]+0.5),
-          breaks = function(x){seq(input$year[1], input$year[2], by = 1)},
-          labels = function(x){str_sub(as.character(x), -2, -1)}
-        )
+                              chart_geom="Line Chart",
+                              share=TRUE,
+                              x_var=vars$fiscal_year,
+                              y_var=input$y_var,
+                              color_var=input$color_var,
+                              facet_var=input$facet_var,
+                              labels_and_colors=labels_and_colors,
+                              column_key=column_key)+         scale_x_continuous(
+                                limits = c(input$year[1]-0.5, input$year[2]+0.5),
+                                breaks = function(x){seq(input$year[1], input$year[2], by = 1)},
+                                labels = function(x){str_sub(as.character(x), -2, -1)}
+                              )
       bar_plot$width<-line_plot$width
       # lay the stacked plots
       lay <- rbind(c(1,1,1),
-        c(1,1,1),
-        c(1,1,1),
-        c(2,2,2),
-        c(2,2,2))
+                   c(1,1,1),
+                   c(1,1,1),
+                   c(2,2,2),
+                   c(2,2,2))
       grid.arrange(bar_plot,
-        line_plot,
-        layout_matrix = lay)
+                   line_plot,
+                   layout_matrix = lay)
 
     } else {
       # make the bar plot or line plot (total or share)
@@ -203,14 +239,14 @@ shinyServer(function(input, output, session) {
       } else {plot_data <- total_data}
       # build bar plot or line plot
       mainplot <- build_plot(data=plot_data,
-        chart_geom=input$chart_geom,
-        share=ifelse(input$y_total_or_share == "As Share",TRUE,FALSE),
-        x_var=vars$fiscal_year,
-        y_var=input$y_var,
-        color_var=input$color_var,
-        facet_var=input$facet_var,
-        labels_and_colors=labels_and_colors,
-        column_key=column_key)
+                             chart_geom=input$chart_geom,
+                             share=ifelse(input$y_total_or_share == "As Share",TRUE,FALSE),
+                             x_var=vars$fiscal_year,
+                             y_var=input$y_var,
+                             color_var=input$color_var,
+                             facet_var=input$facet_var,
+                             labels_and_colors=labels_and_colors,
+                             column_key=column_key)
 
       if(input$show_title == TRUE){
         mainplot <- mainplot + ggtitle(input$title_text)
@@ -241,38 +277,38 @@ shinyServer(function(input, output, session) {
     content = function(file){
       if(input$chart_geom == "Double Stacked") {
         plotdata <- format_data_for_plot(data=current_data,
-          share=FALSE,
-          fy_var=vars$fiscal_year,
-          start_fy=input$year[1],
-          end_fy=input$year[2],
-          y_var=input$y_var,
-          color_var=input$color_var,
-          facet_var=input$facet_var,
-          labels_and_colors=labels_and_colors)
+                                         share=FALSE,
+                                         fy_var=vars$fiscal_year,
+                                         start_fy=input$year[1],
+                                         end_fy=input$year[2],
+                                         y_var=input$y_var,
+                                         color_var=input$color_var,
+                                         facet_var=input$facet_var,
+                                         labels_and_colors=labels_and_colors)
 
         sharedata <-   format_data_for_plot(data=current_data,
-          share=TRUE,
-          fy_var=vars$fiscal_year,
-          start_fy=input$year[1],
-          end_fy=input$year[2],
-          y_var=input$y_var,
-          color_var=input$color_var,
-          facet_var=input$facet_var,
-          labels_and_colors=labels_and_colors)
+                                            share=TRUE,
+                                            fy_var=vars$fiscal_year,
+                                            start_fy=input$year[1],
+                                            end_fy=input$year[2],
+                                            y_var=input$y_var,
+                                            color_var=input$color_var,
+                                            facet_var=input$facet_var,
+                                            labels_and_colors=labels_and_colors)
 
         joinkey <- names(sharedata)[1:ncol(sharedata)-1]
         plot_data <- left_join(plotdata, sharedata, by=joinkey)
         names(plot_data)[ncol(plot_data)] <- paste(input$y_var, ".Sharamout")
       } else{
         format_data_for_plot(data=current_data,
-          share=ifelse(input$y_total_or_share == "As Share",TRUE,FALSE),
-          fy_var=vars$fiscal_year,
-          start_fy=input$year[1],
-          end_fy=input$year[2],
-          y_var=input$y_var,
-          color_var=input$color_var,
-          facet_var=input$facet_var,
-          labels_and_colors=labels_and_colors)
+                             share=ifelse(input$y_total_or_share == "As Share",TRUE,FALSE),
+                             fy_var=vars$fiscal_year,
+                             start_fy=input$year[1],
+                             end_fy=input$year[2],
+                             y_var=input$y_var,
+                             color_var=input$color_var,
+                             facet_var=input$facet_var,
+                             labels_and_colors=labels_and_colors)
       }
       write_csv(plot_data, file)
     }
@@ -419,7 +455,7 @@ shinyServer(function(input, output, session) {
   # the user clicks the factor level rename button
   observeEvent(input$rename_value_btn, {
     if(input$rename_value_txt != "" &
-        input$edit_value != "*Not a Category Variable*") {
+       input$edit_value != "*Not a Category Variable*") {
 
       changed_data <<- rename_value(changed_data, input)
 
@@ -457,8 +493,8 @@ shinyServer(function(input, output, session) {
         which(tolower(colnames(original_data)) == "Action.Obligation")
 
       original_data <- deflate(original_data,
-        fy_var = vars$fiscal_year,
-        money_var = colnames(original_data)[sum_index]
+                               fy_var = vars$fiscal_year,
+                               money_var = colnames(original_data)[sum_index]
       )
 
     }

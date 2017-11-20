@@ -254,14 +254,14 @@ format_data_for_plot <- function(
 
   shown_data <- data
 
-  breakouts <- c(color_var, facet_var)
-  breakouts <- breakouts[breakouts != "None"]
+  breakout <- c(color_var, facet_var)
+  breakout <- breakout[breakout != "None"]
 
   shown_data<-group_data_for_plot(
     shown_data,
     fy_var,
     y_var,
-    breakouts
+    breakout
   )
 
 
@@ -285,7 +285,7 @@ format_data_for_plot <- function(
       # share_vars indicates which columns are being used to calculate the shares.
       # If there's only one breakout, it's set to -1:
       # "everything except fiscal year."
-      # With two breakouts, it's set to c(-1, -2):
+      # With two breakout, it's set to c(-1, -2):
       # "everything except fiscal year and the facet variable."
       if(facet_var=="None" | facet_var == color_var)
         share_vars <- c(-1)
@@ -358,17 +358,18 @@ format_period_average <- function(
   data,
   period_var, #The variable with the period designations, one per entry
   y_var,
-  breakouts #Facet and/or color
+  breakout, #Facet and/or color
+  labels_and_colors
 )
 {
-  breakouts <- c(color_var, facet_var)
-  breakouts <- breakouts[breakouts != "None"]
+  breakout <- breakout[breakout != "None"]
 
-  shown_data<-group_data_for_plot(
+
+  data<-group_data_for_plot(
     data,
     period_var,
     y_var,
-    breakouts,
+    breakout,
     aggregate="mean"
   )
 

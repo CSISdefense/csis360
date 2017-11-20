@@ -124,7 +124,7 @@ group_data_for_plot <-function(
       data %<>%
         group_by_(.dots = c(x_var, breakout)) %>%
         summarize_(
-          agg_val = lazyeval::interp(~avg(var, na.rm = TRUE), var = as.name(y_var)))
+          agg_val = lazyeval::interp(~mean(var, na.rm = TRUE), var = as.name(y_var)))
     }
   } else (stop(paste,"group_data_for_plot does not know how to handle aggregate = ",aggregate))
 
@@ -186,4 +186,14 @@ rename_value <- function(
 }
 
 
+#Extract a legend
+# https://stackoverflow.com/questions/43366616/ggplot2-legend-only-in-a-plot
+# Alternate unused approach From https://github.com/tidyverse/ggplot2/wiki/Share-a-legend-between-two-ggplot2-graphs
+
+
+get_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)}
 

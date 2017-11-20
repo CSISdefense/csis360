@@ -474,7 +474,7 @@ deflate <- function(
   fy_var = "Fiscal.Year",
   deflator_file = "Lookup_Deflators.csv",
   deflator_var="Deflator.2016",
-  path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/data/",
+  path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
   directory="economic/",
   deflator_dropped=TRUE
   ){

@@ -125,26 +125,33 @@ build_plot <- function(
         stat = "identity")
     }
   }
-  start_fy<-min(data[,colnames(data)==x_var])
-  end_fy<-max(data[,colnames(data)==x_var])
 
   # add faceting if requested, and x-axis labeling
   if(facet_var != "None"){
     mainplot <- mainplot +
       facet_wrap(as.formula(paste0("~ `",facet_var, "`"))) +
-      theme(strip.background = element_rect(fill = "white")) +
-      # theme(strip.background = element_rect(colour = "#554449", fill = "white", size=0.5),
-      #       panel.border = element_rect(colour = "#554449", fill=NA, size=0.5)) +
-      scale_x_continuous(
+      theme(strip.background = element_rect(fill = "white"))
+    # theme(strip.background = element_rect(colour = "#554449", fill = "white", size=0.5),
+    #       panel.border = element_rect(colour = "#554449", fill=NA, size=0.5))
+  }
+
+  #For now, assuming numeric var_x means a year
+  if(is.numeric(data[,x_var])){
+    start_fy<-min(data[,colnames(data)==x_var])
+    end_fy<-max(data[,colnames(data)==x_var])
+    if(facet_var != "None"){
+      mainplot<-mainplot+scale_x_continuous(
         breaks = function(x) {seq(start_fy, end_fy, by = 2)},
         labels = function(x){str_sub(as.character(x), -2, -1)}
       )
-  } else {
-    mainplot <- mainplot +
-      scale_x_continuous(
-        breaks = function(x){seq(start_fy, end_fy, by = 1)},
-        labels = function(x){str_sub(as.character(x), -2, -1)}
-      )
+    }
+    else{
+      mainplot <- mainplot +
+        scale_x_continuous(
+          breaks = function(x){seq(start_fy, end_fy, by = 1)},
+          labels = function(x){str_sub(as.character(x), -2, -1)}
+        )
+    }
   }
 
   # add y-axis labeling
@@ -207,3 +214,4 @@ build_plot <- function(
   # return the plot to server.R
   return(mainplot)
 }
+
