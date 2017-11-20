@@ -137,10 +137,15 @@ group_data_for_plot <-function(
 #' @export
 get_label <- function(
   var,
-  column_key
+  column_key,
+  share=FALSE
 ){
   if(is.null(var)) stop("Null var passed to get_label.")
-  title<-subset(column_key,column==var)$title
+  if(share==TRUE){
+    title<-subset(column_key,column==var)$share.title
+  }
+  else
+    title<-subset(column_key,column==var)$title
   label<-ifelse(is.na(title),var,title)
   return(label)
 

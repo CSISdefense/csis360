@@ -117,7 +117,7 @@ shinyServer(function(input, output, session) {
       # build bar plot or line plot
       mainplot <- build_plot(data=plot_data,
         chart_geom=input$chart_geom,
-        share=FALSE,
+        share=ifelse(input$y_total_or_share == "As Share",TRUE,FALSE),
         x_var=vars$fiscal_year,
         y_var=input$y_var,
         color_var=input$color_var,

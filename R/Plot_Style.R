@@ -54,7 +54,8 @@ get_plot_theme<-function(){
   t<-t+theme(legend.title = element_blank()) +
     theme(legend.position = 'bottom') +
     theme(legend.background = element_rect(fill = "white")
-    )
+    )+
+    theme(plot.caption = element_text(size=7, face = "italic", vjust= -0.15, color = "gray25"))
   return(t)
 }
 
@@ -183,7 +184,7 @@ build_plot <- function(
   if(!is.null(column_key)){
     mainplot<-mainplot+labs(
       x=get_label(x_var,column_key),
-      y=get_label(y_var,column_key)
+      y=get_label(y_var,column_key,share)
     )
   }
 
@@ -196,9 +197,9 @@ build_plot <- function(
     mainplot<-mainplot+theme(legend.position = "none")
 
   if(caption==TRUE)
-    #+labs(y="Share Contract $",
+    #+labs(y="",
     mainplot<-mainplot+labs(caption = "Source: FPDS; CSIS analysis"
-    )+ theme(plot.caption = element_text(size=7, face = "italic", vjust= -0.15, color = "gray25"))
+    )
 
 
   # return the plot to server.R
