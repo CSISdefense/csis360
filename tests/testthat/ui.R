@@ -66,14 +66,6 @@ shinyUI(fluidPage(
             selected = "As Total"
           )
         )
-      ),
-      wellPanel(
-        radioButtons(
-          inputId = "show_period",
-          label = "Show Drawdown Periods",
-          choices = c("Yes", "No"),
-          selected = "No"
-        )
       )
     ),
     mainPanel(

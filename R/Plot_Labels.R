@@ -81,7 +81,8 @@ group_data_for_plot <-function(
   data,   # data to format for the plot, as a tibble
   x_var,
   y_var,
-  breakout
+  breakout,
+  aggregate="sum"
   #
   # Returns:
   #   a tibble of formatted data
@@ -101,19 +102,33 @@ group_data_for_plot <-function(
   # the evaluation for dplyr::summarize_ was a pain in the ass to figure out;
   # see stack overflow at https://tinyurl.com/z82ywf3
 
-  if(length(breakout) == 0){
-    data %<>%
-      group_by_(x_var) %>%
-      summarize_(
-        sum_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
-  } else {
-    data %<>%
-      group_by_(.dots = c(x_var, breakout)) %>%
-      summarize_(
-        sum_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
-  }
+  if(aggregate=="sum"){
+    if(length(breakout) == 0){
+      data %<>%
+        group_by_(x_var) %>%
+        summarize_(
+          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
+    } else {
+      data %<>%
+        group_by_(.dots = c(x_var, breakout)) %>%
+        summarize_(
+          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
+    }
+  } else if (aggregate=="mean"){
+    if(length(breakout) == 0){
+      data %<>%
+        group_by_(x_var) %>%
+        summarize_(
+          agg_val = lazyeval::interp(~mean(var, na.rm = TRUE), var = as.name(y_var)))
+    } else {
+      data %<>%
+        group_by_(.dots = c(x_var, breakout)) %>%
+        summarize_(
+          agg_val = lazyeval::interp(~avg(var, na.rm = TRUE), var = as.name(y_var)))
+    }
+  } else (stop(paste,"group_data_for_plot does not know how to handle aggregate = ",aggregate))
 
-  names(data)[which(names(data) == "sum_val")] <- y_var
+  names(data)[which(names(data) == "agg_val")] <- y_var
   return(data)
 }
 

@@ -353,3 +353,27 @@ format_data_for_plot <- function(
 }
 
 
+
+format_period_average <- function(
+  data,
+  period_var, #The variable with the period designations, one per entry
+  y_var,
+  breakouts #Facet and/or color
+)
+{
+  breakouts <- c(color_var, facet_var)
+  breakouts <- breakouts[breakouts != "None"]
+
+  shown_data<-group_data_for_plot(
+    data,
+    period_var,
+    y_var,
+    breakouts,
+    aggregate="mean"
+  )
+
+
+
+  data
+
+}

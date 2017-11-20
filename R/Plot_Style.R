@@ -133,6 +133,8 @@ build_plot <- function(
     mainplot <- mainplot +
       facet_wrap(as.formula(paste0("~ `",facet_var, "`"))) +
       theme(strip.background = element_rect(fill = "white")) +
+      # theme(strip.background = element_rect(colour = "#554449", fill = "white", size=0.5),
+      #       panel.border = element_rect(colour = "#554449", fill=NA, size=0.5)) +
       scale_x_continuous(
         breaks = function(x) {seq(start_fy, end_fy, by = 2)},
         labels = function(x){str_sub(as.character(x), -2, -1)}
