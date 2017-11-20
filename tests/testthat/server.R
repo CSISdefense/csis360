@@ -97,7 +97,12 @@ shinyServer(function(input, output, session) {
         color_var=input$color_var,
         facet_var=input$facet_var,
         labels_and_colors=labels_and_colors,
-        column_key=column_key)
+        column_key=column_key)+         scale_x_continuous(
+          limits = c(input$year[1]-0.5, input$year[2]+0.5),
+          breaks = function(x){seq(input$year[1], input$year[2], by = 1)},
+          labels = function(x){str_sub(as.character(x), -2, -1)}
+        )
+      bar_plot$width<-line_plot$width
       # lay the stacked plots
       lay <- rbind(c(1,1,1),
         c(1,1,1),
