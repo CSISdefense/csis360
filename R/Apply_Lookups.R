@@ -44,7 +44,12 @@ replace_nas_with_unlabeled<- function(data,
                                       var,
                                       replacement="Unlabeled"){
   data<-as.data.frame(data)
-  if(any(is.na(data[var,]))){
+
+  if(!is.factor(data[,var]))
+    data[,var]<-factor(data[,var])
+
+
+  if(any(is.na(data[,var]))){
     #Make sure the replacement value is in the is within the list of levels
     # if (!(replacement %in% levels(data[,var]))){
       data[,var]<-addNA(data[,var],ifany=TRUE)

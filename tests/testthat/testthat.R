@@ -45,7 +45,6 @@ std_data <- subset(std_data,Fiscal.Year >= 2000)
 
 
 context("deflate")
-
 def_data<-deflate(std_data,
   money_var = "Action.Obligation",
   deflator_var="Deflator.2016"
