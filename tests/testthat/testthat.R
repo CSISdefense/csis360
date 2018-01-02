@@ -1,6 +1,10 @@
 library(testthat)
 library(csis360)
 library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(magrittr)
+
 
 # read in data
 full_data <- read.csv(system.file("extdata",
@@ -180,27 +184,71 @@ load(system.file("extdata",
                  "2016_unaggregated_FPDS.Rda",
                  package = "csis360"))
 
-total_data <- format_data_for_plot(data=full_data,
+component_data <- format_data_for_plot(data=full_data,
                                    share=FALSE,
                                    fy_var="Fiscal.Year",
                                    start_fy=2009,
                                    end_fy=2016,
                                    y_var="Action.Obligation.2016",
-                                   color_var="SubCustomer",
-                                   facet_var="SubCustomer",
+                                   color_var="SubCustomer.platform",
+                                   facet_var="SubCustomer.platform",
                                    labels_and_colors=labels_and_colors)
 
 
 
-build_plot(data=total_data,
+build_plot(data=component_data,
            chart_geom="Bar Chart",
            share=FALSE,
            x_var="Fiscal.Year",
            y_var="Action.Obligation.2016",
-           color_var="SubCustomer",
-           facet_var="SubCustomer",
+           color_var="SubCustomer.platform",
+           facet_var="None",
            labels_and_colors=labels_and_colors,
-           column_key=column_key)
+           column_key=column_key)+theme(legend.position = "right")
+
+build_plot(data=component_data,
+           chart_geom="Bar Chart",
+           share=FALSE,
+           x_var="Fiscal.Year",
+           y_var="Action.Obligation.2016",
+           color_var="SubCustomer.platform",
+           facet_var="SubCustomer.platform",
+           labels_and_colors=labels_and_colors,
+           column_key=column_key,legend=FALSE)
+
+
+milserv_data <- format_data_for_plot(data=full_data,
+                                       share=FALSE,
+                                       fy_var="Fiscal.Year",
+                                       start_fy=2009,
+                                       end_fy=2016,
+                                       y_var="Action.Obligation.2016",
+                                       color_var="SubCustomer.platform",
+                                       facet_var="SubCustomer.platform",
+                                       labels_and_colors=labels_and_colors)
+
+
+
+build_plot(data=milserv_data,
+           chart_geom="Bar Chart",
+           share=FALSE,
+           x_var="Fiscal.Year",
+           y_var="Action.Obligation.2016",
+           color_var="SubCustomer.platform",
+           facet_var="None",
+           labels_and_colors=labels_and_colors,
+           column_key=column_key)+theme(legend.position = "right")
+
+build_plot(data=milserv_data,
+           chart_geom="Bar Chart",
+           share=FALSE,
+           x_var="Fiscal.Year",
+           y_var="Action.Obligation.2016",
+           color_var="SubCustomer.platform",
+           facet_var="SubCustomer.platform",
+           labels_and_colors=labels_and_colors,
+           column_key=column_key,legend=FALSE)
+
 
 pp_data <- format_data_for_plot(data=full_data,
                                    share=FALSE,
@@ -222,7 +270,8 @@ build_plot(data=pp_data,
            color_var="PlatformPortfolio",
            facet_var="PlatformPortfolio",
            labels_and_colors=labels_and_colors,
-           column_key=column_key)
+           column_key=column_key,
+           legend=FALSE)
 
 build_plot(data=pp_data,
            chart_geom="Bar Chart",
@@ -282,12 +331,24 @@ build_plot(data=subset(area_vendor_data,ProductServiceOrRnDarea.sum!="Unlabeled"
 
 
 
-build_plot(data=subset(area_vendor_data,ProductServiceOrRnDarea.sum!="Unlabeled"),
-           chart_geom="Bar Chart",
+comp_data <- format_data_for_plot(data=full_data,
+                                         share=TRUE,
+                                         fy_var="Fiscal.Year",
+                                         start_fy=2009,
+                                         end_fy=2016,
+                                         y_var="Action.Obligation.2016",
+                                         color_var="Competition.effective.only",
+                                         # facet_var="None",
+                                         labels_and_colors=labels_and_colors)
+
+
+build_plot(data=subset(comp_data,Competition.effective.only!="Unlabeled"),
+           chart_geom="Line Chart",
            share=FALSE,
            x_var="Fiscal.Year",
            y_var="Action.Obligation.2016",
-           color_var="Shiny.VendorSize",
-           facet_var="ProductServiceOrRnDarea.sum",
+           color_var="Competition.effective.only",
+           # facet_var="None",
            labels_and_colors=labels_and_colors,
            column_key=column_key)
+
