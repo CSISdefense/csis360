@@ -454,7 +454,7 @@ read_and_join_experiment<-function(
 #' @param deflator_file The quoted file name of the deflators to use;
 #' must be a CSV with the column "fiscal.year."
 #' @param deflator_var The quoted name of the defalator variable variable,
-#' by default "deflator.2016"
+#' by default "deflator.2017"
 #' @param path The path or url for the deflator_file CSV.  By default, checks
 #' the CSISdefense Github lookups repository at CSISdefense/csis360/master/data/economic/
 #'
@@ -467,7 +467,7 @@ read_and_join_experiment<-function(
 #'
 #' @examples Path<-"K:\\2007-01 PROFESSIONAL SERVICES\\R scripts and data\\"
 #'
-#' FullData <- read_csv("2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
+#' FullData <- read_csv("2017_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
 #'   col_names = TRUE, col_types = "cccccccccc",na=c("NA","NULL"))
 #' PrepareLabelsAndColors(Coloration,FullData,"Customer")
 #'
@@ -478,7 +478,7 @@ deflate <- function(
   money_var = "Amount",
   fy_var = "Fiscal.Year",
   deflator_file = "Lookup_Deflators.csv",
-  deflator_var="Deflator.2016",
+  deflator_var="Deflator.2017",
   path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
   directory="economic/",
   deflator_dropped=TRUE
@@ -548,7 +548,7 @@ deflate <- function(
 #'
 #' @examples
 #'
-#' FullData <- read_csv("2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
+#' FullData <- read_csv("2017_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
 #'   col_names = TRUE, col_types = "cccccccccc",na=c("NA","NULL"))
 #' PrepareLabelsAndColors(Coloration,FullData,"Customer")
 #'
