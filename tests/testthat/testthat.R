@@ -68,7 +68,7 @@ def_data<-read_and_join(def_data,
                         add_var="Shiny.VendorSize"
 )
 
-# classify competition
+# classify competition and a zip file
 def_data<-read_and_join(def_data,
                         "Lookup_SQL_CompetitionClassification.csv",
                         by=c("CompetitionClassification","ClassifyNumberOfOffers"),

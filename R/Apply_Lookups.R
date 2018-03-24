@@ -339,7 +339,8 @@ read_and_join_experiment<-function(
     overlap_var_replaced=TRUE,
     add_var=NULL,
     new_var_checked=TRUE,
-    skip_check_var=NULL){
+    skip_check_var=NULL,
+    zip_file=NULL){
 
 
     #Replace NAs in input column if requested
@@ -351,6 +352,8 @@ read_and_join_experiment<-function(
   if(is.data.frame(lookup_file))
     stop("lookup_file parameter is a data frame, it should be a filename, e.g. 'lookup_customer.csv'.")
 
+
+  if(is.null(zip_file)){#No zip file
     #Read in the lookup file
     lookup<-readr::read_delim(
       paste(path,directory,lookup_file,sep=""),
@@ -359,7 +362,18 @@ read_and_join_experiment<-function(
       na=c("NA","NULL"),
       trim_ws=TRUE
     )
-
+  }#Zip file
+  else{
+    input<-unz(lookup_file, paste(path,directory,zip_file,sep=""))
+    #Read in the lookup file
+    lookup<-readr::read_delim(
+      input,
+      col_names=TRUE,
+      delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
+      na=c("NA","NULL"),
+      trim_ws=TRUE
+    )
+  }
     #Remove byte order marks present in UTF encoded files
     data<-remove_bom(data)
     lookup<-remove_bom(lookup)
