@@ -69,13 +69,14 @@ def_data<-read_and_join(def_data,
 )
 
 # classify competition and a zip file
+debug(read_and_join_experiment)
 def_data<-read_and_join_experiment(def_data,
                         "Lookup_SQL_CompetitionClassification.csv",
                         zip_file="Lookup_SQL_CompetitionClassification.zip",
                         by=c("CompetitionClassification","ClassifyNumberOfOffers"),
                         replace_na_var="ClassifyNumberOfOffers",
                         path="https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/",
-                        directory=""
+                        directory="",
                         add_var=c("Competition.sum",
                                            "Competition.multisum",
                                            "Competition.effective.only",

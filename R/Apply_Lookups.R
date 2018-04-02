@@ -196,7 +196,10 @@ read_and_join<-function(
                                      replace_na_var)
   }
 
-
+  #This doesn't  work for URLs. Worth trying again later with some parsing
+  # if (!file.exists(paste(path,directory,lookup_file,sep=""))){
+    # stop(paste(path,directory,lookup_file," does not exist.",sep=""))
+  # }
 
   #Read in the lookup file
   lookup<-read.csv(
@@ -255,14 +258,14 @@ read_and_join<-function(
 
   #Conduct the join
   if(is.null(by)){
-    data<- plyr::join(
+    data<- dplyr::left_join(
       data,
       lookup,
       match="first"
     )
   }
   else{
-    data<- plyr::join(
+    data<- dplyr::left_join(
       data,
       lookup,
       match="first",
