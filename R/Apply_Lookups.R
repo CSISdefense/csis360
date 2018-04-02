@@ -358,6 +358,9 @@ read_and_join_experiment<-function(
 
   if(is.null(zip_file)){#No zip file
     #Read in the lookup file
+    if (!file.exists(paste(path,directory,lookup_file,sep=""))){
+      stop(paste(path,directory,zip_file," does not exist",sep=""))
+    }
     lookup<-readr::read_delim(
       paste(path,directory,lookup_file,sep=""),
       col_names=TRUE,
@@ -367,10 +370,13 @@ read_and_join_experiment<-function(
     )
   }#Zip file
   else{
-    input<-unz(lookup_file, paste(path,directory,zip_file,sep=""))
+    if (!file.exists(paste(path,directory,zip_file,sep=""))){
+      stop(paste(path,directory,zip_file," does not exist",sep=""))
+    }
     #Read in the lookup file
+    read.csv(input)
     lookup<-readr::read_delim(
-      input,
+      file=paste(path,directory,zip_file,sep=""),
       col_names=TRUE,
       delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
       na=c("NA","NULL"),
