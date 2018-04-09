@@ -378,3 +378,329 @@ format_period_average <- function(
   data
 
 }
+
+
+
+
+#***********************Standardize Variable Names
+#' Transform Contract names
+#'
+#' @param contract A contract dataset
+#'
+#' @return contract dataset ready for statistical analysis.
+#'
+#' @section This function is designed to prepare CSIS data files for lookup
+#' application. It primarily smooths out variation between different ways we've
+#' written SQL statements. It relies on a pre-existing table of variant names.
+#' The var names are matched against that table in a case insensitive manner,
+#' though no other procedural standardization is applied at this time.
+#'
+#' @examples transform_contract(def)
+#'
+#' @import dplyr
+#' @export
+transform_contract<-function(
+  contract
+){
+
+  # contract$pNewWorkUnmodifiedBaseAndAll<-as.numeric(as.character(contract$pNewWorkUnmodifiedBaseAndAll))
+  #Newwork and change
+  # contract$pNewWork3Sig<-round(
+  # contract$pNewWorkUnmodifiedBaseAndAll,3)
+
+
+
+  #Customer
+  if(!"Is.Defense" %in% colnames(contract)){
+    contract$Is.Defense<-as.character(contract$Who)
+    contract$Is.Defense[contract$Is.Defense %in%
+                          c("Air Force","Army",
+                            "Navy","Other DoD","Uncategorized"  )
+                        ]<-"Defense"
+    contract$Is.Defense<-factor(contract$Is.Defense)
+  }
+
+
+  #PSR_What
+  contract$PSR_What<-factor(paste(as.character(contract$PSR),
+                                  as.character(contract$What),sep="."))
+  contract$PSR_What[contract$PSR_What=="Unlabeled"]<-NA
+
+  #b_CBre
+  contract$b_CBre<-ifelse(contract$CBre=="Ceiling Breach",1,NA)
+  contract$b_CBre[contract$CBre=="None"]<-0
+
+
+  #Create a jittered version of CBre for display purposes
+  #Unlike geom_jitter, this caps values at 0 and 1
+  contract$j_CBre<-jitter_binary(contract$b_CBre)
+
+
+  #b_Term
+  contract$b_Term<-ifelse(contract$Term=="Terminated",1,NA)
+  contract$b_Term[contract$Term=="Unterminated"]<-0
+
+  #Create a jittered version of Term for display purposes
+  #Unlike geom_jitter, this caps values at 0 and 1
+  contract$j_Term<-jitter_binary(contract$b_Term)
+
+  #n_CBre
+  # contract$pChangeOrderUnmodifiedBaseAndAll<-as.numeric(as.character(contract$pChangeOrderUnmodifiedBaseAndAll))
+  # contract$pChange3Sig<-round(
+  #   contract$pChangeOrderUnmodifiedBaseAndAll,3)
+
+  #Should include this in the original data frame but for now can drive it.
+  contract$n_CBre<-contract$ChangeOrderBaseAndAllOptionsValue
+
+  #l_CBre
+  contract$l_CBre<-NA
+  contract$l_CBre[contract$b_CBre==1 & !is.na(contract$b_CBre)]<-
+    log(contract$n_CBre[contract$b_CBre==1 & !is.na(contract$b_CBre)])
+
+  #l_Ceil
+  contract$l_Ceil<-log(contract$UnmodifiedContractBaseAndAllOptionsValue)
+  contract$l_Ceil[is.infinite(contract$l_Ceil)]<-NA
+
+  contract<-contract %>% group_by(Ceil) %>%
+    mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue))
+
+  contract$Ceil.Simple<-as.character(contract$Ceil)
+
+  contract$Ceil.Simple[contract$Ceil.Simple %in% c(
+    "75m+",
+    "10m - <75m")]<-"10m+"
+  contract$Ceil.Simple[contract$Ceil.Simple %in% c(
+    "1m - <10m",
+    "100k - <1m")]<-"100k - <10m"
+  contract$Ceil.Simple[contract$Ceil.Simple %in% c(
+    "15k - <100k",
+    "0 - <15k")]<-"0k - <100k"
+  contract$Ceil.Simple<-factor(contract$Ceil.Simple,
+                               levels=c("0k - <100k",
+                                        "100k - <10m",
+                                        "10m+"),
+                               ordered=TRUE
+  )
+
+
+  contract$Ceil.Big<-as.character(contract$Ceil)
+
+  contract$Ceil.Big[contract$Ceil.Big %in% c(
+    "100k - <1m",
+    "15k - <100k",
+    "0 - <15k")]<-"0k - <1m"
+
+  contract$Ceil.Big<-factor(contract$Ceil.Big,
+                            levels=c("0k - <1m",
+                                     "1m - <10m",
+                                     "10m - <75m",
+                                     "75m+"),
+                            ordered=TRUE
+  )
+
+
+
+  #l_Days
+  contract$l_Days<-NA
+  contract$l_Days[!is.na(contract$UnmodifiedDays)&contract$UnmodifiedDays>0]<-
+    log(contract$UnmodifiedDays[!is.na(contract$UnmodifiedDays)&contract$UnmodifiedDays>0])
+  contract$l_Days[is.infinite(contract$l_Days)]<-NA
+
+
+  contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
+  contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
+  contract$Dur[contract$UnmodifiedYearsCat<0]<-NA
+
+  contract$Dur.Simple<-as.character(contract$Dur)
+  contract$Dur.Simple[contract$Dur.Simple %in% c(
+    "[0 months,~2 months)",
+    "[~2 months,~7 months)",
+    "[~7 months-~1 year]")]<-"<~1 year"
+  contract$Dur.Simple<-factor(contract$Dur.Simple,
+                              levels=c("<~1 year",
+                                       "(~1 year,~2 years]",
+                                       "(~2 years+]"),
+                              ordered=TRUE
+  )
+
+
+  #b_ODoD
+  contract$b_ODoD<-contract$Who
+  levels(contract$b_ODoD)<- list("1"=c("Other DoD"),
+                                 "0"=c("Air Force","Army","Navy"))
+  contract$b_ODoD[contract$b_ODoD=="Uncategorized"]<-NA
+  contract$b_ODoD<-as.integer(as.character(contract$b_ODoD))
+
+
+  #n_Fixed
+
+  contract$n_Fixed<-contract$FxCb
+  levels(contract$n_Fixed)<- list("1"=c("Fixed-Price"),
+                                  "0.5"=c("Combination or Other"),
+                                  "0"=c("Cost-Based"))
+  contract$n_Fixed<-as.integer(as.character(contract$n_Fixed))
+
+  #n_Incent
+  contract$n_Incent<-contract$Fee
+  levels(contract$n_Incent) <-
+    list("1"=c("Incentive"),
+         "0.5"=c("Combination"),
+         "0"=c("Award Fee", "FFP or No Fee", "Fixed Fee", "Other Fee"))
+  contract$n_Incent<-as.integer(as.character(contract$n_Incent))
+
+  #n_NoFee
+  contract$n_NoFee<-contract$Fee
+  levels(contract$n_NoFee) <-
+    list("1"=c("FFP or No Fee"),
+         "0.5"=c("Combination"),
+         "0"=c("Award Fee", "Incentive", "Fixed Fee", "Other Fee"))
+  contract$n_NoFee<-as.integer(as.character(contract$n_NoFee))
+
+
+
+  #Right now comp is not actually a factor, so don't need to process it
+  contract$b_Comp<-contract$Comp #Fix in Rdata, and add back comp
+  levels(contract$b_Comp) <-
+    list("0"="No Comp.",
+         "1"="Comp.")
+  contract$b_Comp<-as.integer(as.character(contract$b_Comp))
+
+  #n_Comp
+  contract$n_Comp<-contract$EffComp #Fix in Rdata, and add back comp
+  levels(contract$n_Comp) <-
+    list("0"="No Comp.",
+         "0.5"="1 Offer",
+         "1"="2+ Offers")
+  contract$n_Comp<-as.integer(as.character(contract$n_Comp))
+
+
+
+  contract$n_Offr<-contract$Offr
+  levels(contract$n_Offr) <-
+    list("1"=c("1"),
+         "2"=c("2"),
+         "3"=c("3-4"),
+         "4"=c("5+"))
+  contract$n_Offr<-as.integer(as.character(contract$n_Offr))
+  contract$n_Offr[contract$b_Comp==0 & !is.na(contract$b_Comp)]<-0
+  contract$CompOffr<-factor(contract$n_Offr)
+  levels(contract$CompOffr) <-
+    list("No Competition"="0",
+         "1 offer"="1",
+         "2 offers"="2",
+         "3-4 offers"="3",
+         "5+ offers"="4")
+
+
+  #l_Offr
+  contract$l_Offr<-log(contract$UnmodifiedNumberOfOffersReceived)
+  contract$l_Offr[is.infinite(contract$l_Offr)]<-NA
+
+  contract$cb_Comp<-scale(contract$b_Comp)
+  contract$cn_Comp<-scale(contract$n_Comp)
+  contract$cn_Offr<-scale(contract$n_Offr)
+  contract$cl_Offr<-scale(contract$l_Offr)
+
+
+
+
+  #b_Intl
+  contract$b_Intl<-contract$Intl
+  contract$b_Intl[contract$b_Intl=="Unlabeled"]<-NA
+  levels(contract$b_Intl) <-
+    list("0"=c("Just U.S."),
+         "1"=c("Any International"))
+  contract$b_Intl<-as.integer(as.character(contract$b_Intl))
+
+
+
+  #b_UCA
+  contract$b_UCA<-contract$UCA
+  levels(contract$b_UCA) <-
+    list("0"=c("Not UCA"),
+         "1"=c("UCA"))
+  contract$b_UCA<-as.integer(as.character(contract$b_UCA))
+
+
+
+
+
+  # contract$DecisionTree<-as.character(contract$MaxOfDecisionTree)
+  # contract$DecisionTree[
+  #   contract$DecisionTree=="Excluded"|
+  #     is.na(contract$DecisionTree)]<-"All Other"
+  # contract$DecisionTree<-factor(contract$DecisionTree,levels=c("OCO","Disaster","ARRA","All Other"))
+  #
+  # if(!"Is.Defense" %in% colnames(contract)){
+  #   contract$Is.Defense<-as.character(contract$Who)
+  #   contract$Is.Defense[contract$Is.Defense %in%
+  #                                      c("Air Force","Army",
+  #                                        "Navy","Other DoD","Uncategorized"  )
+  #                                    ]<-"Defense"
+  #   contract$Is.Defense<-factor(contract$Is.Defense)
+  # }
+
+
+
+
+  #SIDV
+  contract$SIDV<-contract$Veh
+  levels(contract$SIDV) <-
+    list("1"=c("SINGLE AWARD IDC"),
+         "0"=c("Def/Pur","MULTIPLE AWARD IDC","Other IDV","FSS/GWAC","BPA/BOA"))
+  contract$SIDV<-as.integer(as.character(contract$SIDV))
+
+  #MIDV
+  contract$MIDV<-contract$Veh
+  levels(contract$MIDV) <-
+    list("1"=c("MULTIPLE AWARD IDC"),
+         "0"=c("Def/Pur","SINGLE AWARD IDC", "Other IDV","FSS/GWAC","BPA/BOA"))
+  contract$MIDV<-as.integer(as.character(contract$MIDV))
+
+  #FSSGWAC
+  contract$FSSGWAC<-contract$Veh
+  levels(contract$FSSGWAC) <-
+    list("1"=c("FSS/GWAC"),
+         "0"=c("Def/Pur","SINGLE AWARD IDC", "MULTIPLE AWARD IDC","BPA/BOA"))
+  contract$FSSGWAC<-as.integer(as.character(contract$FSSGWAC))
+
+  #BPABOA
+  contract$BPABOA<-contract$Veh
+  levels(contract$BPABOA) <-
+    list("1"=c("BPA/BOA"),
+         "0"=c("Def/Pur","SINGLE AWARD IDC", "MULTIPLE AWARD IDC","FSS/GWAC"))
+  contract$BPABOA<-as.integer(as.character(contract$BPABOA))
+
+  #Crisis Dataset
+  contract$ARRA<-0
+  contract$ARRA[contract$MaxOfDecisionTree=="ARRA"]<-1
+  contract$Dis<-0
+  contract$Dis[contract$MaxOfDecisionTree=="Disaster"]<-1
+  contract$OCO<-0
+  contract$OCO[contract$MaxOfDecisionTree=="OCO"]<-1
+
+  #NAICS
+  if(file.exists("annual_naics6_summary.Rdata")){
+    load("annual_naics6_summary.Rdata")
+    contract$NAICS<-as.integer(as.character(contract$NAICS))
+    contract<-left_join(contract,NAICS_join, by=c("StartFY"="StartFY",
+                                                  "NAICS"="NAICS_Code"))
+
+    #Remove 0s, they make no sense, source must be one contractors in field have 0 obligations, which is just missing data really
+    contract$HHI_lag1[contract$HHI_lag1==0]<-NA
+    contract$c_HHI_lag1<-scale(contract$HHI_lag1)
+
+    contract$l_HHI_lag1<-log(contract$HHI_lag1)
+    contract$cl_HHI_lag1<-scale(contract$l_HHI_lag1)
+  }
+  contract$cl_Ceil<-scale(contract$l_Ceil)
+  contract$cl_Days<-scale(contract$l_Days)
+  contract$clsqr_Ceil<-contract$cl_Ceil^2
+  contract$lsqr_Ceil<-contract$l_Ceil^2
+
+  contract$clsqr_Days<-contract$cl_Days^2
+  contract$lsqr_Days<-contract$l_Days^2
+
+
+  contract
+}

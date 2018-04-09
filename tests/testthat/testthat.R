@@ -356,3 +356,8 @@ build_plot(data=subset(comp_data,Competition.effective.only!="Unlabeled"),
            labels_and_colors=labels_and_colors,
            column_key=column_key)
 
+
+load(file="tests/testthat/defense_contract_CSIScontractID_detail.Rdata")
+head(def)
+# undebug(transform_contract)
+def<-csis360::transform_contract(def)

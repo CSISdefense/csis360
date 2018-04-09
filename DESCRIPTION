@@ -8,7 +8,7 @@ Description: Tools for supporting CSIS quantitative research projects.
 Imports: plyr (>= 0.1.8.4)
 Imports: ggplot2
 Imports: magrittr
-Imports: dplyr
+Depends: dplyr
 Imports: lazyeval
 Imports: forcats
 Imports: readr

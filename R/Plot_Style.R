@@ -1,3 +1,27 @@
+
+
+
+
+#' jitter_binary
+#'
+#' @return Takes a binary variable and randomly spreads it within 0 and 1
+#'
+#' @section From Andrew Gelman and Jennifer Hill. For use in graphs
+#' to show the quantity of variable that otherwise would be stuck
+#' on a single lines at 0 and 1. This is different from geom_jitter
+#' because it keeps all the data within the possible range of the variable,
+#' not allowing values greater than 1 or less than 0.
+#'
+#' @examples jitter_binary(contract$b_CBre)
+#'
+#' @import ggplot2
+#' @export
+jitter_binary<-function(a, jitt=0.05){
+  ifelse(a==0,runif(length(a),0,jitt),runif(length(a),1-jitt,1))
+}
+
+
+
 #' Get Plot Theme
 #'
 #' @return Thematic elements that can be added to a plot.
