@@ -583,6 +583,7 @@ transform_contract<-function(
          "4"=c("5+"))
   contract$n_Offr<-as.integer(as.character(contract$n_Offr))
   contract$n_Offr[contract$b_Comp==0 & !is.na(contract$b_Comp)]<-0
+  contract$n_Offr[is.na(contract$b_Comp)]<-NA
   contract$CompOffr<-factor(contract$n_Offr)
   levels(contract$CompOffr) <-
     list("No Competition"="0",
