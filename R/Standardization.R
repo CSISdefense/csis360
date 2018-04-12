@@ -602,6 +602,10 @@ transform_contract<-function(
   contract$cn_Offr<-scale(contract$n_Offr)
   contract$cl_Offr<-scale(contract$l_Offr)
 
+#Urgency
+  contract$b_Urg<-NA
+  contract$b_Urg<-ifelse(contract$Urg=="Urgency Except.",1,NA)
+  contract$b_Urg[contract$Urg=="Not Urgency"]<-0
 
 
 
@@ -679,6 +683,11 @@ transform_contract<-function(
   contract$Dis[contract$MaxOfDecisionTree=="Disaster"]<-1
   contract$OCO<-0
   contract$OCO[contract$MaxOfDecisionTree=="OCO"]<-1
+
+
+  contract$Crisis<-as.character(contract$MaxOfDecisionTree)
+  contract$Crisis[contract$Crisis=="Excluded" | is.na(contract$Crisis)]<-"Other"
+  contract$Crisis<-factor(contract$Crisis)
 
   #NAICS
   if(file.exists("annual_naics6_summary.Rdata")){
