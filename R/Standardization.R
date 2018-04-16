@@ -677,17 +677,18 @@ transform_contract<-function(
   contract$BPABOA<-as.integer(as.character(contract$BPABOA))
 
   #Crisis Dataset
-  contract$ARRA<-0
-  contract$ARRA[contract$MaxOfDecisionTree=="ARRA"]<-1
-  contract$Dis<-0
-  contract$Dis[contract$MaxOfDecisionTree=="Disaster"]<-1
-  contract$OCO<-0
-  contract$OCO[contract$MaxOfDecisionTree=="OCO"]<-1
+  # contract$ARRA<-0
+  # contract$ARRA[contract$MaxOfDecisionTree=="ARRA"]<-1
+  # contract$Dis<-0
+  # contract$Dis[contract$MaxOfDecisionTree=="Disaster"]<-1
+  # contract$OCO<-0
+  # contract$OCO[contract$MaxOfDecisionTree=="OCO"]<-1
 
 
   contract$Crisis<-as.character(contract$MaxOfDecisionTree)
   contract$Crisis[contract$Crisis=="Excluded" | is.na(contract$Crisis)]<-"Other"
-  contract$Crisis<-factor(contract$Crisis)
+  levels(contract$Crisis)[levels(contract$Crisis)=="Disaster"]<-"Dis"
+  contract$Crisis<-factor(contract$Crisis,c("Other","ARRA","Dis","OCO"))
 
   #NAICS
   if(file.exists("annual_naics6_summary.Rdata")){
@@ -703,6 +704,20 @@ transform_contract<-function(
     contract$l_HHI_lag1<-log(contract$HHI_lag1)
     contract$cl_HHI_lag1<-scale(contract$l_HHI_lag1)
   }
+
+  #Office
+
+  contract$ContractingOfficeCode<-as.character(contract$Office)
+  contract<-csis360::read_and_join( contract,
+                               "Office.ContractingOfficeCode.txt",
+                               path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                               directory="office\\",
+                               by="ContractingOfficeCode",
+                               add_var=c("AvgPlaceOCOcrisisScore","CrisisPercent"),
+                               new_var_checked=FALSE)
+
+  contract<-contract[ ,!colnames(contract) %in% c("ContractingOfficeCode")]
+
   contract$cl_Ceil<-scale(contract$l_Ceil)
   contract$cl_Days<-scale(contract$l_Days)
   contract$clsqr_Ceil<-contract$cl_Ceil^2
@@ -713,4 +728,13 @@ transform_contract<-function(
 
 
   contract
+}
+
+make_dummy<-function(x, value){
+
+  dummy<-ifelse(x %in% value,1,0)
+  dummy[is.na(x)]<-NA
+  dummy()
+
+
 }

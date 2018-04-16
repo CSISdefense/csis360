@@ -27,3 +27,5 @@ Data/Federal_contract_CSIScontractID_detail\.csv
 Data/Contract\.SP_ContractSampleCriteriaDetailsCustomer\.txt
 
 Data/Contract\.SP_ContractUnmodifiedandOutcomeDetailsCustomer\.txt
+
+tests/testthat/defense_contract_CSIScontractID_detail\.Rdata
