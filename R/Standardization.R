@@ -718,6 +718,12 @@ transform_contract<-function(
 
   contract<-contract[ ,!colnames(contract) %in% c("ContractingOfficeCode")]
 
+
+  contract$OffPlace<-contract$AvgPlaceOCOcrisisScore+1
+  contract$OffPlace[contract$OffPlace<0]<-0
+  contract$OffPlace[contract$OffPlace>4]<-4
+  contract$sqrt_OffPlace<-sqrt(contract$OffPlace)
+
   contract$cl_Ceil<-scale(contract$l_Ceil)
   contract$cl_Days<-scale(contract$l_Days)
   contract$clsqr_Ceil<-contract$cl_Ceil^2
@@ -725,7 +731,7 @@ transform_contract<-function(
 
   contract$clsqr_Days<-contract$cl_Days^2
   contract$lsqr_Days<-contract$l_Days^2
-
+  contract$c_OffCri<-scale(contract$CrisisPercent)
 
   contract
 }
