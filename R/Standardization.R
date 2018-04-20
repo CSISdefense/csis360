@@ -644,36 +644,42 @@ transform_contract<-function(
   #                                    ]<-"Defense"
   #   contract$Is.Defense<-factor(contract$Is.Defense)
   # }
+crisis_smp$
 
-
-
+  levels(contract$Veh)[levels(contract$Veh)=="SINGLE AWARD IDC"]<-"S-IDC"
+  levels(contract$Veh)[levels(contract$Veh)=="MULTIPLE AWARD IDC"]<-"M-IDC"
+  contract$Veh<-factor(contract$Veh,c("Def/Pur",
+                                            "S-IDC",
+                                            "M-IDC",
+                                            "FSS/GWAC",
+                                            "BPA/BOA"))
 
   #SIDV
   contract$SIDV<-contract$Veh
   levels(contract$SIDV) <-
-    list("1"=c("SINGLE AWARD IDC"),
-         "0"=c("Def/Pur","MULTIPLE AWARD IDC","Other IDV","FSS/GWAC","BPA/BOA"))
+    list("1"=c("S-IDC"),
+         "0"=c("Def/Pur","M-IDC","FSS/GWAC","BPA/BOA"))
   contract$SIDV<-as.integer(as.character(contract$SIDV))
 
   #MIDV
   contract$MIDV<-contract$Veh
   levels(contract$MIDV) <-
-    list("1"=c("MULTIPLE AWARD IDC"),
-         "0"=c("Def/Pur","SINGLE AWARD IDC", "Other IDV","FSS/GWAC","BPA/BOA"))
+    list("1"=c("M-IDC"),
+         "0"=c("Def/Pur","S-IDC","FSS/GWAC","BPA/BOA"))
   contract$MIDV<-as.integer(as.character(contract$MIDV))
 
   #FSSGWAC
   contract$FSSGWAC<-contract$Veh
   levels(contract$FSSGWAC) <-
     list("1"=c("FSS/GWAC"),
-         "0"=c("Def/Pur","SINGLE AWARD IDC", "MULTIPLE AWARD IDC","BPA/BOA"))
+         "0"=c("Def/Pur","S-IDC", "M-IDC","BPA/BOA"))
   contract$FSSGWAC<-as.integer(as.character(contract$FSSGWAC))
 
   #BPABOA
   contract$BPABOA<-contract$Veh
   levels(contract$BPABOA) <-
     list("1"=c("BPA/BOA"),
-         "0"=c("Def/Pur","SINGLE AWARD IDC", "MULTIPLE AWARD IDC","FSS/GWAC"))
+         "0"=c("Def/Pur","S-IDC", "M-IDC","FSS/GWAC"))
   contract$BPABOA<-as.integer(as.character(contract$BPABOA))
 
   #Crisis Dataset
