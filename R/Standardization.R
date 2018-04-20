@@ -607,7 +607,12 @@ transform_contract<-function(
   contract$b_Urg<-ifelse(contract$Urg=="Urgency Except.",1,NA)
   contract$b_Urg[contract$Urg=="Not Urgency"]<-0
 
-
+  contract$UrgComp<-NA
+  contract$UrgComp<-ifelse(contract$Urg=="Urgency Except.","Urgency",NA)
+  contract$UrgComp[contract$Urg=="Not Urgency"]<-"Other No"
+  contract$UrgComp[contract$b_Comp==1]<-"Any Comp."
+  contract$UrgComp<-factor(contract$UrgComp,
+                           c("Other No","Urgency","Any Comp"))
 
   #b_Intl
   contract$b_Intl<-contract$Intl
