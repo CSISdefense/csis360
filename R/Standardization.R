@@ -614,6 +614,8 @@ transform_contract<-function(
   contract$NoComp<-factor(contract$NoComp,
                            c("Any Comp.","Other No","Urgency"))
 
+
+
   #b_Intl
   contract$b_Intl<-contract$Intl
   contract$b_Intl[contract$b_Intl=="Unlabeled"]<-NA
