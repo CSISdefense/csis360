@@ -696,10 +696,9 @@ transform_contract<-function(
   # contract$Dis[contract$MaxOfDecisionTree=="Disaster"]<-1
   # contract$OCO<-0
   # contract$OCO[contract$MaxOfDecisionTree=="OCO"]<-1
-
-
-  contract$Crisis<-as.character(contract$MaxOfDecisionTree)
-  contract$Crisis[contract$Crisis=="Excluded" | is.na(contract$Crisis)]<-"Other"
+  contract$Crisis<-contract$MaxOfDecisionTree
+  levels(contract$Crisis)[levels(contract$Crisis)=="Excluded"]<-"Other"
+  contract$Crisis[is.na(contract$Crisis)]<-"Other"
   levels(contract$Crisis)[levels(contract$Crisis)=="Disaster"]<-"Dis"
   contract$Crisis<-factor(contract$Crisis,c("Other","ARRA","Dis","OCO"))
 
@@ -732,18 +731,11 @@ transform_contract<-function(
   contract<-contract[ ,!colnames(contract) %in% c("ContractingOfficeCode")]
 
 
-  contract$OffPlace<-contract$PlaceIntlPercent+1
-  contract$OffPlace[contract$OffPlace<0]<-0
-  contract$OffPlace[contract$OffPlace>4]<-4
-  contract$sqrt_OffPlace<-sqrt(contract$OffPlace)
+  contract$OffIntl<-contract$PlaceIntlPercent
 
   contract$cl_Ceil<-scale(contract$l_Ceil)
   contract$cl_Days<-scale(contract$l_Days)
-  contract$clsqr_Ceil<-contract$cl_Ceil^2
-  contract$lsqr_Ceil<-contract$l_Ceil^2
 
-  contract$clsqr_Days<-contract$cl_Days^2
-  contract$lsqr_Days<-contract$l_Days^2
   contract$c_OffCri<-scale(contract$CrisisPercent)
 
   contract
