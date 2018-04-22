@@ -651,7 +651,7 @@ transform_contract<-function(
   #                                    ]<-"Defense"
   #   contract$Is.Defense<-factor(contract$Is.Defense)
   # }
-crisis_smp$
+
 
   levels(contract$Veh)[levels(contract$Veh)=="SINGLE AWARD IDC"]<-"S-IDC"
   levels(contract$Veh)[levels(contract$Veh)=="MULTIPLE AWARD IDC"]<-"M-IDC"
@@ -726,13 +726,13 @@ crisis_smp$
                                path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
                                directory="office\\",
                                by="ContractingOfficeCode",
-                               add_var=c("AvgPlaceOCOcrisisScore","CrisisPercent"),
+                               add_var=c("PlaceIntlPercent","CrisisPercent"),
                                new_var_checked=FALSE)
 
   contract<-contract[ ,!colnames(contract) %in% c("ContractingOfficeCode")]
 
 
-  contract$OffPlace<-contract$AvgPlaceOCOcrisisScore+1
+  contract$OffPlace<-contract$PlaceIntlPercent+1
   contract$OffPlace[contract$OffPlace<0]<-0
   contract$OffPlace[contract$OffPlace>4]<-4
   contract$sqrt_OffPlace<-sqrt(contract$OffPlace)
