@@ -16,16 +16,16 @@
 
 
 
-#' Replace NAs in one var of a data frame with a specified valued
+#' Replace NAs in one variable of a data frame with a specified valued
 #'
 #' @param data A data frame
-#' @param var The var to have NAs removed
+#' @param var The variable to have NAs removed
 #' @param replacement Charater string that will replace NAs, by default "Unlabeled"
 #'
 #' @return Returns a data frame with the var values replaced with replacement,
 #' otherwise identical to the original data frame
 #'
-#' @section This function is intended for preparing columns for use.
+#' @details This function is intended for preparing columns for use.
 #' As far as the function creator understands it, NAs do not match to NAs. However,
 #' we often wish to include NAs in a graph under a proper name, such as Unlabeled
 #' and with a color of our choosing. One critical step in this process is the addition
@@ -68,9 +68,9 @@ replace_nas_with_unlabeled<- function(data,
 #' @param output_var The var(s) that result from the join
 #' @param lookup_file The file used in the join
 #'
-#' @return None. Instead the function raises an error if there are NAs.
+#' @return None. Instead the function raises an error if there are NAs
 #'
-#' @section This function is intended to catch gaps in lookup tables
+#' @details This function is intended to catch gaps in lookup tables
 #' and to alert the developer before they can come into use. The core intent
 #' is to throw an error message that, if needed, will guide the developer to
 #' the file they need to update and the rows they need to add.
@@ -113,13 +113,13 @@ na_check<-function(data
 
 
 
-#' Remove byte order marks, these appear before the first column name
+#' Remove byte order marks, these appear before the first column name:
 #'
 #' @param data A /code(data.frame)
 #'
-#' @return /code(data) with the first column stripped of a byte order mark, if present.
+#' @return /code(data) with the first column stripped of a byte order mark, if present
 #'
-#' @section Byte order marks are included at the start of UTF
+#' @details Byte order marks are included at the start of UTF
 #' text files and if not properly processed on read in, can add
 #' nonsense characters to the start of the first column of a the
 #' /code(data.frame) read in from a text file.
@@ -142,7 +142,7 @@ remove_bom<-function(data
 }
 
 
-#' Read in an external file and join it with an existing data frame.
+#' Read in an external file and join it with an existing data frame
 #'
 #' @param data The data frame to be joined
 #' @param lookup_file The name of the lookup file
@@ -154,14 +154,14 @@ remove_bom<-function(data
 #' @param overlap_var_replaced=TRUE Should the function replace for common columns not used to join?
 #' @param add_var=NULL, What new columns should be checked for NA values?
 #' @param new_var_checked=FALSE Should only checked new columns be kept?
-#' @param skip_check_var=NULL List of vars that should not be checked for NA values.
+#' @param skip_check_var=NULL List of vars that should not be checked for NA values
 #'
 #' @return The data frame plus new columns from the lookup file. If new_var_checked is
 #' true and only new columns listed in add_var will be kept. Note to self, should
 #' add input protection that throws an error if new_var_checked is set to true when
 #' add_var is false.
 #'
-#' @section This function is an elaborate join with various quality check measures thrown in.
+#' @details This function is an elaborate join with various quality check measures thrown in.
 #' At its simplest, it just joins the existing data frame with the passed file. But along the way
 #' it will make some fixes to common CSV errors and also take advantage of some known facts about
 #' how CSIS data is organized.
@@ -300,7 +300,7 @@ read_and_join<-function(
 
 
 
-#' Read in an external file and join it with an existing data frame.
+#' Read in an external file and join it with an existing data frame
 #'
 #' @param data The data frame to be joined
 #' @param lookup_file The name of the lookup file
@@ -312,14 +312,15 @@ read_and_join<-function(
 #' @param overlap_var_replaced=TRUE Should the function replace for common columns not used to join?
 #' @param add_var=NULL, What new columns should be checked for NA values?
 #' @param new_var_checked=FALSE Should only checked new columns be kept?
-#' @param skip_check_var=NULL List of vars that should not be checked for NA values.
+#' @param skip_check_var=NULL List of vars that should not be checked for NA values
+#' @param zip_file=NULL
 #'
 #' @return The data frame plus new columns from the lookup file. If new_var_checked is
 #' true and only new columns listed in add_var will be kept. Note to self, should
 #' add input protection that throws an error if new_var_checked is set to true when
 #' add_var is false.
 #'
-#' @section This function is an elaborate join with various quality check measures thrown in.
+#' @details This function is an elaborate join with various quality check measures thrown in.
 #' At its simplest, it just joins the existing data frame with the passed file. But along the way
 #' it will make some fixes to common CSV errors and also take advantage of some known facts about
 #' how CSIS data is organized.
@@ -484,7 +485,7 @@ read_and_join_experiment<-function(
 #' @return Returns a data frame with the money_var deflated, using deflator_var
 #' otherwise identical to the original data frame
 #'
-#' @section Warning: This function should be used __in data processing only__,
+#' @details Warning: This function should be used __in data processing only__,
 #' not in a live app.  It reads an external file from GitHub,
 #' which will slow down an app substantially if done repeatedly.
 #'
@@ -564,7 +565,7 @@ deflate <- function(
 #'
 #' @return A data frame of the column names from data joined up to the column key
 #'
-#' @section Warning: This function should be used in data processing only,
+#' @details Warning: This function should be used in data processing only,
 #' not in a live app.  It reads an external file from GitHub,
 #' which will slow down an app substantially if done repeatedly. Works best
 #' when standardize_names has already been run on the data frame in question.

@@ -3,11 +3,18 @@
 #
 ################################################################################
 
-
+#' Fills the ui menus with appropriate variables from the tibble passed to it
+#' @param data_source A tibble from which to populate the ui menus
+#' @param session=getDefaultReactiveDomain()  The shiny app session
+#'
+#' @return Returns???
+#'
+#'
+#'
+#'
+#' @import
+#' @export
 populate_ui_var_lists <- function(
-  # Fills the ui menus with appropriate variables from the tibble passed to it
-  #
-  # Args:
   data_source,    # tibble from which to populate the ui menus
   session = getDefaultReactiveDomain()  # shiny app session
   ){
@@ -32,11 +39,20 @@ populate_ui_var_lists <- function(
 
 
 
+#' Populates the edit_var element on the edit page, based on the current data
+#' @param current_data The current data frame for the app
+#' @param input  Shiny input object
+#' @param session=getDefaultReactiveDomain() The shiny app session
+#'
+#' @return Returns???
+#'
+#'
+#'
+#'
+#' @import
+#' @export
 populate_edit_var <- function(
-  # Populates the edit_var element on the edit page, based on the current data
-
-  # Args:
-  current_data,    # the current data for the app
+  current_data,    # the current data frame for the app
   input,           # shiny input object
   session = getDefaultReactiveDomain() # shiny app session
   ){
@@ -68,12 +84,19 @@ populate_edit_var <- function(
 
 }
 
-
+#' Creates the list of values available for editing, when the user changes the variable they are examining
+#' @param current_data The current data frame for the app
+#' @param input  Shiny input object
+#' @param session=getDefaultReactiveDomain() The shiny app session
+#'
+#' @return Returns???
+#'
+#'
+#'
+#'
+#' @import
+#' @export
 create_edit_values_list <- function(
-  # creates the list of values available for editing, when the user changes the
-  # variable they are examining
-  #
-  # Args:
   current_data,  # current data frame in the app
   input,         # shiny input object
   session = getDefaultReactiveDomain()  # shiny session object
@@ -131,10 +154,18 @@ create_edit_values_list <- function(
 }
 
 
+#' Removes the variable and value selection selectInputs from the Edit Data tab
+#' @param input  Shiny input object
+#' @param session=getDefaultReactiveDomain() The shiny app session
+#'
+#' @return Returns???
+#'
+#'
+#'
+#'
+#' @import
+#' @export
 clear_edit_ui <- function(
-  # removes the variable and value selection selectInputs from the Edit Data tab
-  #
-  # Args:
   input,    # shiny input object
   session = getDefaultReactiveDomain()  # shiny session object
   ){
@@ -153,17 +184,26 @@ clear_edit_ui <- function(
 
 }
 
+
+#' Filters out and drops factor levels from a factor in a data frame
+#' @param passed_frame A data frame, as an object
+#' @param passed_var  A variable, as a string
+#' @param passed_levels The levels to drop, as a string
+#' @param session=getDefaultReactiveDomain() The shiny app session
+#'
+#' @return The data frame with the factor level removed
+#'
+#'
+#'
+#'
+#' @import
+#' @export
 drop_from_frame <- function(
-  # filters out and drops factor levels from a factor in a data frame
-  #
-  # Args:
   passed_frame,    # the data frame, as an object
   passed_var,   # the name of the variable, as a string
   passed_levels,    # the name of the levels to drop, as a string
   session = getDefaultReactiveDomain()    # shiny session object
   #
-  # Returns:
-  #   The data frame with the factor level removed
 ){
   # stack overflow: https://tinyurl.com/mtys7xo
   passed_frame %<>%
@@ -176,11 +216,20 @@ drop_from_frame <- function(
 
 
 
-
+#' Populates the title field with a dynamic title, if appropriate
+#' @param passed_data The data used in the plot
+#' @param input  Shiny input object
+#' @param user_title "None" unless the user has manually entered a title
+#' @param session=getDefaultReactiveDomain() The shiny app session
+#'
+#' @return Returns???
+#'
+#'
+#'
+#'
+#' @import
+#' @export
 update_title <- function(
-  # populates the title field with a dynamic title, if appropriate
-  #
-  # Args:
   passed_data,   # the data used in the plot
   input,    # shiny input object
   user_title,   # "None" unless the user has manually entered a title

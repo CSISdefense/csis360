@@ -2,11 +2,11 @@
 #'
 #' @param plot The existing ggplot, needed to add more than one scale
 #' @param labels_and_colors A csis360 lookup data.frame with factor information
-#' @param var The names of the column, default of none for generic colors
+#' @param var The name of the column, default to none for generic colors
 #'
-#' @return plot with added color and fill scales for the column passed.
+#' @return A plot with added color and fill scales for the column passed
 #'
-#' @section labels_and_colors is a data.frame produced by
+#' @details labels_and_colors is a data.frame produced by
 #' the csis360 package, see prepare_labels_and_colors drawing
 #' from lookup table that preassign labels, order, and color
 #' to the expected values of a column.
@@ -73,16 +73,28 @@ add_preassigned_scales<-function(
   return(plot)
 }
 
-
+#' Returns data in the appropriate format for the user-specified plot
+#'
+#' @param data The data to format for the plot, as a tibble
+#' @param x_var
+#' @param y_var
+#' @param breakout
+#' @param aggregate ??????? = "sum"
+#'
+#' @return A tibble of formatted data
+#'
+#' @details
+#'
+#'
+#'
+#' @import
+#' @export
 group_data_for_plot <-function(
-  # Returns data in the appropriate format for the user-specified plot
-  #
-  # Args:
   data,   # data to format for the plot, as a tibble
   x_var,
   y_var,
   breakout,
-  aggregate="sum"
+  aggregate ="sum"
   #
   # Returns:
   #   a tibble of formatted data
@@ -137,23 +149,20 @@ group_data_for_plot <-function(
 #'
 #' @return character string with the label corresponding to a column
 #'
-#' @param column_key A csis360 lookup data.frame with column information
 #' @param var The names of the column, default of none for generic colors
+#' @param column_key A csis360 lookup data.frame with column information
+#' @param share If TRUE, calculates the share????????? COPIED FROM STAND
 #'
-#' @section column_key is a data.frame produced by
-#' the csis360 package, see get_column_key drawing
-#' from lookup table that preassigns labels and describes column
-#' characteristics. This function returns the appropriate label if
-#' present, otherwise it returns the name of the variable.
 #'
-#' @examples plot<-get_preasssigned_scales(plot,labels_and_colors,"pricing.mechanism.sum")
+#'
+#'
 #'
 #' @import
 #' @export
 get_label <- function(
   var,
   column_key,
-  share=FALSE
+  share = FALSE
 ){
   if(is.null(var)) stop("Null var passed to get_label.")
   if(share==TRUE){
@@ -169,15 +178,21 @@ get_label <- function(
 
 
 
-
+#' Renames a factor level to user-specified name, in the passed data frame
+#'
+#' @param data The data frame in which to rename the value
+#' @param input Shiny input object
+#'
+#' @return A data frame with the factor level renamed
+#'
+#'
+#'
+#'
+#' @import
+#' @export
 rename_value <- function(
-  # Renames a factor level to user-specified name, in the passed data frame
-  #
-  # Args:
   data,    # the data frame in which to rename the value
   input    # shiny input object
-  #
-  # Returns: a data frame with the factor level renamed
 ){
   levels(data[[input$edit_var]])[levels(data[[
     input$edit_var]]) == input$edit_value] <- input$rename_value_txt
@@ -185,6 +200,19 @@ rename_value <- function(
   return(data)
 }
 
+
+#' Extract a legend
+#'
+#' @param a.gplot ?????????????
+#'
+#' @return Returns a legend (from ________________)
+#'
+#'
+#'
+#'
+#'
+#' @import ggplot2
+#' @export
 
 #Extract a legend
 # https://stackoverflow.com/questions/43366616/ggplot2-legend-only-in-a-plot

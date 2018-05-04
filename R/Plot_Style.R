@@ -2,11 +2,14 @@
 
 
 
-#' jitter_binary
+#' Create a function to jitter the binary outcome (p89)
+#'
+#' @param a ???????????????????
+#' @param jitt ????????should jitt always equal .05 or does this number just have to be between 0 and 1, and .05 is the default?
 #'
 #' @return Takes a binary variable and randomly spreads it within 0 and 1
 #'
-#' @section From Andrew Gelman and Jennifer Hill. For use in graphs
+#' @details From Andrew Gelman and Jennifer Hill. For use in graphs
 #' to show the quantity of variable that otherwise would be stuck
 #' on a single lines at 0 and 1. This is different from geom_jitter
 #' because it keeps all the data within the possible range of the variable,
@@ -16,17 +19,17 @@
 #'
 #' @import ggplot2
 #' @export
-jitter_binary<-function(a, jitt=0.05){
+jitter_binary<-function(a, jitt = 0.05){
   ifelse(a==0,runif(length(a),0,jitt),runif(length(a),1-jitt,1))
 }
 
 
 
-#' Get Plot Theme
+#' Get Plot Theme  ??????????Description???
 #'
 #' @return Thematic elements that can be added to a plot.
 #'
-#' @section A standard set of style elements that is applied
+#' @details A standard set of style elements that is applied
 #' across csis360 plots by default. These can be overriden,
 #' by adding different theme elements after adding this to
 #' your plot.
@@ -85,17 +88,37 @@ get_plot_theme<-function(){
 
 
 
-
+#' Adds a geom layer to a ggplot object based on user input.
+#'
+#' @param data A tibble of formatted data for the ggplot
+#' @param chart_geom ???????????
+#' @param share If TRUE, calculates the share
+#' @param x_var The name of fiscal year variable, as string
+#' @param y_var The name of variable to plot on y-axis
+#' @param color_var The name of the coloration variable, as string
+#' @param facet_var="None" The name of facet variable, as string
+#' @param legend If TRUE, includes a legend
+#' @param caption If TRUE, includes a source caption
+#' @param labels_and_colors ?????????
+#' @param column_key ??????????????
+#'
+#'
+#'
+#'
+#' @return A ggplot object including user-specified geom layer
+#'
+#' @details Intended to handle ggplot settings that depend on user input.
+#'Settings that apply universally should be added in server.R.
+#'
+#' @examples
+#'
+#' @import ggplot2
+#' @export
 build_plot <- function(
-  # Adds a geom layer to a ggplot object based on user input.
-  # Intended to handle ggplot settings that depend on user input.
-  # Settings that apply universally should be added in server.R
-  #
-  # Args:
-  data,    # tibble of formatted data for the ggplot
+  data,
   chart_geom = "Line Chart",
-  share = FALSE, #True or false as to whether to calculate the share
-  x_var,          # name of fiscal year variable, as string
+  share = FALSE,
+  x_var,
   y_var, #Name of variable to plot on y-axis
   color_var="None",       # name of coloration variable, as string
   facet_var="None",        # name of facet variable, as string
@@ -103,10 +126,6 @@ build_plot <- function(
   caption=TRUE, #Include a source caption
   labels_and_colors=NULL,
   column_key=NULL
-
-  #
-  # Returns:
-  #   A ggplot object including user-specified geom layer
 ){
   mainplot <- ggplot(data = data)
 

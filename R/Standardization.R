@@ -13,20 +13,16 @@
 #   Test Package:        'Ctrl + Shift + T'
 
 
-
-
-
-
 #***********************Standardize Variable Names
 #' Standardize variable names
 #'
 #' @param data The data frame to be joined
 #' @param path The location of the lookup file
-#' @param var The names to standard, by default all will be done
+#' @param var The variable names to standardize, by default all will be done
 #'
 #' @return data with standardized var names.
 #'
-#' @section This function is designed to prepare CSIS data files for lookup
+#' @details This function is designed to prepare CSIS data files for lookup
 #' application. It primarily smooths out variation between different ways we've
 #' written SQL statements. It relies on a pre-existing table of variant names.
 #' The var names are matched against that table in a case insensitive manner,
@@ -39,10 +35,9 @@
 #' @import
 #' @export
 standardize_variable_names<- function(data,
-                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/",
-                                      var=NULL
+                                      path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/",
+                                      var = NULL
 ){
-  #V
   if(!is.null(var) & any(!var %in% colnames(data)))
     stop(paste(var," is not present in colnames(data)."))
 
@@ -87,13 +82,13 @@ standardize_variable_names<- function(data,
 #'
 #' @param data The data frame to be joined
 #' @param var Prepare colors for this columns
-#' @param na_replaced If true, replace NAs for var before adding colors
+#' @param na_replaced If TRUE, replace NAs for var before adding colors
 #' @param path The location of the lookup file
 #'
 #' @return A new data frame for build on the var var, it will
 #' include colors, and order, and proper name labels.
 #'
-#' @section This function applies standard colors and orders to a single
+#' @details This function applies standard colors and orders to a single
 #' data frame var. Colors and order are drawn from pre-existing lookup tables.
 #' When values are missing or wrong, these tables must be manually updated.
 #' This function is badly optimized, reading in multiple csvs every time.
@@ -232,25 +227,24 @@ prepare_labels_and_colors<-function(data
 }
 
 
-
-format_data_for_plot <- function(
-  # Returns data in the appropriate format for the user-specified plot
-  #
-  # Args:
-  data,   # data to format for the plot, as a tibble
-  fy_var,          # name of fiscal year variable, as string
-  y_var, #Name of variable to plot on y-axis
-  share = FALSE, #True or false as to whether to calculate the share
-  start_fy = NA, #End fiscal year
-  end_fy = NA, #Start fiscal Year
-  color_var="None",       # name of coloration variable, as string
-  facet_var="None",        # name of facet variable, as string
-  labels_and_colors=NULL#Style information for the
-
-  #
-  # Returns:
-  #   a tibble of formatted data
-){
+#' Returns data in the appropriate format for the user-specified plot
+#'
+#' @param   data    A data to format for the plot, as a tibble
+#' @param   fy_var  The fiscal year variable, as string
+#' @param   y_var   The variable to be plotted on the y-axis
+#' @param   share   If TRUE, calculates the share
+#' @param   start_fy Start fiscal year
+#' @param   end_fy  End fiscal Year
+#' @param   color_var Coloration variable, as string
+#' @param   facet_var Facet variable, as string
+#' @param   labels_and_colors Style information for the
+#'
+#' @return Returns a tibble of formatted data
+#'
+#' @import
+#' @export
+format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = NA, end_fy = NA,
+                                 color_var="None", facet_var="None", labels_and_colors=NULL){
 
   shown_data <- data
 
@@ -353,7 +347,18 @@ format_data_for_plot <- function(
 }
 
 
-
+#' Returns data in the appropriate format for the user-specified plot
+#'
+#' @param   data
+#' @param   period_var The variable with the period designations, one per entry
+#' @param   y_var
+#' @param   breakout Facet and/or color
+#' @param   labels_and_colors
+#'
+#' @return
+#'
+#' @import
+#' @export
 format_period_average <- function(
   data,
   period_var, #The variable with the period designations, one per entry
@@ -383,13 +388,13 @@ format_period_average <- function(
 
 
 #***********************Standardize Variable Names
-#' Transform Contract names
+#' Transform contract names
 #'
 #' @param contract A contract dataset
 #'
 #' @return contract dataset ready for statistical analysis.
 #'
-#' @section This function is designed to prepare CSIS data files for lookup
+#' @details This function is designed to prepare CSIS data files for lookup
 #' application. It primarily smooths out variation between different ways we've
 #' written SQL statements. It relies on a pre-existing table of variant names.
 #' The var names are matched against that table in a case insensitive manner,
