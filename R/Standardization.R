@@ -535,10 +535,13 @@ transform_contract<-function(
   #n_Fixed
 
   contract$n_Fixed<-contract$FxCb
-  levels(contract$n_Fixed)<- list("1"=c("Fixed-Price"),
-                                  "0.5"=c("Combination or Other"),
-                                  "0"=c("Cost-Based"))
-  contract$n_Fixed<-as.integer(as.character(contract$n_Fixed))
+  levels(contract$n_Fixed)<- list("1"=c("Fixed-Price","Fixed"),
+                                  "0.5"=c("Combination or Other","Combo/Other"),
+                                  "0"=c("Cost-Based","Cost"))
+  levels(contract$FxCb)<- list("Fixed"=c("Fixed-Price","Fixed"),
+                               "Combo/Other"=c("Combination or Other","Combo/Other"),
+                               "Cost"=c("Cost-Based","Cost"))
+  contract$n_Fixed<-as.numeric(as.character(contract$n_Fixed))
 
   #n_Incent
   contract$n_Incent<-contract$Fee
@@ -546,7 +549,7 @@ transform_contract<-function(
     list("1"=c("Incentive"),
          "0.5"=c("Combination"),
          "0"=c("Award Fee", "FFP or No Fee", "Fixed Fee", "Other Fee"))
-  contract$n_Incent<-as.integer(as.character(contract$n_Incent))
+  contract$n_Incent<-as.numeric(as.character(contract$n_Incent))
 
   #n_NoFee
   contract$n_NoFee<-contract$Fee
@@ -554,7 +557,7 @@ transform_contract<-function(
     list("1"=c("FFP or No Fee"),
          "0.5"=c("Combination"),
          "0"=c("Award Fee", "Incentive", "Fixed Fee", "Other Fee"))
-  contract$n_NoFee<-as.integer(as.character(contract$n_NoFee))
+  contract$n_NoFee<-as.numeric(as.character(contract$n_NoFee))
 
 
 
@@ -571,7 +574,7 @@ transform_contract<-function(
     list("0"="No Comp.",
          "0.5"="1 Offer",
          "1"="2+ Offers")
-  contract$n_Comp<-as.integer(as.character(contract$n_Comp))
+  contract$n_Comp<-as.numeric(as.character(contract$n_Comp))
 
 
 
