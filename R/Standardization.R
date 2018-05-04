@@ -16,16 +16,16 @@
 #***********************Standardize Variable Names
 #' Standardize variable names
 #'
-#' @param data The data frame to be joined
-#' @param path The location of the lookup file
-#' @param var The variable names to standardize, by default all will be done
+#' @param data the data frame to be joined
+#' @param path the location of the lookup file
+#' @param var the variable names to standardize; by default all will be done
 #'
-#' @return data with standardized var names.
+#' @return Data with standardized variable names.
 #'
 #' @details This function is designed to prepare CSIS data files for lookup
 #' application. It primarily smooths out variation between different ways we've
-#' written SQL statements. It relies on a pre-existing table of variant names.
-#' The var names are matched against that table in a case insensitive manner,
+#' written SQL statements. It relies on a pre-existing table of variant variable names.
+#' The variable names are matched against that table in a case insensitive manner,
 #' though no other procedural standardization is applied at this time.
 #'
 #' @examples FullData<-standardize_variable_names(
@@ -80,12 +80,12 @@ standardize_variable_names<- function(data,
 
 #' Prepare Labels And Colors
 #'
-#' @param data The data frame to be joined
-#' @param var Prepare colors for this columns
-#' @param na_replaced If TRUE, replace NAs for var before adding colors
+#' @param data the data frame to be joined
+#' @param var the variables (column names) for which to prepare colors; by default all will be done
+#' @param na_replaced if TRUE, replace NA values with var before adding colors
 #' @param path The location of the lookup file
 #'
-#' @return A new data frame for build on the var var, it will
+#' @return A new data frame built on the variable var. It will
 #' include colors, and order, and proper name labels.
 #'
 #' @details This function applies standard colors and orders to a single
