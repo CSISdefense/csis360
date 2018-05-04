@@ -731,10 +731,19 @@ transform_contract<-function(
                                add_var=c("PlaceIntlPercent","CrisisPercent"),
                                new_var_checked=FALSE)
 
-  contract<-contract[ ,!colnames(contract) %in% c("ContractingOfficeCode")]
 
 
   contract$OffIntl<-contract$PlaceIntlPercent
+
+  contract$OffPl99<-Hmisc::cut2(contract$OffIntl,c(0.01,0.50))
+  levels(contract$OffPl99) <-
+    list("US99"=c("[0.00,0.01)"),
+         "Mixed"=c("[0.01,0.50)"),
+         "Intl"=c("[0.50,1.00]"))
+
+
+  contract<-contract[ ,!colnames(contract) %in% c("ContractingOfficeCode")]
+
 
   contract$cl_Ceil<-scale(contract$l_Ceil)
   contract$cl_Days<-scale(contract$l_Days)
@@ -744,11 +753,4 @@ transform_contract<-function(
   contract
 }
 
-make_dummy<-function(x, value){
 
-  dummy<-ifelse(x %in% value,1,0)
-  dummy[is.na(x)]<-NA
-  dummy()
-
-
-}
