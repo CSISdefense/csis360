@@ -753,7 +753,8 @@ transform_contract<-function(
   contract$cl_Ceil<-scale(contract$l_Ceil)
   contract$cl_Days<-scale(contract$l_Days)
 
-  contract$c_OffCri<-scale(contract$CrisisPercent)
+  colnames(contract)[colnames(contract)=="CrisisPercent"]<-"OffCri"
+  contract$c_OffCri<-scale(contract$OffCri)
 
   contract
 }
