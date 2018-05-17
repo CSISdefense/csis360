@@ -4,8 +4,8 @@
 
 #' Create a function to jitter the binary outcome (p89)
 #'
-#' @param a ???????????????????
-#' @param jitt ????????should jitt always equal .05 or does this number just have to be between 0 and 1, and .05 is the default?
+#' @param a column with values of 0 or 1
+#' @param jitt amount of horizontal and vertical jitter, value between 0 and .5; defaults to .05
 #'
 #' @return Takes a binary variable and randomly spreads it within 0 and 1
 #'
@@ -25,7 +25,7 @@ jitter_binary<-function(a, jitt = 0.05){
 
 
 
-#' Get Plot Theme  ??????????Description???
+#' Get Plot Theme
 #'
 #' @return Thematic elements that can be added to a plot.
 #'
@@ -91,7 +91,7 @@ get_plot_theme<-function(){
 #' Adds a geom layer to a ggplot object based on user input.
 #'
 #' @param data A tibble of formatted data for the ggplot
-#' @param chart_geom ???????????
+#' @param chart_geom choose from Line Chart or Bar Chart; defaults to Line Chart
 #' @param share If TRUE, calculates the share
 #' @param x_var The name of fiscal year variable, as string
 #' @param y_var The name of variable to plot on y-axis
