@@ -10,21 +10,12 @@ get_label(var, column_key, share = FALSE)
 \item{var}{The names of the column, default of none for generic colors}
 
 \item{column_key}{A csis360 lookup data.frame with column information}
+
+\item{share}{If TRUE, calculates the share????????? COPIED FROM STAND}
 }
 \value{
 character string with the label corresponding to a column
 }
 \description{
 Get Label
-}
-\details{
-column_key is a data.frame produced by
-the csis360 package, see get_column_key drawing
-from lookup table that preassigns labels and describes column
-characteristics. This function returns the appropriate label if
-present, otherwise it returns the name of the variable.
-}
-\examples{
-plot<-get_preasssigned_scales(plot,labels_and_colors,"pricing.mechanism.sum")
-
 }

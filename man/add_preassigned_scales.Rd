@@ -11,10 +11,10 @@ add_preassigned_scales(plot, labels_and_colors, var = "None")
 
 \item{labels_and_colors}{A csis360 lookup data.frame with factor information}
 
-\item{var}{The names of the column, default of none for generic colors}
+\item{var}{The name of the column, default to none for generic colors}
 }
 \value{
-plot with added color and fill scales for the column passed.
+A plot with added color and fill scales for the column passed
 }
 \description{
 Get Preassigned Scales
