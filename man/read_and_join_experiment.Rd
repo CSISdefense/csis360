@@ -30,6 +30,8 @@ read_and_join_experiment(data, lookup_file,
 \item{new_var_checked=FALSE}{Should only checked new columns be kept?}
 
 \item{skip_check_var=NULL}{List of vars that should not be checked for NA values}
+
+\item{zip_file=NULL}{}
 }
 \value{
 The data frame plus new columns from the lookup file. If new_var_checked is

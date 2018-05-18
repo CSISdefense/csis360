@@ -238,33 +238,35 @@ prepare_labels_and_colors<-function(data
 #' @param   color_var Coloration variable, as string
 #' @param   facet_var Facet variable, as string
 #' @param   labels_and_colors Style information for the
+#' @param   group If TRUE aggregate
 #'
 #' @return Returns a tibble of formatted data
 #'
 #' @import
 #' @export
 format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = NA, end_fy = NA,
-                                 color_var="None", facet_var="None", labels_and_colors=NULL){
+                                 color_var="None", facet_var="None", labels_and_colors=NULL, group=TRUE){
 
   shown_data <- data
 
   breakout <- c(color_var, facet_var)
   breakout <- breakout[breakout != "None"]
 
-  shown_data<-group_data_for_plot(
-    shown_data,
-    fy_var,
-    y_var,
-    breakout
-  )
+  if(group){
+    shown_data<-group_data_for_plot(
+      shown_data,
+      fy_var,
+      y_var,
+      breakout
+    )
+  }
 
-
-
-  # filter by year - see https://tinyurl.com/lm2u8xs
-  shown_data %<>%
-    filter_(paste0(fy_var, ">=", as.character(start_fy), "&", fy_var,
-                   "<=", as.character(end_fy)))
-
+  if(!is.na(start_fy) & !is.na(end_fy)){
+    # filter by year - see https://tinyurl.com/lm2u8xs
+    shown_data %<>%
+      filter_(paste0(fy_var, ">=", as.character(start_fy), "&", fy_var,
+                     "<=", as.character(end_fy)))
+  }
 
 
   #
@@ -748,6 +750,44 @@ transform_contract<-function(
 
 
   contract<-contract[ ,!colnames(contract) %in% c("ContractingOfficeCode")]
+
+  contract$OffCri<-contract$CrisisPercent
+  contract$ProductOrServiceCode<-as.character(contract$ProdServ)
+    contract<-csis360::read_and_join( contract,
+                                 "ProductOrServiceCodes.csv",
+                                 path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                 directory="",
+                                 by="ProductOrServiceCode",
+                                 add_var=c("Simple",
+                                           "ProductServiceOrRnDarea",
+                                           "ProductOrServiceArea",
+                                           "HostNation3Category",
+                                           "CrisisProductOrServiceArea",
+                                           "ProductOrServiceCodeText"
+                                           ),
+                                 new_var_checked=FALSE)
+  contract$ProductServiceOrRnDarea<-factor(contract$ProductServiceOrRnDarea)
+  contract$ProductOrServiceArea<-factor(contract$ProductOrServiceArea)
+  contract$HostNation3Category<-factor(contract$HostNation3Category)
+  contract$CrisisProductOrServiceArea<-factor(contract$CrisisProductOrServiceArea)
+  contract$ProductOrServiceCodeText<-factor(contract$ProductOrServiceCodeText)
+
+  contract$Reach6<-factor(paste(contract$OffPl99,contract$Intl,sep="-"))
+  levels(contract$Reach6) <-
+    list( "US99-Dom"=c("US99-Just U.S."),
+          "Mixed-Dom"=c("Mixed-Just U.S."),
+          "Intl-Dom"=c("Intl-Just U.S."),
+          "US99-Intl"=c("US99-Any International"),
+          "Mixed-Intl"=c("Mixed-Any International"),
+          "Intl-Intl"=c("Intl-Any International"))
+  contract$Reach<-contract$Reach6
+
+  levels(contract$Reach) <-
+    list( "US50-Dom"=c("US99-Just U.S.","Mixed-Just U.S."),
+          "Mixed-Dom"=c(),
+          "Intl-Dom"=c("Intl-Just U.S."),
+          "US50-Intl"=c("Mixed-Any International","US99-Any International"),
+          "Intl-Intl"=c("Intl-Any International"))
 
 
   contract$cl_Ceil<-scale(contract$l_Ceil)

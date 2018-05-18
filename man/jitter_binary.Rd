@@ -2,15 +2,20 @@
 % Please edit documentation in R/Plot_Style.R
 \name{jitter_binary}
 \alias{jitter_binary}
-\title{jitter_binary}
+\title{Create a function to jitter the binary outcome (p89)}
 \usage{
 jitter_binary(a, jitt = 0.05)
+}
+\arguments{
+\item{a}{???????????????????}
+
+\item{jitt}{????????should jitt always equal .05 or does this number just have to be between 0 and 1, and .05 is the default?}
 }
 \value{
 Takes a binary variable and randomly spreads it within 0 and 1
 }
 \description{
-jitter_binary
+Create a function to jitter the binary outcome (p89)
 }
 \details{
 From Andrew Gelman and Jennifer Hill. For use in graphs

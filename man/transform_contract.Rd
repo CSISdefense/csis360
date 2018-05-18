@@ -2,7 +2,7 @@
 % Please edit documentation in R/Standardization.R
 \name{transform_contract}
 \alias{transform_contract}
-\title{Transform Contract names}
+\title{Transform contract names}
 \usage{
 transform_contract(contract)
 }
@@ -13,7 +13,7 @@ transform_contract(contract)
 contract dataset ready for statistical analysis.
 }
 \description{
-Transform Contract names
+Transform contract names
 }
 \details{
 This function is designed to prepare CSIS data files for lookup

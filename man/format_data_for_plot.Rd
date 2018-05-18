@@ -15,7 +15,7 @@ format_data_for_plot(data, fy_var, y_var, share = FALSE, start_fy = NA,
 
 \item{y_var}{The variable to be plotted on the y-axis}
 
-\item{share}{TRUE or FALSE, depending on whether you want to calculate the share}
+\item{share}{If TRUE, calculates the share}
 
 \item{start_fy}{Start fiscal year}
 

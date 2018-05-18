@@ -2,7 +2,7 @@
 % Please edit documentation in R/Plot_Style.R
 \name{get_plot_theme}
 \alias{get_plot_theme}
-\title{Get Plot Theme}
+\title{Get Plot Theme  ??????????Description???}
 \usage{
 get_plot_theme()
 }
@@ -10,7 +10,7 @@ get_plot_theme()
 Thematic elements that can be added to a plot.
 }
 \description{
-Get Plot Theme
+Get Plot Theme  ??????????Description???
 }
 \details{
 A standard set of style elements that is applied

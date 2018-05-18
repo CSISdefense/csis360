@@ -9,16 +9,16 @@ prepare_labels_and_colors(data, var = NULL, na_replaced = FALSE,
   missing_allowed = FALSE)
 }
 \arguments{
-\item{data}{The data frame to be joined}
+\item{data}{the data frame to be joined}
 
-\item{var}{Prepare colors for this columns}
+\item{var}{the variables (column names) for which to prepare colors; by default all will be done}
 
-\item{na_replaced}{If true, replace NAs for var before adding colors}
+\item{na_replaced}{if TRUE, replace NA values with var before adding colors}
 
 \item{path}{The location of the lookup file}
 }
 \value{
-A new data frame for build on the var var, it will
+A new data frame built on the variable var. It will
 include colors, and order, and proper name labels.
 }
 \description{
