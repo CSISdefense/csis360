@@ -88,8 +88,8 @@ standardize_variable_names<- function(data,
 #' @return A new data frame built on the variable var. It will
 #' include colors, and order, and proper name labels.
 #'
-#' @details This function applies standard colors and orders to a single
-#' data frame var. Colors and order are drawn from pre-existing lookup tables.
+#' @details This function applies standard colors and orders to a
+#' column var in a data frame data. Colors and order are drawn from pre-existing lookup tables.
 #' When values are missing or wrong, these tables must be manually updated.
 #' This function is badly optimized, reading in multiple csvs every time.
 #' It is intend for use in data preparation source code and not to be used in a
@@ -229,10 +229,10 @@ prepare_labels_and_colors<-function(data
 
 #' Returns data in the appropriate format for the user-specified plot
 #'
-#' @param   data    A data to format for the plot, as a tibble
+#' @param   data    A data frame to format for the plot, as a tibble
 #' @param   fy_var  The fiscal year variable, as string
 #' @param   y_var   The variable to be plotted on the y-axis
-#' @param   share   If TRUE, calculates the share
+#' @param   share   If TRUE, calculates the share as a percentage
 #' @param   start_fy Start fiscal year
 #' @param   end_fy  End fiscal Year
 #' @param   color_var Coloration variable, as string
@@ -351,13 +351,13 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
 
 #' Returns data in the appropriate format for the user-specified plot
 #'
-#' @param   data
-#' @param   period_var The variable with the period designations, one per entry
+#' @param   data data frame
+#' @param   period_var The variable with the period designations, grouped into those periods
 #' @param   y_var
-#' @param   breakout Facet and/or color
+#' @param   breakout Facet and/or color; everything that is to be grouped by for retention
 #' @param   labels_and_colors
 #'
-#' @return
+#' @return Returns the average of the year entries across each period
 #'
 #' @import
 #' @export
@@ -793,7 +793,8 @@ transform_contract<-function(
   contract$cl_Ceil<-scale(contract$l_Ceil)
   contract$cl_Days<-scale(contract$l_Days)
 
-  contract$c_OffCri<-scale(contract$CrisisPercent)
+  colnames(contract)[colnames(contract)=="CrisisPercent"]<-"OffCri"
+  contract$c_OffCri<-scale(contract$OffCri)
 
   contract
 }
