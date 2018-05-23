@@ -150,7 +150,7 @@ build_plot <- function(
   }
 
   # add a bar layer, broken out by color if requested
-  if(chart_geom == "Bar Chart"){
+  else if(chart_geom == "Bar Chart"){
     if(color_var == "None"){
       mainplot <- mainplot +
         geom_bar(aes_q(
@@ -169,16 +169,94 @@ build_plot <- function(
     }
   }
 
+
+  else if(chart_geom=="Scatter Plot"){
+    if(color_var == "None"){
+      mainplot<-mainplot+geom_text(                     aes_string(x_var,
+                                                                   y_var,
+                                                                   label="party_code"),
+                                                        position=position_jitter(width=0.2,height=0.2))
+    }
+    else{
+      mainplot<-mainplot+geom_text(                     aes_string(x_var,
+                                                                   y_var,
+                                                                   color=color_var,
+                                                                   label="party_code"),
+                                                        position=position_jitter(width=0.2,height=0.2))
+
+    }
+    mainplot<-add_preassigned_scales(
+      mainplot,
+      labels_and_colors,
+      var="party_code"
+    )
+
+  }
+  else if (chart_geom=="Histogram"){
+    #If no color, color by what you use to facet
+    if(color_var=="None" & facet_var!="None") color_var<-facet_var
+    if(color_var == "None"){
+
+    mainplot<-mainplot+geom_histogram(bins=7,
+                             aes_string(x=x_var))
+    }
+    else{
+      mainplot<-mainplot+geom_histogram(bins=7,
+                                        aes_string(x=x_var,
+                                                   # y=y_var,
+                                                   fill=color_var))
+    }
+  }
+  else if (chart_geom=="Box and Whiskers"){
+    #If no color, color by what you use to facet
+
+    # browser()
+    if(color_var == "None"){
+
+      data$Overall<-"Overall"
+      if(facet_var!="None"){
+      mainplot<-ggplot(data)+geom_boxplot(aes_string(y=y_var,
+                                               x="Overall",
+                                               fill=facet_var
+                                               )
+                                    )
+      }
+      else{
+        mainplot<-ggplot(data)+geom_boxplot(aes_string(y=y_var,
+                                                       x="Overall"
+        )
+        )
+      }
+
+    } else{
+      mainplot<-mainplot+geom_boxplot(aes_string(y=y_var,
+                                                 x=color_var,
+                                                 fill=color_var)
+                                      )
+
+    }
+  }
+
+
   # add faceting if requested, and x-axis labeling
   if(facet_var != "None"){
+    if(chart_geom!="Histogram"){
     mainplot <- mainplot +
       facet_wrap(as.formula(paste0("~ `",facet_var, "`"))) +
       theme(strip.background = element_rect(fill = "white"))
     # theme(strip.background = element_rect(colour = "#554449", fill = "white", size=0.5),
     #       panel.border = element_rect(colour = "#554449", fill=NA, size=0.5))
+    }
+    else{
+      mainplot <- mainplot +
+        facet_wrap(as.formula(paste0("~ `",facet_var, "`")),ncol=1) +
+        theme(strip.background = element_rect(fill = "white"))
+
+    }
   }
 
   #For now, assuming numeric var_x means a year
+  if(chart_geom %in% c("Line Chart","Bar Chart"))
   if(is.numeric(data[,x_var])){
     start_fy<-min(data[,colnames(data)==x_var])
     end_fy<-max(data[,colnames(data)==x_var])
@@ -234,10 +312,18 @@ build_plot <- function(
     var=color_var
   )
   if(!is.null(column_key)){
-    mainplot<-mainplot+labs(
-      x=get_label(x_var,column_key),
-      y=get_label(y_var,column_key,share)
-    )
+    if(chart_geom=="Box and Whiskers")
+      mainplot<-mainplot+labs(
+        x=get_label(color_var,column_key),
+        y=get_label(y_var,column_key,share)
+      )
+    else{
+      mainplot<-mainplot+labs(
+        x=get_label(x_var,column_key),
+        y=get_label(y_var,column_key,share)
+      )
+    }
+    if(chart_geom=="Histogram") mainplot<-mainplot+ylab("Count") #No y_var in a histogram.
   }
 
 

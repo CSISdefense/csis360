@@ -165,12 +165,15 @@ get_label <- function(
   share = FALSE
 ){
   if(is.null(var)) stop("Null var passed to get_label.")
-  if(share==TRUE){
-    title<-subset(column_key,column==var)$share.title
+  if(var=="None") label<-""
+  else{
+    if(share==TRUE){
+      title<-subset(column_key,column==var)$share.title
+    }
+    else
+      title<-subset(column_key,column==var)$title
+    label<-ifelse(is.na(title),var,title)
   }
-  else
-    title<-subset(column_key,column==var)$title
-  label<-ifelse(is.na(title),var,title)
   return(label)
 
 }
