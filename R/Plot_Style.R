@@ -211,8 +211,7 @@ build_plot <- function(
     #If no color, color by what you use to facet
 
     # browser()
-    if(color_var == "None"){
-
+    if(color_var == "None" | facet_var==color_var){
       data$Overall<-"Overall"
       if(facet_var!="None"){
       mainplot<-ggplot(data)+geom_boxplot(aes_string(y=y_var,
