@@ -1,7 +1,3 @@
-
-
-
-
 #' Create a function to jitter the binary outcome (p89)
 #'
 #' @param a column with values of 0 or 1

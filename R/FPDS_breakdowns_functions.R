@@ -7,7 +7,6 @@
 #' @param data_source A tibble from which to populate the ui menus
 #' @param session=getDefaultReactiveDomain()  The shiny app session
 #'
-#' @return Returns???
 #'
 #'
 #'
@@ -43,8 +42,6 @@ populate_ui_var_lists <- function(
 #' @param current_data The current data frame for the app
 #' @param input  Shiny input object
 #' @param session=getDefaultReactiveDomain() The shiny app session
-#'
-#' @return Returns???
 #'
 #'
 #'
@@ -88,8 +85,6 @@ populate_edit_var <- function(
 #' @param current_data The current data frame for the app
 #' @param input  Shiny input object
 #' @param session=getDefaultReactiveDomain() The shiny app session
-#'
-#' @return Returns???
 #'
 #'
 #'
@@ -158,8 +153,6 @@ create_edit_values_list <- function(
 #' @param input  Shiny input object
 #' @param session=getDefaultReactiveDomain() The shiny app session
 #'
-#' @return Returns???
-#'
 #'
 #'
 #'
@@ -221,8 +214,6 @@ drop_from_frame <- function(
 #' @param input  Shiny input object
 #' @param user_title "None" unless the user has manually entered a title
 #' @param session=getDefaultReactiveDomain() The shiny app session
-#'
-#' @return Returns???
 #'
 #'
 #'

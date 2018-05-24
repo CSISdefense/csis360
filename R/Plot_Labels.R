@@ -1,4 +1,4 @@
-#' Get Preassigned Scales
+#' Take existing data frame and associate colors with values
 #'
 #' @param plot The existing ggplot, needed to add more than one scale
 #' @param labels_and_colors A csis360 lookup data.frame with factor information
@@ -76,10 +76,10 @@ add_preassigned_scales<-function(
 #' Returns data in the appropriate format for the user-specified plot
 #'
 #' @param data The data to format for the plot, as a tibble
-#' @param x_var
-#' @param y_var
+#' @param x_var x-axis
+#' @param y_var y-axis
 #' @param breakout
-#' @param aggregate ??????? = "sum"
+#' @param aggregate aggregation function; defaults to sum
 #'
 #' @return A tibble of formatted data
 #'
@@ -203,9 +203,9 @@ rename_value <- function(
 
 #' Extract a legend
 #'
-#' @param a.gplot ?????????????
+#' @param a.gplot a ggplot
 #'
-#' @return Returns a legend (from ________________)
+#' @return Returns a legend
 #'
 #'
 #'
