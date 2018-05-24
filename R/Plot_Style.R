@@ -172,25 +172,24 @@ build_plot <- function(
 
   else if(chart_geom=="Scatter Plot"){
     if(color_var == "None"){
-      mainplot<-mainplot+geom_text(                     aes_string(x_var,
-                                                                   y_var,
-                                                                   label="party_code"),
-                                                        position=position_jitter(width=0.2,height=0.2))
+      mainplot<-mainplot+geom_point(
+        aes_string(x_var,
+                   y_var),
+        position=position_jitter(width=0.15,height=0.15))
     }
     else{
-      mainplot<-mainplot+geom_text(                     aes_string(x_var,
-                                                                   y_var,
-                                                                   color=color_var,
-                                                                   label="party_code"),
-                                                        position=position_jitter(width=0.2,height=0.2))
+      label<-subset(labels_and_colors,column==color_var)
+      label<-label[,colnames(label) %in% c("Label","abbreviation")]
+      colnames(label)[colnames(label)=="Label"]<-color_var
+      data<-left_join(data,label)
+      mainplot<-ggplot(data)+geom_text(
+        aes_string(x_var,
+                   y_var,
+                   color=color_var,
+                   label="abbreviation"),
+        position=position_jitter(width=0.2,height=0.2))
 
     }
-    mainplot<-add_preassigned_scales(
-      mainplot,
-      labels_and_colors,
-      var="party_code"
-    )
-
   }
   else if (chart_geom=="Histogram"){
     #If no color, color by what you use to facet
