@@ -196,14 +196,24 @@ build_plot <- function(
     if(color_var=="None" & facet_var!="None") color_var<-facet_var
     if(color_var == "None"){
 
-    mainplot<-mainplot+geom_histogram(bins=7,
-                             aes_string(x=x_var))
+      if(is.numeric(data[,colnames(data)==x_var])&
+        min(data[,colnames(data)==x_var])>=1 & max(data[,colnames(data)==x_var])<=7){
+        mainplot<-mainplot+geom_histogram(aes_string(x=x_var),
+                                          breaks=c(1:7))
+      }
+      else{
+        mainplot<-mainplot+geom_histogram(aes_string(x=x_var))
+      }
     }
     else{
-      mainplot<-mainplot+geom_histogram(bins=7,
-                                        aes_string(x=x_var,
-                                                   # y=y_var,
-                                                   fill=color_var))
+      if(is.numeric(data[,colnames(data)==x_var])&
+         min(data[,colnames(data)==x_var])>=1 & max(data[,colnames(data)==x_var])<=7){
+        mainplot<-mainplot+geom_histogram(aes_string(x=x_var,fill=color_var),
+                                          breaks=c(1:7))
+      }
+      else{
+        mainplot<-mainplot+geom_histogram(aes_string(x=x_var,fill=color_var))
+      }
     }
   }
   else if (chart_geom=="Box and Whiskers"){
