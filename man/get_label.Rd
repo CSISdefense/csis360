@@ -11,7 +11,7 @@ get_label(var, column_key, share = FALSE)
 
 \item{column_key}{A csis360 lookup data.frame with column information}
 
-\item{share}{If TRUE, calculates the share????????? COPIED FROM STAND}
+\item{share}{If TRUE, calculates the share}
 }
 \value{
 character string with the label corresponding to a column

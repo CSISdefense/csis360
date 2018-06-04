@@ -87,7 +87,6 @@ add_preassigned_scales<-function(
 #'
 #'
 #'
-#' @import
 #' @export
 group_data_for_plot <-function(
   data,   # data to format for the plot, as a tibble
@@ -157,7 +156,6 @@ group_data_for_plot <-function(
 #'
 #'
 #'
-#' @import
 #' @export
 get_label <- function(
   var,
@@ -191,7 +189,6 @@ get_label <- function(
 #'
 #'
 #'
-#' @import
 #' @export
 rename_value <- function(
   data,    # the data frame in which to rename the value

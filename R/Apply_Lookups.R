@@ -38,7 +38,6 @@
 #'   replacement = "Uncategorized"
 #'   )
 #'
-#' @import
 #' @export
 replace_nas_with_unlabeled<- function(data,
                                       var,
@@ -126,7 +125,6 @@ na_check<-function(data
 #'
 #' @examples remove_bom(data)
 #'
-#' @import
 #' @export
 remove_bom<-function(data
 ){
@@ -576,7 +574,6 @@ deflate <- function(
 #'   col_names = TRUE, col_types = "cccccccccc",na=c("NA","NULL"))
 #' PrepareLabelsAndColors(Coloration,FullData,"Customer")
 #'
-#' @import
 #' @export
 get_column_key <- function(
   data,

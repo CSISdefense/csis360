@@ -11,7 +11,6 @@
 #'
 #'
 #'
-#' @import
 #' @export
 populate_ui_var_lists <- function(
   data_source,    # tibble from which to populate the ui menus
@@ -46,7 +45,6 @@ populate_ui_var_lists <- function(
 #'
 #'
 #'
-#' @import
 #' @export
 populate_edit_var <- function(
   current_data,    # the current data frame for the app
@@ -89,7 +87,6 @@ populate_edit_var <- function(
 #'
 #'
 #'
-#' @import
 #' @export
 create_edit_values_list <- function(
   current_data,  # current data frame in the app
@@ -156,7 +153,6 @@ create_edit_values_list <- function(
 #'
 #'
 #'
-#' @import
 #' @export
 clear_edit_ui <- function(
   input,    # shiny input object
@@ -189,7 +185,6 @@ clear_edit_ui <- function(
 #'
 #'
 #'
-#' @import
 #' @export
 drop_from_frame <- function(
   passed_frame,    # the data frame, as an object
@@ -218,7 +213,6 @@ drop_from_frame <- function(
 #'
 #'
 #'
-#' @import
 #' @export
 update_title <- function(
   passed_data,   # the data used in the plot
