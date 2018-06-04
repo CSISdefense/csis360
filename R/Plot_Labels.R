@@ -78,7 +78,7 @@ add_preassigned_scales<-function(
 #' @param data The data to format for the plot, as a tibble
 #' @param x_var x-axis
 #' @param y_var y-axis
-#' @param breakout
+#' @param breakout TESTTESTTESTTESTTEST
 #' @param aggregate aggregation function; defaults to sum
 #'
 #' @return A tibble of formatted data
@@ -151,7 +151,7 @@ group_data_for_plot <-function(
 #'
 #' @param var The names of the column, default of none for generic colors
 #' @param column_key A csis360 lookup data.frame with column information
-#' @param share If TRUE, calculates the share????????? COPIED FROM STAND
+#' @param share If TRUE, calculates the share
 #'
 #'
 #'

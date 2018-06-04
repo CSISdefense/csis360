@@ -11,9 +11,6 @@ populate_ui_var_lists(data_source, session = getDefaultReactiveDomain())
 
 \item{session=getDefaultReactiveDomain()}{The shiny app session}
 }
-\value{
-Returns???
-}
 \description{
 Fills the ui menus with appropriate variables from the tibble passed to it
 }

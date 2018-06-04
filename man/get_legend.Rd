@@ -7,10 +7,10 @@
 get_legend(a.gplot)
 }
 \arguments{
-\item{a.gplot}{?????????????}
+\item{a.gplot}{a ggplot}
 }
 \value{
-Returns a legend (from ________________)
+Returns a legend
 }
 \description{
 Extract a legend

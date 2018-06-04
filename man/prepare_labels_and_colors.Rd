@@ -25,8 +25,8 @@ include colors, and order, and proper name labels.
 Prepare Labels And Colors
 }
 \details{
-This function applies standard colors and orders to a single
-data frame var. Colors and order are drawn from pre-existing lookup tables.
+This function applies standard colors and orders to a
+column var in a data frame data. Colors and order are drawn from pre-existing lookup tables.
 When values are missing or wrong, these tables must be manually updated.
 This function is badly optimized, reading in multiple csvs every time.
 It is intend for use in data preparation source code and not to be used in a

@@ -9,17 +9,24 @@ standardize_variable_names(data,
   var = NULL)
 }
 \arguments{
-\item{data}{The data frame to be joined}
+\item{data}{the data frame to be joined}
 
-\item{path}{The location of the lookup file}
+\item{path}{the location of the lookup file}
 
-\item{var}{The names to standard, by default all will be done}
+\item{var}{the variable names to standardize; by default all will be done}
 }
 \value{
-data with standardized var names.
+Data with standardized variable names.
 }
 \description{
 Standardize variable names
+}
+\details{
+This function is designed to prepare CSIS data files for lookup
+application. It primarily smooths out variation between different ways we've
+written SQL statements. It relies on a pre-existing table of variant variable names.
+The variable names are matched against that table in a case insensitive manner,
+though no other procedural standardization is applied at this time.
 }
 \examples{
 FullData<-standardize_variable_names(

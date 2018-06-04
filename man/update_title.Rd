@@ -16,9 +16,6 @@ update_title(passed_data, input, user_title,
 
 \item{session=getDefaultReactiveDomain()}{The shiny app session}
 }
-\value{
-Returns???
-}
 \description{
 Populates the title field with a dynamic title, if appropriate
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/Plot_Labels.R
 \name{add_preassigned_scales}
 \alias{add_preassigned_scales}
-\title{Get Preassigned Scales}
+\title{Take existing data frame and associate colors with values}
 \usage{
 add_preassigned_scales(plot, labels_and_colors, var = "None")
 }
@@ -17,7 +17,7 @@ add_preassigned_scales(plot, labels_and_colors, var = "None")
 A plot with added color and fill scales for the column passed
 }
 \description{
-Get Preassigned Scales
+Take existing data frame and associate colors with values
 }
 \details{
 labels_and_colors is a data.frame produced by

@@ -11,7 +11,7 @@ build_plot(data, chart_geom = "Line Chart", share = FALSE, x_var, y_var,
 \arguments{
 \item{data}{A tibble of formatted data for the ggplot}
 
-\item{chart_geom}{???????????}
+\item{chart_geom}{choose from Line Chart or Bar Chart; defaults to Line Chart}
 
 \item{share}{If TRUE, calculates the share}
 
