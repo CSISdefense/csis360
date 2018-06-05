@@ -97,7 +97,6 @@ standardize_variable_names<- function(data,
 #' @examples FullData<-standardize_variable_names(Path,
 #'   FullData)
 #'
-#' @import plyr
 #' @export
 prepare_labels_and_colors<-function(data
                                     ,var=NULL

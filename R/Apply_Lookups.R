@@ -79,7 +79,6 @@ replace_nas_with_unlabeled<- function(data,
 #'   output_var=add_var,
 #'   lookup_file=lookup_file)
 #'
-#' @import stats
 #' @export
 na_check<-function(data
   , input_var
@@ -169,7 +168,6 @@ remove_bom<-function(data
 #'   output_var=add_var,
 #'   lookup_file=lookup_file)
 #'
-#' @import plyr
 #' @import utils
 #' @export
 read_and_join<-function(
@@ -328,7 +326,6 @@ read_and_join<-function(
 #'   output_var=add_var,
 #'   lookup_file=lookup_file)
 #'
-#' @import plyr
 #' @import utils
 #' @export
 read_and_join_experiment<-function(
@@ -493,7 +490,6 @@ read_and_join_experiment<-function(
 #'   col_names = TRUE, col_types = "cccccccccc",na=c("NA","NULL"))
 #' PrepareLabelsAndColors(Coloration,FullData,"Customer")
 #'
-#' @import plyr
 #' @export
 deflate <- function(
   data,
