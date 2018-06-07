@@ -1,6 +1,17 @@
 #Cross-Footing
-#These are quality control functions for verify that numbers sum over multiple souces.
 
+#'
+#'
+#' @param VAR.Path
+#' @param VAR.Choice.Data
+#' @param VAR.Which.Data
+#'
+#' @return FPDS.gov.buckets.df what is this?
+#'
+#' @details These are quality control functions for verify that numbers sum over multiple souces.
+#' IS THAT ALL OF THESE FUNCTIONS OR JUST THIS ONE
+#'
+#' @export
 load.FPDS.gov.customers.df<-function(
   VAR.Path
   ,VAR.Choice.Data
@@ -8,9 +19,9 @@ load.FPDS.gov.customers.df<-function(
 ){
 
 
-  customers.files<-paste(Path
+  customers.files<-paste(VAR.Path
                          ,"Footing Data\\"
-                         ,list.files(path=paste(Path,"Footing Data\\",sep="")
+                         ,list.files(path=paste(VAR.Path,"Footing Data\\",sep="")
                                      ,pattern=paste("Footing_"
                                                     ,as.character(VAR.Choice.Data$ProdServCode.Prefix[VAR.Which.Data])
                                                     ,"Customers.*[.]csv"
@@ -36,6 +47,20 @@ load.FPDS.gov.customers.df<-function(
   }
 }
 
+
+#'
+#'
+#' @param VAR.Path
+#' @param VAR.Choice.Data
+#' @param VAR.Which.Data
+#'
+#' @return
+#'
+#' @details
+#'
+#' @export
+
+
 load.FPDS.gov.buckets.df<-function(VAR.Path,VAR.Choice.Data,VAR.Which.Data){
   buckets.files<-paste(VAR.Path,"Footing Data\\",list.files(path=paste(VAR.Path,"Footing Data\\",sep=""),pattern="Footing_Buckets.*[.]csv"),sep="")
 
@@ -60,14 +85,35 @@ load.FPDS.gov.buckets.df<-function(VAR.Path,VAR.Choice.Data,VAR.Which.Data){
   FPDS.gov.buckets.df
 }
 
-
+#' Bind multiple csv files into one dataframe
+#'
+#' @param file.names list each filename of data with same column names
+#'
+#' @return combines data from multiple files into one data table
+#' with an extra column identifying which file the line of data came from
+#'
+#' @examples data <- read.tables(c("filename1.csv", "filename2.csv"))
+#'
+#'
+#' @export
 #Source: http://stackoverflow.com/questions/2104483/how-to-read-table-multiple-files-into-a-single-table-in-r
 read.tables <- function(file.names, ...) {
   require(plyr)
   ldply(file.names, function(fn) data.frame(Filename=fn, read.csv(fn, ...)))
 }
 
-
+#'
+#'
+#' @param var.FPDS.gov
+#' @param VAR.customer
+#' @param VAR.big.ProdServ
+#'
+#' @return
+#'
+#' @details
+#'
+#'
+#' @export
 
 LimitData <- function(
   var.FPDS.gov
@@ -93,6 +139,19 @@ LimitData <- function(
   var.FPDS.gov
 }
 
+
+#'
+#'
+#' @param var.FPDS.gov
+#' @param var.main.DF
+#' @param
+#'
+#' @return
+#'
+#' @details
+#'
+#' @export
+
 LimitScope <- function(var.FPDS.gov, var.main.DF) {
   var.FPDS.gov<-subset(var.FPDS.gov,Fiscal.Year>=min(subset(var.main.DF$Fiscal.Year
                                                             ,!is.na(var.main.DF$Fiscal.Year
@@ -102,6 +161,21 @@ LimitScope <- function(var.FPDS.gov, var.main.DF) {
   )))
   var.FPDS.gov
 }
+
+
+
+#'
+#'
+#' @param VAR.Path
+#' @param VAR.prefix
+#' @param VAR.file.name
+#'
+#' @return
+#'
+#' @details
+#'
+#' @export
+
 
 import_SQLserver_file <- function(VAR.Path
                                   , VAR.prefix
