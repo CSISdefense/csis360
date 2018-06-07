@@ -7,18 +7,18 @@
 format_period_average(data, period_var, y_var, breakout, labels_and_colors)
 }
 \arguments{
-\item{data}{}
+\item{data}{data frame}
 
-\item{period_var}{The variable with the period designations, one per entry}
+\item{period_var}{The variable with the period designations, grouped into those periods}
 
 \item{y_var}{}
 
-\item{breakout}{Facet and/or color}
+\item{breakout}{Facet and/or color; everything that is to be grouped by for retention}
 
 \item{labels_and_colors}{}
 }
 \value{
-
+Returns the average of the year entries across each period
 }
 \description{
 Returns data in the appropriate format for the user-specified plot

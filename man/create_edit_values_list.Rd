@@ -14,9 +14,6 @@ create_edit_values_list(current_data, input,
 
 \item{session=getDefaultReactiveDomain()}{The shiny app session}
 }
-\value{
-Returns???
-}
 \description{
 Creates the list of values available for editing, when the user changes the variable they are examining
 }

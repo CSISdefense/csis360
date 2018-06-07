@@ -6,16 +6,16 @@
 \usage{
 format_data_for_plot(data, fy_var, y_var, share = FALSE, start_fy = NA,
   end_fy = NA, color_var = "None", facet_var = "None",
-  labels_and_colors = NULL)
+  labels_and_colors = NULL, group = TRUE)
 }
 \arguments{
-\item{data}{A data to format for the plot, as a tibble}
+\item{data}{A data frame to format for the plot, as a tibble}
 
 \item{fy_var}{The fiscal year variable, as string}
 
 \item{y_var}{The variable to be plotted on the y-axis}
 
-\item{share}{If TRUE, calculates the share}
+\item{share}{If TRUE, calculates the share as a percentage}
 
 \item{start_fy}{Start fiscal year}
 
@@ -26,6 +26,8 @@ format_data_for_plot(data, fy_var, y_var, share = FALSE, start_fy = NA,
 \item{facet_var}{Facet variable, as string}
 
 \item{labels_and_colors}{Style information for the}
+
+\item{group}{If TRUE aggregate}
 }
 \value{
 Returns a tibble of formatted data

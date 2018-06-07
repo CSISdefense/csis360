@@ -7,9 +7,9 @@
 jitter_binary(a, jitt = 0.05)
 }
 \arguments{
-\item{a}{???????????????????}
+\item{a}{column with values of 0 or 1}
 
-\item{jitt}{????????should jitt always equal .05 or does this number just have to be between 0 and 1, and .05 is the default?}
+\item{jitt}{amount of horizontal and vertical jitter, value between 0 and .5; defaults to .05}
 }
 \value{
 Takes a binary variable and randomly spreads it within 0 and 1

@@ -78,7 +78,7 @@ add_preassigned_scales<-function(
 #' @param data The data to format for the plot, as a tibble
 #' @param x_var x-axis
 #' @param y_var y-axis
-#' @param breakout
+#' @param breakout TESTTESTTESTTESTTEST
 #' @param aggregate aggregation function; defaults to sum
 #'
 #' @return A tibble of formatted data
@@ -87,7 +87,6 @@ add_preassigned_scales<-function(
 #'
 #'
 #'
-#' @import
 #' @export
 group_data_for_plot <-function(
   data,   # data to format for the plot, as a tibble
@@ -151,13 +150,12 @@ group_data_for_plot <-function(
 #'
 #' @param var The names of the column, default of none for generic colors
 #' @param column_key A csis360 lookup data.frame with column information
-#' @param share If TRUE, calculates the share????????? COPIED FROM STAND
+#' @param share If TRUE, calculates the share
 #'
 #'
 #'
 #'
 #'
-#' @import
 #' @export
 get_label <- function(
   var,
@@ -191,7 +189,6 @@ get_label <- function(
 #'
 #'
 #'
-#' @import
 #' @export
 rename_value <- function(
   data,    # the data frame in which to rename the value

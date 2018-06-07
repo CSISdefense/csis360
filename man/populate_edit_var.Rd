@@ -13,9 +13,6 @@ populate_edit_var(current_data, input, session = getDefaultReactiveDomain())
 
 \item{session=getDefaultReactiveDomain()}{The shiny app session}
 }
-\value{
-Returns???
-}
 \description{
 Populates the edit_var element on the edit page, based on the current data
 }

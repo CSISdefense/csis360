@@ -32,7 +32,6 @@
 #'   FullData,
 #'   Path)
 #'
-#' @import
 #' @export
 standardize_variable_names<- function(data,
                                       path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/",
@@ -98,7 +97,6 @@ standardize_variable_names<- function(data,
 #' @examples FullData<-standardize_variable_names(Path,
 #'   FullData)
 #'
-#' @import plyr
 #' @export
 prepare_labels_and_colors<-function(data
                                     ,var=NULL
@@ -242,7 +240,6 @@ prepare_labels_and_colors<-function(data
 #'
 #' @return Returns a tibble of formatted data
 #'
-#' @import
 #' @export
 format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = NA, end_fy = NA,
                                  color_var="None", facet_var="None", labels_and_colors=NULL, group=TRUE){
@@ -359,7 +356,6 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
 #'
 #' @return Returns the average of the year entries across each period
 #'
-#' @import
 #' @export
 format_period_average <- function(
   data,

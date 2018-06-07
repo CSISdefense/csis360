@@ -11,9 +11,6 @@ clear_edit_ui(input, session = getDefaultReactiveDomain())
 
 \item{session=getDefaultReactiveDomain()}{The shiny app session}
 }
-\value{
-Returns???
-}
 \description{
 Removes the variable and value selection selectInputs from the Edit Data tab
 }

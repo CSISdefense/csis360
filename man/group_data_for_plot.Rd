@@ -9,7 +9,13 @@ group_data_for_plot(data, x_var, y_var, breakout, aggregate = "sum")
 \arguments{
 \item{data}{The data to format for the plot, as a tibble}
 
-\item{aggregate}{??????? = "sum"}
+\item{x_var}{x-axis}
+
+\item{y_var}{y-axis}
+
+\item{breakout}{TESTTESTTESTTESTTEST}
+
+\item{aggregate}{aggregation function; defaults to sum}
 }
 \value{
 A tibble of formatted data
