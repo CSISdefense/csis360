@@ -235,7 +235,7 @@ prepare_labels_and_colors<-function(data
 #' @param   end_fy  End fiscal Year
 #' @param   color_var Coloration variable, as string
 #' @param   facet_var Facet variable, as string
-#' @param   labels_and_colors Style information for the
+#' @param   labels_and_colors A csis360 lookup data.frame with factor information
 #' @param   group If TRUE aggregate
 #'
 #' @return Returns a tibble of formatted data
@@ -350,9 +350,9 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
 #'
 #' @param   data data frame
 #' @param   period_var The variable with the period designations, grouped into those periods
-#' @param   y_var
+#' @param   y_var The name of variable to plot on y-axis
 #' @param   breakout Facet and/or color; everything that is to be grouped by for retention
-#' @param   labels_and_colors
+#' @param   labels_and_colors A csis360 lookup data.frame with factor information
 #'
 #' @return Returns the average of the year entries across each period
 #'

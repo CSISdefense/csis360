@@ -95,8 +95,8 @@ get_plot_theme<-function(){
 #' @param facet_var="None" The name of facet variable, as string
 #' @param legend If TRUE, includes a legend
 #' @param caption If TRUE, includes a source caption
-#' @param labels_and_colors ?????????
-#' @param column_key ??????????????
+#' @param labels_and_colors A csis360 lookup data.frame with factor information
+#' @param column_key A csis360 lookup data.frame with column information
 #'
 #'
 #'

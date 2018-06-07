@@ -11,11 +11,11 @@ format_period_average(data, period_var, y_var, breakout, labels_and_colors)
 
 \item{period_var}{The variable with the period designations, grouped into those periods}
 
-\item{y_var}{}
+\item{y_var}{The name of variable to plot on y-axis}
 
 \item{breakout}{Facet and/or color; everything that is to be grouped by for retention}
 
-\item{labels_and_colors}{}
+\item{labels_and_colors}{A csis360 lookup data.frame with factor information}
 }
 \value{
 Returns the average of the year entries across each period

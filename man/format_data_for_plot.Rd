@@ -25,7 +25,7 @@ format_data_for_plot(data, fy_var, y_var, share = FALSE, start_fy = NA,
 
 \item{facet_var}{Facet variable, as string}
 
-\item{labels_and_colors}{Style information for the}
+\item{labels_and_colors}{A csis360 lookup data.frame with factor information}
 
 \item{group}{If TRUE aggregate}
 }

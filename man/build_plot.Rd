@@ -25,9 +25,9 @@ build_plot(data, chart_geom = "Line Chart", share = FALSE, x_var, y_var,
 
 \item{caption}{If TRUE, includes a source caption}
 
-\item{labels_and_colors}{?????????}
+\item{labels_and_colors}{A csis360 lookup data.frame with factor information}
 
-\item{column_key}{??????????????}
+\item{column_key}{A csis360 lookup data.frame with column information}
 
 \item{facet_var="None"}{The name of facet variable, as string}
 }
