@@ -2,29 +2,29 @@
 #These are quality control functions for verify that numbers sum over multiple souces.
 #'
 #'
-#' @param VAR.Path
-#' @param VAR.Choice.Data
-#' @param VAR.Which.Data
+#' @param Path file path name where Footing files are stored
+#' @param Choice.Data
+#' @param Which.Data character string determining which data files to call; defaults to ""
 #'
-#' @return
+#' @return dataframe
 #'
-#' @details
+#' @details Quality control function
 #'
 #'
 #' @export
 load.FPDS.gov.customers.df<-function(
-  VAR.Path
-  ,VAR.Choice.Data
-  ,VAR.Which.Data
+  Path
+  ,Choice.Data
+  ,Which.Data=""
 ){
 
 
-  customers.files<-paste(VAR.Path
+  customers.files<-paste(Path
                          ,"Footing Data\\"
-                         ,list.files(path=paste(VAR.Path,"Footing Data\\",sep="")
+                         ,list.files(path=paste(Path,"Footing Data\\",sep="")
                                      ,pattern=paste("Footing_"
-                                                    ,as.character(VAR.Choice.Data$ProdServCode.Prefix[VAR.Which.Data])
-                                                    ,"Customers.*[.]csv"
+                                                    ,Which.Data
+                                                    ,"Customers"
                                                     ,sep=""
                                      )
                          )
@@ -39,8 +39,8 @@ load.FPDS.gov.customers.df<-function(
     rm(customers.files)
 
     FPDS.gov.customers.df<-LimitData(FPDS.gov.customers.df
-                                     ,VAR.Choice.Data$Customer[VAR.Which.Data]
-                                     ,VAR.Choice.Data$big.ProdServCode[VAR.Which.Data]
+                                     ,Choice.Data$Customer[Which.Data]
+                                     ,Choice.Data$big.ProdServCode[Which.Data]
     )
 
     FPDS.gov.customers.df
@@ -56,7 +56,7 @@ load.FPDS.gov.customers.df<-function(
 #'
 #' @return
 #'
-#' @details
+#' @details Quality control function
 #'
 #' @export
 
@@ -112,7 +112,7 @@ read.tables <- function(file.names, ...) {
 #'
 #' @return
 #'
-#' @details
+#' @details Quality control function
 #'
 #'
 #' @export
@@ -150,7 +150,7 @@ LimitData <- function(
 #'
 #' @return
 #'
-#' @details
+#' @details Quality control function
 #'
 #' @export
 
@@ -174,7 +174,7 @@ LimitScope <- function(var.FPDS.gov, var.main.DF) {
 #'
 #' @return
 #'
-#' @details
+#' @details Quality control function
 #'
 #' @export
 
@@ -224,7 +224,16 @@ import_SQLserver_file <- function(VAR.Path
   import.data.file
 }
 
-
+#'
+#'
+#' @param VAR.Path
+#' @param VAR.df
+#'
+#' @return
+#'
+#' @details
+#'
+#' @export
 append_contract_fixes<- function(VAR.path,VAR.df){
   #   print(nrow(VAR.df))
 
