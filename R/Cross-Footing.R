@@ -125,6 +125,57 @@ LimitData <- function(
   var.FPDS.gov<-subset(var.FPDS.gov,select=-c(Filename))
   var.FPDS.gov<-append_contract_fixes(Path,var.FPDS.gov)
   var.FPDS.gov<-apply_lookups(Path,var.FPDS.gov)
+
+
+
+  #Classify Customers
+  if("AgencyID" %in% colnames(var.FPDS.gov)){
+    var.FPDS.gov<-csis360::read_and_join(var.FPDS.gov,
+                                         "Ageny_AgencyID.csv",
+                                         by="AgencyID",
+                                         replace_na_var="AgencyID",
+                                         add_var="Customer"
+    )
+  }
+  else if("Contracting.Agency.ID" %in% colnames(var.FPDS.gov)){
+    var.FPDS.gov$AgencyID<-var.FPDS.gov$Contracting.Agency.ID
+    var.FPDS.gov<-csis360::read_and_join(var.FPDS.gov,
+                                         "Ageny_AgencyID.csv",
+                                         by="AgencyID",
+                                         replace_na_var="AgencyID",
+                                         add_var=c("Customer","SubCustomer")
+    )
+  }
+  else if("Contracting.Department.ID" %in% colnames(var.FPDS.gov)){
+    var.FPDS.gov$AgencyID<-var.FPDS.gov$Contracting.Department.ID
+    var.FPDS.gov<-csis360::read_and_join(var.FPDS.gov,
+                                         "Ageny_AgencyID.csv",
+                                         by="AgencyID",
+                                         replace_na_var="AgencyID",
+                                         add_var="Customer"
+    )
+  }
+
+  #Classify Product or Service Codes
+  if("ProductOrServiceCode" %in% colnames(var.FPDS.gov))
+    var.FPDS.gov<-csis360::read_and_join(var.FPDS.gov,
+                                         "ProductOrServiceCodes.csv",
+                                         by="ProductOrServiceCode",
+                                         replace_na_var="ProductOrServiceCode",
+                                         add_var=c("ServicesCategory","Simple","ProductServiceOrRnDarea","ProductOrServiceArea")
+    )
+
+
+  full_data<-replace_nas_with_unlabeled(var.FPDS.gov,"SubCustomer","Uncategorized")
+  full_data<-csis360::read_and_join(var.FPDS.gov,
+                                    "Lookup_SubCustomer.csv",
+                                    by=c("Customer","SubCustomer"),
+                                    add_var="SubCustomer.platform"
+  )
+
+
+
+
   if(!(is.null(VAR.customer)) && (VAR.customer=="") &&!(VAR.customer=="") && !(VAR.customer=="D3")) {
     var.FPDS.gov<-subset(var.FPDS.gov,Customer==VAR.customer)
   } else if (!(is.null(VAR.customer)) && (VAR.customer=="D3")){
