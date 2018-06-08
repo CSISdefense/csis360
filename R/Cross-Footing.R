@@ -1,15 +1,15 @@
 #Cross-Footing
-
+#These are quality control functions for verify that numbers sum over multiple souces.
 #'
 #'
 #' @param VAR.Path
 #' @param VAR.Choice.Data
 #' @param VAR.Which.Data
 #'
-#' @return FPDS.gov.buckets.df what is this?
+#' @return
 #'
-#' @details These are quality control functions for verify that numbers sum over multiple souces.
-#' IS THAT ALL OF THESE FUNCTIONS OR JUST THIS ONE
+#' @details
+#'
 #'
 #' @export
 load.FPDS.gov.customers.df<-function(
@@ -50,7 +50,7 @@ load.FPDS.gov.customers.df<-function(
 
 #'
 #'
-#' @param VAR.Path
+#' @param VAR.Path A character string of path name
 #' @param VAR.Choice.Data
 #' @param VAR.Which.Data
 #'
@@ -62,7 +62,7 @@ load.FPDS.gov.customers.df<-function(
 
 
 load.FPDS.gov.buckets.df<-function(VAR.Path,VAR.Choice.Data,VAR.Which.Data){
-  buckets.files<-paste(VAR.Path,"Footing Data\\",list.files(path=paste(VAR.Path,"Footing Data\\",sep=""),pattern="Footing_Buckets.*[.]csv"),sep="")
+  buckets.files<-paste(VAR.Path,list.files(path=VAR.Path,pattern="Footing_Buckets_"),sep="")
 
   FPDS.gov.buckets.df<-read.tables(buckets.files,
                                    header=TRUE, sep=",", na.strings="NA", dec=".", strip.white=TRUE,
@@ -77,7 +77,6 @@ load.FPDS.gov.buckets.df<-function(VAR.Path,VAR.Choice.Data,VAR.Which.Data){
   rm(buckets.files)
 
 
-
   FPDS.gov.buckets.df<-LimitData(FPDS.gov.buckets.df
                                  ,VAR.Choice.Data$Customer[VAR.Which.Data]
                                  ,VAR.Choice.Data$big.ProdServCode[VAR.Which.Data]
@@ -89,7 +88,7 @@ load.FPDS.gov.buckets.df<-function(VAR.Path,VAR.Choice.Data,VAR.Which.Data){
 #'
 #' @param file.names list each filename of data with same column names
 #'
-#' @return combines data from multiple files into one data table
+#' @return combined data from multiple files into one data table
 #' with an extra column identifying which file the line of data came from
 #'
 #' @examples data <- read.tables(c("filename1.csv", "filename2.csv"))
@@ -101,6 +100,9 @@ read.tables <- function(file.names, ...) {
   require(plyr)
   ldply(file.names, function(fn) data.frame(Filename=fn, read.csv(fn, ...)))
 }
+
+
+
 
 #'
 #'
