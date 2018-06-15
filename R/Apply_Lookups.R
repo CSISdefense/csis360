@@ -300,9 +300,8 @@ read_and_join<-function(
 #'
 #' @param data The data frame to be joined
 #' @param lookup_file The name of the lookup file
-#' @param path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
-#' The location of the lookup file
-#' @param directory="Lookups\\" The directory within the path that holds the lookup
+#' @param path The location of the lookup file
+#' @param directory The directory within the path that holds the lookup
 #' @param by=NULL The columns used to join, if not provided, matching columns will be used
 #' @param replace_na_var=NULL Before the join, these columns will have NAs values replaced
 #' @param overlap_var_replaced=TRUE Should the function replace for common columns not used to join?

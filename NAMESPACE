@@ -3,6 +3,7 @@
 export(LimitData)
 export(LimitScope)
 export(add_preassigned_scales)
+export(append_contract_fixes)
 export(build_plot)
 export(clear_edit_ui)
 export(create_edit_values_list)

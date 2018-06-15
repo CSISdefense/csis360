@@ -10,7 +10,7 @@ read.tables(file.names, ...)
 \item{file.names}{list each filename of data with same column names}
 }
 \value{
-combines data from multiple files into one data table
+combined data from multiple files into one data table
 with an extra column identifying which file the line of data came from
 }
 \description{
