@@ -12,8 +12,51 @@
 #   Test Package:        'Ctrl + Shift + T'
 
 
+#' When passed a file that doesn't exist, check for the zip version
+#'
+#' @param file The name of the data file
+#' @param path="" The location of the data file#'
+#' @param directory="Data\\" The directory within the path that holds the lookup
+#'
+#' @return The file name, if the file exists. Otherwise the zip file that contains the file.
+#'
+#' @details This function is meant for large data files. Our default approach is to zip them
+#' up, one zip per file, and name the zip file the same name as the data file, except with zip
+#' as an extension instead of .txt or .csv. This checks if the base file is available and if
+#' not it handles opening the zip file instead.
+#'
+#' @examples swap_in_zip(file="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv)
+#'
+swap_in_zip<-function(filename,path,directory){
+  input<-file
+  if(!file.exists(paste(parth,dir,file,sep=""))){
+    zipfile<-paste(dir,substring(file,1,nchar(file)-3),"zip",sep="")
+    if (!file.exists(zip_file)){
+      stop(paste(path,directory,filename," does not exist",sep=""))
+    }
+    file.exists(paste(dir,substring(file,1,nchar(file)-3),"zip",sep=""))
+    input<-unz(description=zipfile,filename=file)
+  }
+  input
+}
 
-
+#' Return the appropriate delimeter for the file type
+#'
+#' @param filename The name of the data file
+#'
+#' @return The delimter to use.
+#'
+#' @details Returns ',' for csv and '/t' for txt files. Creates an error for other file types.
+#'
+#' @examples get_delim("test.csv")
+get_delim<-function(filename){
+  delim<-NULL
+  extension<-substring(filename,nchar(filename)-2,nchar(filename))
+  if(extension=="csv") delim<-","
+  else if(extension=="txt") delim<-"\t"
+  else stop(paste("Unknown file type",extension))
+  delim
+}
 
 
 #' Replace NAs in one variable of a data frame with a specified valued
@@ -339,7 +382,11 @@ read_and_join_experiment<-function(
     add_var=NULL,
     new_var_checked=TRUE,
     skip_check_var=NULL,
-    zip_file=NULL){
+    zip_file=NULL
+    ){
+
+
+
 
 
     #Replace NAs in input column if requested
@@ -352,33 +399,24 @@ read_and_join_experiment<-function(
     stop("lookup_file parameter is a data frame, it should be a filename, e.g. 'lookup_customer.csv'.")
 
 
-  if(is.null(zip_file)){#No zip file
+  if(!is.null(zip_file)){#No zip file
     #Read in the lookup file
-    if (!file.exists(paste(path,directory,lookup_file,sep=""))){
+    if (!file.exists(aste(path,directory,zip_file,sep=""))){
       stop(paste(path,directory,zip_file," does not exist",sep=""))
     }
-    lookup<-readr::read_delim(
-      paste(path,directory,lookup_file,sep=""),
-      col_names=TRUE,
-      delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
-      na=c("NA","NULL"),
-      trim_ws=TRUE
-    )
-  }#Zip file
-  else{
-    if (!file.exists(paste(path,directory,zip_file,sep=""))){
-      stop(paste(path,directory,zip_file," does not exist",sep=""))
-    }
-    #Read in the lookup file
-    read.csv(input)
-    lookup<-readr::read_delim(
-      file=paste(path,directory,zip_file,sep=""),
-      col_names=TRUE,
-      delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
-      na=c("NA","NULL"),
-      trim_ws=TRUE
-    )
+    input<-unz(description=zip_file,filename=lookup_file)
   }
+  else{
+    input<-swap_in_zip(file,path,directory)
+  }
+    lookup<-readr::read_delim(
+      input,
+      col_names=TRUE,
+      delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
+      na=c("NA","NULL"),
+      trim_ws=TRUE
+    )
+
     #Remove byte order marks present in UTF encoded files
     data<-remove_bom(data)
     lookup<-remove_bom(lookup)
