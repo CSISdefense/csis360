@@ -1,30 +1,31 @@
 #Cross-Footing
 #These are quality control functions for verify that numbers sum over multiple souces.
+
+#'Returns a dataframe with customer data for quality control check
 #'
+#' @param Path file path name where Footing files are stored
+#' @param Choice.Data
+#' @param Which.Data character string determining which data files to call; defaults to ""
 #'
-#' @param VAR.Path
-#' @param VAR.Choice.Data
-#' @param VAR.Which.Data
+#' @return dataframe
 #'
-#' @return
-#'
-#' @details
+#' @details Quality control function
 #'
 #'
 #' @export
 load.FPDS.gov.customers.df<-function(
-  VAR.Path
-  ,VAR.Choice.Data
-  ,VAR.Which.Data
+  Path
+  ,Choice.Data
+  ,Which.Data=""
 ){
 
 
-  customers.files<-paste(VAR.Path
+  customers.files<-paste(Path
                          ,"Footing Data\\"
-                         ,list.files(path=paste(VAR.Path,"Footing Data\\",sep="")
+                         ,list.files(path=paste(Path,"Footing Data\\",sep="")
                                      ,pattern=paste("Footing_"
-                                                    ,as.character(VAR.Choice.Data$ProdServCode.Prefix[VAR.Which.Data])
-                                                    ,"Customers.*[.]csv"
+                                                    ,Which.Data
+                                                    ,"Customers"
                                                     ,sep=""
                                      )
                          )
@@ -39,8 +40,8 @@ load.FPDS.gov.customers.df<-function(
     rm(customers.files)
 
     FPDS.gov.customers.df<-LimitData(FPDS.gov.customers.df
-                                     ,VAR.Choice.Data$Customer[VAR.Which.Data]
-                                     ,VAR.Choice.Data$big.ProdServCode[VAR.Which.Data]
+                                     ,Choice.Data$Customer[Which.Data]
+                                     ,Choice.Data$big.ProdServCode[Which.Data]
     )
 
     FPDS.gov.customers.df
@@ -50,19 +51,19 @@ load.FPDS.gov.customers.df<-function(
 
 #'
 #'
-#' @param VAR.Path A character string of path name
-#' @param VAR.Choice.Data
-#' @param VAR.Which.Data
+#' @param Path A character string of path name
+#' @param Choice.Data
+#' @param Which.Data
 #'
 #' @return
 #'
-#' @details
+#' @details Quality control function
 #'
 #' @export
 
 
-load.FPDS.gov.buckets.df<-function(VAR.Path,VAR.Choice.Data,VAR.Which.Data){
-  buckets.files<-paste(VAR.Path,list.files(path=VAR.Path,pattern="Footing_Buckets_"),sep="")
+load.FPDS.gov.buckets.df<-function(Path,Choice.Data,Which.Data){
+  buckets.files<-paste(Path,list.files(path=Path,pattern="Footing_Buckets_"),sep="")
 
   FPDS.gov.buckets.df<-read.tables(buckets.files,
                                    header=TRUE, sep=",", na.strings="NA", dec=".", strip.white=TRUE,
@@ -78,8 +79,8 @@ load.FPDS.gov.buckets.df<-function(VAR.Path,VAR.Choice.Data,VAR.Which.Data){
 
 
   FPDS.gov.buckets.df<-LimitData(FPDS.gov.buckets.df
-                                 ,VAR.Choice.Data$Customer[VAR.Which.Data]
-                                 ,VAR.Choice.Data$big.ProdServCode[VAR.Which.Data]
+                                 ,Choice.Data$Customer[Which.Data]
+                                 ,Choice.Data$big.ProdServCode[Which.Data]
   )
   FPDS.gov.buckets.df
 }
@@ -106,50 +107,50 @@ read.tables <- function(file.names, ...) {
 
 #'
 #'
-#' @param var.FPDS.gov
-#' @param VAR.customer
-#' @param VAR.big.ProdServ
+#' @param FPDS.gov
+#' @param customer
+#' @param big.ProdServ
 #'
 #' @return
 #'
-#' @details
+#' @details Quality control function
 #'
 #'
 #' @export
 
 LimitData <- function(
-  var.FPDS.gov
-  ,VAR.customer=NULL
-  ,VAR.big.ProdServ=NULL)
+  FPDS.gov
+  ,customer=NULL
+  ,big.ProdServ=NULL)
 {
-  var.FPDS.gov<-subset(var.FPDS.gov,select=-c(Filename))
-  var.FPDS.gov<-append_contract_fixes(Path,var.FPDS.gov)
-  var.FPDS.gov<-apply_lookups(Path,var.FPDS.gov)
+  FPDS.gov<-subset(FPDS.gov,select=-c(Filename))
+  FPDS.gov<-append_contract_fixes(Path,FPDS.gov)
+##  FPDS.gov<-apply_lookups(Path,FPDS.gov)
 
 
 
   #Classify Customers
-  if("AgencyID" %in% colnames(var.FPDS.gov)){
-    var.FPDS.gov<-csis360::read_and_join(var.FPDS.gov,
-                                         "Ageny_AgencyID.csv",
+  if("AgencyID" %in% colnames(FPDS.gov)){
+    FPDS.gov<-csis360::read_and_join(FPDS.gov,
+                                         "Agency_AgencyID.csv",
                                          by="AgencyID",
                                          replace_na_var="AgencyID",
                                          add_var="Customer"
     )
   }
-  else if("Contracting.Agency.ID" %in% colnames(var.FPDS.gov)){
-    var.FPDS.gov$AgencyID<-var.FPDS.gov$Contracting.Agency.ID
-    var.FPDS.gov<-csis360::read_and_join(var.FPDS.gov,
-                                         "Ageny_AgencyID.csv",
+  else if("Contracting.Agency.ID" %in% colnames(FPDS.gov)){
+    FPDS.gov$AgencyID<-FPDS.gov$Contracting.Agency.ID
+    FPDS.gov<-csis360::read_and_join(FPDS.gov,
+                                         "Agency_AgencyID.csv",
                                          by="AgencyID",
                                          replace_na_var="AgencyID",
                                          add_var=c("Customer","SubCustomer")
     )
   }
-  else if("Contracting.Department.ID" %in% colnames(var.FPDS.gov)){
-    var.FPDS.gov$AgencyID<-var.FPDS.gov$Contracting.Department.ID
-    var.FPDS.gov<-csis360::read_and_join(var.FPDS.gov,
-                                         "Ageny_AgencyID.csv",
+  else if("Contracting.Department.ID" %in% colnames(FPDS.gov)){
+    FPDS.gov$AgencyID<-FPDS.gov$Contracting.Department.ID
+    FPDS.gov<-csis360::read_and_join(FPDS.gov,
+                                         "Agency_AgencyID.csv",
                                          by="AgencyID",
                                          replace_na_var="AgencyID",
                                          add_var="Customer"
@@ -157,8 +158,8 @@ LimitData <- function(
   }
 
   #Classify Product or Service Codes
-  if("ProductOrServiceCode" %in% colnames(var.FPDS.gov))
-    var.FPDS.gov<-csis360::read_and_join(var.FPDS.gov,
+  if("ProductOrServiceCode" %in% colnames(FPDS.gov))
+    FPDS.gov<-csis360::read_and_join(FPDS.gov,
                                          "ProductOrServiceCodes.csv",
                                          by="ProductOrServiceCode",
                                          replace_na_var="ProductOrServiceCode",
@@ -166,8 +167,8 @@ LimitData <- function(
     )
 
 
-  full_data<-replace_nas_with_unlabeled(var.FPDS.gov,"SubCustomer","Uncategorized")
-  full_data<-csis360::read_and_join(var.FPDS.gov,
+  full_data<-replace_nas_with_unlabeled(FPDS.gov,"SubCustomer","Uncategorized")
+  full_data<-csis360::read_and_join(FPDS.gov,
                                     "Lookup_SubCustomer.csv",
                                     by=c("Customer","SubCustomer"),
                                     add_var="SubCustomer.platform"
@@ -176,67 +177,66 @@ LimitData <- function(
 
 
 
-  if(!(is.null(VAR.customer)) && (VAR.customer=="") &&!(VAR.customer=="") && !(VAR.customer=="D3")) {
-    var.FPDS.gov<-subset(var.FPDS.gov,Customer==VAR.customer)
-  } else if (!(is.null(VAR.customer)) && (VAR.customer=="D3")){
-    var.FPDS.gov<-subset(var.FPDS.gov,Customer  %in% c("Defense","State and IAP"))
+  if(!(is.null(customer)) && (customer=="") &&!(customer=="") && !(customer=="D3")) {
+    FPDS.gov<-subset(FPDS.gov,Customer==customer)
+  } else if (!(is.null(customer)) && (customer=="D3")){
+    FPDS.gov<-subset(FPDS.gov,Customer  %in% c("Defense","State and IAP"))
   }
 
-  if(!(is.null(VAR.big.ProdServ)) && VAR.big.ProdServ=="Services" && ("ProductOrServiceArea" %in% names(var.FPDS.gov))){
-    var.FPDS.gov<-subset(var.FPDS.gov,ProductOrServiceArea %in% c("PAMS","MED","FRS&C","ICT","ERS","R&D"))
+  if(!(is.null(big.ProdServ)) && big.ProdServ=="Services" && ("ProductOrServiceArea" %in% names(FPDS.gov))){
+    FPDS.gov<-subset(FPDS.gov,ProductOrServiceArea %in% c("PAMS","MED","FRS&C","ICT","ERS","R&D"))
   }
-  else if(!(is.null(VAR.big.ProdServ))&& VAR.big.ProdServ!=""&& ("ProductOrServiceArea" %in% names(var.FPDS.gov))){
-    #     stop(paste("In LimitData, VAR.big.Prodserv = ",VAR.big.ProdServ,"which is not handled."))
-    warning(paste("In LimitData, VAR.big.Prodserv = ",VAR.big.ProdServ,"which is not handled."))
+  else if(!(is.null(big.ProdServ)) && big.ProdServ!="" && ("ProductOrServiceArea" %in% names(FPDS.gov))){
+    #     stop(paste("In LimitData, big.Prodserv = ",big.ProdServ,"which is not handled."))
+    warning(paste("In LimitData, big.Prodserv = ",big.ProdServ,"which is not handled."))
   }
-  var.FPDS.gov
+  FPDS.gov
 }
 
 
 #'
 #'
-#' @param var.FPDS.gov
-#' @param var.main.DF
-#' @param
+#' @param FPDS.gov
+#' @param main.DF
 #'
 #' @return
 #'
-#' @details
+#' @details Quality control function
 #'
 #' @export
 
-LimitScope <- function(var.FPDS.gov, var.main.DF) {
-  var.FPDS.gov<-subset(var.FPDS.gov,Fiscal.Year>=min(subset(var.main.DF$Fiscal.Year
-                                                            ,!is.na(var.main.DF$Fiscal.Year
+LimitScope <- function(FPDS.gov, main.DF) {
+  FPDS.gov<-subset(FPDS.gov,Fiscal.Year>=min(subset(main.DF$Fiscal.Year
+                                                            ,!is.na(main.DF$Fiscal.Year
                                                             ))))
-  var.FPDS.gov<-subset(var.FPDS.gov,Fiscal.Year<=max(subset(var.main.DF$Fiscal.Year
-                                                            ,!is.na(var.main.DF$Fiscal.Year)
+  FPDS.gov<-subset(FPDS.gov,Fiscal.Year<=max(subset(main.DF$Fiscal.Year
+                                                            ,!is.na(main.DF$Fiscal.Year)
   )))
-  var.FPDS.gov
+  FPDS.gov
 }
 
 
 
 #'
 #'
-#' @param VAR.Path
-#' @param VAR.prefix
-#' @param VAR.file.name
+#' @param Path
+#' @param prefix
+#' @param file.name
 #'
 #' @return
 #'
-#' @details
+#' @details Quality control function
 #'
 #' @export
 
 
-import_SQLserver_file <- function(VAR.Path
-                                  , VAR.prefix
-                                  , VAR.file.name) {
+import_SQLserver_file <- function(Path
+                                  , prefix
+                                  , file.name) {
   import.data.file <-read.csv(
     paste(
-      #       VAR.Path,
-      "Data\\",VAR.prefix,VAR.file.name,sep=""),
+      #       Path,
+      "Data\\",prefix,file.name,sep=""),
     header=TRUE, sep=",", na.strings=c("NA","NULL"), dec=".", strip.white=TRUE,
     stringsAsFactors=TRUE
   )
@@ -248,7 +248,7 @@ import_SQLserver_file <- function(VAR.Path
   #
   #   import.data.file<- join(
   #     import.data.file,
-  #     VAR.lookup,
+  #     lookup,
   #     match="first"
   #   )
 
@@ -262,31 +262,40 @@ import_SQLserver_file <- function(VAR.Path
   #   NA.check.df<-subset(import.data.file, is.na(variable.sum), select=c("variable","variable.detail","variable.sum"))
   #   if(nrow(NA.check.df)>0){
   #     print(unique(NA.check.df))
-  #     stop(paste(nrow(NA.check.df),"rows of NAs generated in variable.sum from ",VAR.file.name))
+  #     stop(paste(nrow(NA.check.df),"rows of NAs generated in variable.sum from ",file.name))
   #   }
 
   #   NA.check.df<-subset(import.data.file, is.na(variable.detail), select=c("variable","variable.detail","variable.sum"))
   #   if(nrow(NA.check.df)>0){
   #     print(unique(NA.check.df))
-  #     stop(paste(nrow(NA.check.df),"rows of NAs generated in variable.sum from ",VAR.file.name))
+  #     stop(paste(nrow(NA.check.df),"rows of NAs generated in variable.sum from ",file.name))
   #   }
 
 
   import.data.file
 }
 
-
-append_contract_fixes<- function(VAR.path,VAR.df){
-  #   print(nrow(VAR.df))
+#'
+#'
+#' @param Path
+#' @param df
+#'
+#' @return
+#'
+#' @details
+#'
+#' @export
+append_contract_fixes<- function(path,df){
+  #   print(nrow(df))
 
 
   #Step 1, apply our known fixes to the data
-  if("X" %in% names(VAR.df))  {
-    VAR.df<-subset(VAR.df,select =-c(X))
+  if("X" %in% names(df))  {
+    df<-subset(df,select =-c(X))
   }
 
   append.fixed.tasks<-read.csv(
-    paste(VAR.path,"Lookups\\","APPEND_Fixed_Tasks_webtool.csv",sep=""),
+    paste(path,"Lookups\\","APPEND_Fixed_Tasks_webtool.csv",sep=""),
     header=TRUE, sep=",", na.strings="NA", dec=".", strip.white=TRUE,
     stringsAsFactors=TRUE,
   )
@@ -302,7 +311,7 @@ append_contract_fixes<- function(VAR.path,VAR.df){
   append.fixed.tasks<-subset(
     append.fixed.tasks,
     select=c(
-      names(VAR.df)
+      names(df)
     ))
 
 
@@ -327,17 +336,17 @@ append_contract_fixes<- function(VAR.path,VAR.df){
   #
 
 
-  #   if("IDV.Part.8.Or.Part.13" %in% names(VAR.df)){
-  # #     print(paste("typeof","VAR.df",typeof(VAR.df$IDV.Part.8.Or.Part.13)))
+  #   if("IDV.Part.8.Or.Part.13" %in% names(df)){
+  # #     print(paste("typeof","df",typeof(df$IDV.Part.8.Or.Part.13)))
   # #     print(paste("typeof","append.fixed.tasks",typeof(append.fixed.tasks$IDV.Part.8.Or.Part.13)))
   # #     append.fixed.tasks$IDV.Part.8.Or.Part.13<-as.integer(append.fixed.tasks$IDV.Part.8.Or.Part.13)
   #
-  # #     print(paste("typeof","VAR.df[1]",typeof(VAR.df$IDV.Part.8.Or.Part.13[1])))
+  # #     print(paste("typeof","df[1]",typeof(df$IDV.Part.8.Or.Part.13[1])))
   # #     print(paste("typeof","append.fixed.tasks[1]",typeof(append.fixed.tasks$IDV.Part.8.Or.Part.13[1])))
   #
   #     #    append.fixed.tasks$IDV.Part.8.Or.Part.13<-factor(append.fixed.tasks$IDV.Part.8.Or.Part.13)
   #
-  # #     print(paste("is.character","VAR.df",is.character(append.fixed.tasks$IDV.Part.8.Or.Part.13[1])))
+  # #     print(paste("is.character","df",is.character(append.fixed.tasks$IDV.Part.8.Or.Part.13[1])))
   # #     print(paste("is.vector","append.fixed.tasks",is.vector(append.fixed.tasks$IDV.Part.8.Or.Part.13[1])))
   #
   #     append.fixed.tasks$IDV.Part.8.Or.Part.13<-factor(append.fixed.tasks$IDV.Part.8.Or.Part.13)
@@ -348,21 +357,21 @@ append_contract_fixes<- function(VAR.path,VAR.df){
   #   print(sum(append.fixed.tasks$value))
   #  append.fixed.tasks<-subset(append.fixed.tasks, select=c(Contracting.Agency.Name, Contracting.Agency.ID, Contracting.Department.ID, Award.or.IDV.Type, IDV.Part.8.Or.Part.13, IDV.Multiple.Or.Single.Award.IDV, IDV.Type, Extent.Competed, Fair.Opportunity.Limited.Sources, Number.of.Offers.Received, Fiscal.Year, variable, value, Download.Date))
   #   print(sum(append.fixed.tasks$value))
-  #   print(sum(VAR.df$value))
+  #   print(sum(df$value))
 
 
-  VAR.df$Action.Obligation<-FactorToNumber(VAR.df$Action.Obligation)
+  df$Action.Obligation<-FactorToNumber(df$Action.Obligation)
 
-  VAR.df$Actions<-FactorToNumber(VAR.df$Actions)
+  df$Actions<-FactorToNumber(df$Actions)
 
 
-  VAR.df<-rbind(VAR.df, append.fixed.tasks)
-  #   print(sum(VAR.df$value))
+  df<-rbind(df, append.fixed.tasks)
+  #   print(sum(df$value))
   print("LOOKUP_Fixed_Tasks_webtool.csv")
-  print(head(VAR.df))
-  print(tail(VAR.df))
+  print(head(df))
+  print(tail(df))
 
   print(head(append.fixed.tasks))
 
-  VAR.df
+  df
 }
