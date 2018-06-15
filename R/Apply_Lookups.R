@@ -28,14 +28,13 @@
 #' @examples swap_in_zip(filename="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv)
 #'
 swap_in_zip<-function(filename,path,directory){
-  input<-filename
-  if(!file.exists(paste(path,dir,filename,sep=""))){
-    zipfile<-paste(dir,substring(filename,1,nchar(filename)-3),"zip",sep="")
+  input<-paste(path,directory,filename,sep="")
+  if(!file.exists(input)){
+    zip_file<-paste(substring(input,1,nchar(input)-3),"zip",sep="")
     if (!file.exists(zip_file)){
-      stop(paste(path,directory,filename," does not exist",sep=""))
+      stop(paste(input,"does not exist"))
     }
-    file.exists(paste(dir,substring(filename,1,nchar(filename)-3),"zip",sep=""))
-    input<-unz(description=zipfile,filename=filename)
+    input<-unz(description=zip_file,filename=filename)
   }
   input
 }
@@ -400,7 +399,7 @@ read_and_join_experiment<-function(
 
   if(!is.null(zip_file)){#No zip file
     #Read in the lookup file
-    if (!file.exists(aste(path,directory,zip_file,sep=""))){
+    if (!file.exists(paste(path,directory,zip_file,sep=""))){
       stop(paste(path,directory,zip_file," does not exist",sep=""))
     }
     input<-unz(description=zip_file,filename=lookup_file)
