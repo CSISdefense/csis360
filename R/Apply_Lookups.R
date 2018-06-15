@@ -14,28 +14,28 @@
 
 #' When passed a file that doesn't exist, check for the zip version
 #'
-#' @param file The name of the data file
+#' @param filename The name of the data file
 #' @param path="" The location of the data file#'
 #' @param directory="Data\\" The directory within the path that holds the lookup
 #'
-#' @return The file name, if the file exists. Otherwise the zip file that contains the file.
+#' @return The filename name, if the file exists. Otherwise the zip file that contains the file.
 #'
 #' @details This function is meant for large data files. Our default approach is to zip them
 #' up, one zip per file, and name the zip file the same name as the data file, except with zip
 #' as an extension instead of .txt or .csv. This checks if the base file is available and if
 #' not it handles opening the zip file instead.
 #'
-#' @examples swap_in_zip(file="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv)
+#' @examples swap_in_zip(filename="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv)
 #'
 swap_in_zip<-function(filename,path,directory){
-  input<-file
-  if(!file.exists(paste(parth,dir,file,sep=""))){
-    zipfile<-paste(dir,substring(file,1,nchar(file)-3),"zip",sep="")
+  input<-filename
+  if(!file.exists(paste(path,dir,filename,sep=""))){
+    zipfile<-paste(dir,substring(filename,1,nchar(filename)-3),"zip",sep="")
     if (!file.exists(zip_file)){
       stop(paste(path,directory,filename," does not exist",sep=""))
     }
-    file.exists(paste(dir,substring(file,1,nchar(file)-3),"zip",sep=""))
-    input<-unz(description=zipfile,filename=file)
+    file.exists(paste(dir,substring(filename,1,nchar(filename)-3),"zip",sep=""))
+    input<-unz(description=zipfile,filename=filename)
   }
   input
 }
@@ -406,7 +406,7 @@ read_and_join_experiment<-function(
     input<-unz(description=zip_file,filename=lookup_file)
   }
   else{
-    input<-swap_in_zip(file,path,directory)
+    input<-swap_in_zip(lookup_file,path,directory)
   }
     lookup<-readr::read_delim(
       input,
