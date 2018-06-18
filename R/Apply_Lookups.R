@@ -415,7 +415,7 @@ case_match<-function(name, list){
     }
     file_size<-file.info(paste(path,directory,zip_file,sep=""))$size
     if (file_size>200000000){
-      stop(paste("Zip file size (",file_size,") exceeds 200 megabytes and unz can't handle this"))
+      stop(paste("Zip file size (",file_size,") exceeds 200 megabytes and unz can't handle this. Current solution is to unzip in file system and read in directly."))
     }
 
     #Case sensitivity fix for data filename
