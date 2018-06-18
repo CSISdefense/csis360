@@ -356,8 +356,78 @@ build_plot(data=subset(comp_data,Competition.effective.only!="Unlabeled"),
            labels_and_colors=labels_and_colors,
            column_key=column_key)
 
+#Defense Contracts
+load(file="tests/testthat/defense_CSIScontractID_mini.Rdata")
 
-load(file="tests/testthat/defense_contract_CSIScontractID_detail.Rdata")
 head(def)
 # undebug(transform_contract)
 def<-csis360::transform_contract(def)
+def<-csis360::transform_contract(def)
+
+
+load(def_full,file="tests/testthat/def_all_mini.Rdata")
+
+
+def_full<-csis360::read_and_join_experiment(data=def_full
+                                            , "Contract.SP_ContractLocationCustomer.txt"
+                                            ,path=""
+                                            ,dir="tests/testthat/"
+                                            ,by="CSIScontractID"
+                                            ,new_var_checked=FALSE
+)
+
+
+
+def_full<-csis360::read_and_join_experiment(data=def_full
+                                            , "Contract.SP_ContractUnmodifiedandOutcomeDetailsCustomer.txt"
+                                            ,path=""
+                                            ,dir="tests/testthat/"
+                                            ,by="CSIScontractID"
+                                            ,new_var_checked=FALSE
+)
+debug(read_and_join_experiment)
+def_full<-read_and_join_experiment(data=def_full
+                                            , "Contract.SP_ContractUnmodifiedAndOutcomeDetailsCustomer.txt"
+                                            ,path=""
+                                            ,dir="tests/testthat/"
+                                            ,by="CSIScontractID"
+                                            ,new_var_checked=FALSE
+                                            ,zip_file="Contract.SP_ContractUnmodifiedAndOutcomeDetailsCustomer.zip"
+)
+
+def_full<-read_and_join_experiment(data=def_full
+                                   , "Contract_SP_ContractDefenseSubCustomer.csv"
+                                   ,path=""
+                                   ,dir="tests/testthat/"
+                                   ,by="CSIScontractID"
+                                   ,new_var_checked=FALSE
+                                   ,zip_file="Contract_SP_ContractDefenseSubCustomer.zip"
+)
+
+readr::read_delim(
+  "tests/testthat/Contract_SP_ContractDefenseSubCustomer.zip",
+  col_names=TRUE,
+  delim=ifelse(substring("Contract.SP_ContractUnmodifiedAndOutcomeDetailsCustomer.txt",
+                         nchar("Contract.SP_ContractUnmodifiedAndOutcomeDetailsCustomer.txt")-3)==".csv",",","\t"),
+  na=c("NA","NULL"),
+  trim_ws=TRUE
+)
+
+file.info("tests/testthat/Contract_SP_ContractDefenseSubCustomer.zip")$size
+
+
+read.table(unz(description="tests/testthat/Contract.SP_ContractUnmodifiedandOutcomeDetailsCustomer.zip",
+             filename="Contract.SP_ContractUnmodifiedandOutcomeDetailsCustomer.txt"))
+
+read.table(unz(description="tests/testthat/Defense_Contract_SP_ContractBucketPlatformCustomer.zip",
+               filename="Defense_Contract_SP_ContractBucketPlatformCustomer.csv"))
+
+read.table(unz(description="tests/testthat/Contract_SP_ContractDefenseSubCustomer.zip",
+               filename="Contract_SP_ContractDefenseSubCustomer.csv"),
+           header=TRUE)
+
+
+read.table(unz(description="tests/testthat/Defense_Contract_SP_ContractBucketPlatformCustomer.zip",
+               filename="Defense_Contract_SP_ContractBucketPlatformCustomer.csv"),
+           header=TRUE)
+

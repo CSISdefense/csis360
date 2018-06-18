@@ -384,7 +384,14 @@ read_and_join_experiment<-function(
     ){
 
 
-
+case_match<-function(name, list){
+  if(!name %in% (list)){
+    if(tolower(name) %in% tolower(list)){
+      name<-list[tolower(list)==tolower(name)]
+    }
+  }
+  name
+}
 
 
     #Replace NAs in input column if requested
@@ -398,11 +405,28 @@ read_and_join_experiment<-function(
 
 
   if(!is.null(zip_file)){#No zip file
+    #Case sensitivity fix for zip filename
+    # dir_list<-list.files(paste(path,directory,sep=""))
+    # zip_file<-case_match(zip_file,dir_list)
+
     #Read in the lookup file
     if (!file.exists(paste(path,directory,zip_file,sep=""))){
       stop(paste(path,directory,zip_file," does not exist",sep=""))
     }
-    input<-unz(description=zip_file,filename=lookup_file)
+    file_size<-file.info(paste(path,directory,zip_file,sep=""))$size
+    if (file_size>200000000){
+      stop(paste("Zip file size (",file_size,") exceeds 200 megabytes and unz can't handle this"))
+    }
+
+    #Case sensitivity fix for data filename
+    file_list<-unzip(paste(path,directory,zip_file,sep=""),list=TRUE)
+    lookup_file<-case_match(lookup_file,file_list$Name)
+    if(!lookup_file %in% (file_list$Name)){
+      print(file_list)
+      stop(paste(lookup_file,"not present in",zip_file))
+    }
+    input<-paste(path,directory,zip_file,sep="")#unz(description=paste(path,directory,zip_file,sep=""),filename=lookup_file)
+
   }
   else{
     input<-swap_in_zip(lookup_file,path,directory)
