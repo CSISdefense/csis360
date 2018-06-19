@@ -414,21 +414,32 @@ transform_contract<-function(
 
 
   #Customer
-  if(!"Is.Defense" %in% colnames(contract)){
+  if(!"Is.Defense" %in% colnames(contract) & "Who" %in% colnames(contract)){
     contract$Is.Defense<-as.character(contract$Who)
     contract$Is.Defense[contract$Is.Defense %in%
                           c("Air Force","Army",
                             "Navy","Other DoD","Uncategorized"  )
                         ]<-"Defense"
     contract$Is.Defense<-factor(contract$Is.Defense)
+
+
+    #b_ODoD
+    contract$b_ODoD<-contract$Who
+    levels(contract$b_ODoD)<- list("1"=c("Other DoD"),
+                                   "0"=c("Air Force","Army","Navy"))
+    contract$b_ODoD[contract$b_ODoD=="Uncategorized"]<-NA
+    contract$b_ODoD<-as.integer(as.character(contract$b_ODoD))
+
+
   }
 
 
   #PSR_What
-  contract$PSR_What<-factor(paste(as.character(contract$PSR),
-                                  as.character(contract$What),sep="."))
-  contract$PSR_What[contract$PSR_What=="Unlabeled"]<-NA
-
+  if("PSR_What" %in% colnames(contract)){
+    contract$PSR_What<-factor(paste(as.character(contract$PSR),
+                                    as.character(contract$What),sep="."))
+    contract$PSR_What[contract$PSR_What=="Unlabeled"]<-NA
+  }
   #b_CBre
   contract$b_CBre<-ifelse(contract$CBre=="Ceiling Breach",1,NA)
   contract$b_CBre[contract$CBre=="None"]<-0
@@ -527,16 +538,8 @@ transform_contract<-function(
   )
 
 
-  #b_ODoD
-  contract$b_ODoD<-contract$Who
-  levels(contract$b_ODoD)<- list("1"=c("Other DoD"),
-                                 "0"=c("Air Force","Army","Navy"))
-  contract$b_ODoD[contract$b_ODoD=="Uncategorized"]<-NA
-  contract$b_ODoD<-as.integer(as.character(contract$b_ODoD))
-
-
   #n_Fixed
-
+  if("FxCb" %in% colnames(contract)){
   contract$n_Fixed<-contract$FxCb
   levels(contract$n_Fixed)<- list("1"=c("Fixed-Price","Fixed"),
                                   "0.5"=c("Combination or Other","Combo/Other"),
@@ -561,9 +564,10 @@ transform_contract<-function(
          "0.5"=c("Combination"),
          "0"=c("Award Fee", "Incentive", "Fixed Fee", "Other Fee"))
   contract$n_NoFee<-as.numeric(as.character(contract$n_NoFee))
+  }
 
-
-
+  #Competition
+  if("Comp" %in% colnames(contract)){
   #Right now comp is not actually a factor, so don't need to process it
   contract$b_Comp<-contract$Comp #Fix in Rdata, and add back comp
   levels(contract$b_Comp) <-
@@ -619,19 +623,20 @@ transform_contract<-function(
   contract$NoComp[contract$b_Comp==1]<-"Any Comp."
   contract$NoComp<-factor(contract$NoComp,
                            c("Any Comp.","Other No","Urgency"))
-
+}
 
 
   #b_Intl
+  if("Intl" %in% colnames(contract)){
   contract$b_Intl<-contract$Intl
   contract$b_Intl[contract$b_Intl=="Unlabeled"]<-NA
   levels(contract$b_Intl) <-
     list("0"=c("Just U.S."),
          "1"=c("Any International"))
   contract$b_Intl<-as.integer(as.character(contract$b_Intl))
+}
 
-
-
+  if("UCA" %in% colnames(contract)){
   #b_UCA
   contract$b_UCA<-contract$UCA
   levels(contract$b_UCA) <-
@@ -639,7 +644,7 @@ transform_contract<-function(
          "1"=c("UCA"))
   contract$b_UCA<-as.integer(as.character(contract$b_UCA))
 
-
+}
 
 
 
@@ -658,7 +663,7 @@ transform_contract<-function(
   #   contract$Is.Defense<-factor(contract$Is.Defense)
   # }
 
-
+  if("Veh" %in% colnames(contract)){
   levels(contract$Veh)[levels(contract$Veh)=="SINGLE AWARD IDC"]<-"S-IDC"
   levels(contract$Veh)[levels(contract$Veh)=="MULTIPLE AWARD IDC"]<-"M-IDC"
   contract$Veh<-factor(contract$Veh,c("Def/Pur",
@@ -707,8 +712,10 @@ transform_contract<-function(
   contract$Crisis[is.na(contract$Crisis)]<-"Other"
   levels(contract$Crisis)[levels(contract$Crisis)=="Disaster"]<-"Dis"
   contract$Crisis<-factor(contract$Crisis,c("Other","ARRA","Dis","OCO"))
+  }
 
   #NAICS
+  if("NAICS" %in% colnames(contract)){
   if(file.exists("annual_naics6_summary.Rdata")){
     load("annual_naics6_summary.Rdata")
     contract$NAICS<-as.integer(as.character(contract$NAICS))
@@ -723,8 +730,10 @@ transform_contract<-function(
     contract$cl_HHI_lag1<-scale(contract$l_HHI_lag1)
   }
 
-  #Office
+  }
 
+  #Office
+  if("$Office" %in% colnames(contract)){
   contract$ContractingOfficeCode<-as.character(contract$Office)
   contract<-csis360::read_and_join( contract,
                                "Office.ContractingOfficeCode.txt",
@@ -747,27 +756,6 @@ transform_contract<-function(
 
   contract<-contract[ ,!colnames(contract) %in% c("ContractingOfficeCode")]
 
-  contract$OffCri<-contract$CrisisPercent
-  contract$ProductOrServiceCode<-as.character(contract$ProdServ)
-    contract<-csis360::read_and_join( contract,
-                                 "ProductOrServiceCodes.csv",
-                                 path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
-                                 directory="",
-                                 by="ProductOrServiceCode",
-                                 add_var=c("Simple",
-                                           "ProductServiceOrRnDarea",
-                                           "ProductOrServiceArea",
-                                           "HostNation3Category",
-                                           "CrisisProductOrServiceArea",
-                                           "ProductOrServiceCodeText"
-                                           ),
-                                 new_var_checked=FALSE)
-  contract$ProductServiceOrRnDarea<-factor(contract$ProductServiceOrRnDarea)
-  contract$ProductOrServiceArea<-factor(contract$ProductOrServiceArea)
-  contract$HostNation3Category<-factor(contract$HostNation3Category)
-  contract$CrisisProductOrServiceArea<-factor(contract$CrisisProductOrServiceArea)
-  contract$ProductOrServiceCodeText<-factor(contract$ProductOrServiceCodeText)
-
   contract$Reach6<-factor(paste(contract$OffPl99,contract$Intl,sep="-"))
   levels(contract$Reach6) <-
     list( "US99-Dom"=c("US99-Just U.S."),
@@ -785,12 +773,38 @@ transform_contract<-function(
           "US50-Intl"=c("Mixed-Any International","US99-Any International"),
           "Intl-Intl"=c("Intl-Any International"))
 
+  colnames(contract)[colnames(contract)=="CrisisPercent"]<-"OffCri"
+  contract$c_OffCri<-scale(contract$OffCri)
+
+  contract$OffCri<-contract$CrisisPercent
+  }
+  if("$ProductServiceOrRnDarea" %in% colnames(contract)){
+    contract$ProductOrServiceCode<-as.character(contract$ProdServ)
+    contract<-csis360::read_and_join( contract,
+                                      "ProductOrServiceCodes.csv",
+                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                      directory="",
+                                      by="ProductOrServiceCode",
+                                      add_var=c("Simple",
+                                                "ProductServiceOrRnDarea",
+                                                "ProductOrServiceArea",
+                                                "HostNation3Category",
+                                                "CrisisProductOrServiceArea",
+                                                "ProductOrServiceCodeText"
+                                      ),
+                                      new_var_checked=FALSE)
+
+  contract$ProductServiceOrRnDarea<-factor(contract$ProductServiceOrRnDarea)
+  contract$ProductOrServiceArea<-factor(contract$ProductOrServiceArea)
+  contract$HostNation3Category<-factor(contract$HostNation3Category)
+  contract$CrisisProductOrServiceArea<-factor(contract$CrisisProductOrServiceArea)
+  contract$ProductOrServiceCodeText<-factor(contract$ProductOrServiceCodeText)
+}
+
 
   contract$cl_Ceil<-scale(contract$l_Ceil)
   contract$cl_Days<-scale(contract$l_Days)
 
-  colnames(contract)[colnames(contract)=="CrisisPercent"]<-"OffCri"
-  contract$c_OffCri<-scale(contract$OffCri)
 
   contract
 }

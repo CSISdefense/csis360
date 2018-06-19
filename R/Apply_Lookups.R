@@ -35,6 +35,10 @@ swap_in_zip<-function(filename,path,directory){
       stop(paste(input,"does not exist"))
     }
     input<-unz(description=zip_file,filename=filename)
+    file_size<-file.info(zip_file)$size
+    if (file_size>200000000){
+      stop(paste("Zip file size (",file_size,") exceeds 200 megabytes and unz can't handle this. Current solution is to unzip in file system and read in directly."))
+    }
   }
   input
 }
