@@ -474,7 +474,7 @@ transform_contract<-function(
   #l_Ceil
   contract$l_Ceil<-log(contract$UnmodifiedContractBaseAndAllOptionsValue)
   contract$l_Ceil[is.infinite(contract$l_Ceil)]<-NA
-
+contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentCompletionDate)
   contract<-contract %>% group_by(Ceil) %>%
     mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue))
 
