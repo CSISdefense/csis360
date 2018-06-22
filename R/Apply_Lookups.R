@@ -12,8 +12,54 @@
 #   Test Package:        'Ctrl + Shift + T'
 
 
+#' When passed a file that doesn't exist, check for the zip version
+#'
+#' @param filename The name of the data file
+#' @param path="" The location of the data file#'
+#' @param directory="Data\\" The directory within the path that holds the lookup
+#'
+#' @return The filename name, if the file exists. Otherwise the zip file that contains the file.
+#'
+#' @details This function is meant for large data files. Our default approach is to zip them
+#' up, one zip per file, and name the zip file the same name as the data file, except with zip
+#' as an extension instead of .txt or .csv. This checks if the base file is available and if
+#' not it handles opening the zip file instead.
+#'
+#' @examples swap_in_zip(filename="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv)
+#'
+swap_in_zip<-function(filename,path,directory){
+  input<-paste(path,directory,filename,sep="")
+  if(!file.exists(input)){
+    zip_file<-paste(substring(input,1,nchar(input)-3),"zip",sep="")
+    if (!file.exists(zip_file)){
+      stop(paste(input,"does not exist"))
+    }
+    input<-unz(description=zip_file,filename=filename)
+    file_size<-file.info(zip_file)$size
+    if (file_size>200000000){
+      stop(paste("Zip file size (",file_size,") exceeds 200 megabytes and unz can't handle this. Current solution is to unzip in file system and read in directly."))
+    }
+  }
+  input
+}
 
-
+#' Return the appropriate delimeter for the file type
+#'
+#' @param filename The name of the data file
+#'
+#' @return The delimter to use.
+#'
+#' @details Returns ',' for csv and '/t' for txt files. Creates an error for other file types.
+#'
+#' @examples get_delim("test.csv")
+get_delim<-function(filename){
+  delim<-NULL
+  extension<-substring(filename,nchar(filename)-2,nchar(filename))
+  if(extension=="csv") delim<-","
+  else if(extension=="txt") delim<-"\t"
+  else stop(paste("Unknown file type",extension))
+  delim
+}
 
 
 #' Replace NAs in one variable of a data frame with a specified valued
@@ -338,7 +384,18 @@ read_and_join_experiment<-function(
     add_var=NULL,
     new_var_checked=TRUE,
     skip_check_var=NULL,
-    zip_file=NULL){
+    zip_file=NULL
+    ){
+
+
+case_match<-function(name, list){
+  if(!name %in% (list)){
+    if(tolower(name) %in% tolower(list)){
+      name<-list[tolower(list)==tolower(name)]
+    }
+  }
+  name
+}
 
 
     #Replace NAs in input column if requested
@@ -351,33 +408,41 @@ read_and_join_experiment<-function(
     stop("lookup_file parameter is a data frame, it should be a filename, e.g. 'lookup_customer.csv'.")
 
 
-  if(is.null(zip_file)){#No zip file
+  if(!is.null(zip_file)){#No zip file
+    #Case sensitivity fix for zip filename
+    # dir_list<-list.files(paste(path,directory,sep=""))
+    # zip_file<-case_match(zip_file,dir_list)
+
     #Read in the lookup file
-    if (!file.exists(paste(path,directory,lookup_file,sep=""))){
-      stop(paste(path,directory,zip_file," does not exist",sep=""))
-    }
-    lookup<-readr::read_delim(
-      paste(path,directory,lookup_file,sep=""),
-      col_names=TRUE,
-      delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
-      na=c("NA","NULL"),
-      trim_ws=TRUE
-    )
-  }#Zip file
-  else{
     if (!file.exists(paste(path,directory,zip_file,sep=""))){
       stop(paste(path,directory,zip_file," does not exist",sep=""))
     }
-    #Read in the lookup file
-    read.csv(input)
+    file_size<-file.info(paste(path,directory,zip_file,sep=""))$size
+    if (file_size>200000000){
+      stop(paste("Zip file size (",file_size,") exceeds 200 megabytes and unz can't handle this. Current solution is to unzip in file system and read in directly."))
+    }
+
+    #Case sensitivity fix for data filename
+    file_list<-unzip(paste(path,directory,zip_file,sep=""),list=TRUE)
+    lookup_file<-case_match(lookup_file,file_list$Name)
+    if(!lookup_file %in% (file_list$Name)){
+      print(file_list)
+      stop(paste(lookup_file,"not present in",zip_file))
+    }
+    input<-paste(path,directory,zip_file,sep="")#unz(description=paste(path,directory,zip_file,sep=""),filename=lookup_file)
+
+  }
+  else{
+    input<-swap_in_zip(lookup_file,path,directory)
+  }
     lookup<-readr::read_delim(
-      file=paste(path,directory,zip_file,sep=""),
+      input,
       col_names=TRUE,
       delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
       na=c("NA","NULL"),
       trim_ws=TRUE
     )
-  }
+
     #Remove byte order marks present in UTF encoded files
     data<-remove_bom(data)
     lookup<-remove_bom(lookup)
