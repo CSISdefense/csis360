@@ -143,7 +143,7 @@ remove_bom<-function(data
 #'
 #' @param data The data frame to be joined
 #' @param lookup_file The name of the lookup file
-#' @param path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
+#' @param path="https://github.com/CSISdefense/R-scripts-and-data/tree/master/",
 #' The location of the lookup file
 #' @param directory="Lookups\\" The directory within the path that holds the lookup
 #' @param by=NULL The columns used to join, if not provided, matching columns will be used
@@ -173,8 +173,8 @@ remove_bom<-function(data
 read_and_join<-function(
   data,
   lookup_file,
-  path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
-  directory="Lookups\\",
+  path="https://github.com/CSISdefense/R-scripts-and-data/tree/master/",
+  directory="Lookups/",
   by=NULL,
   replace_na_var=NULL,
   overlap_var_replaced=TRUE,

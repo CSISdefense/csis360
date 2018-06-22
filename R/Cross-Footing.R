@@ -3,9 +3,9 @@
 
 #'Returns a dataframe with customer data for quality control check
 #'
-#' @param Path file path name where Footing files are stored
-#' @param Choice.Data
-#' @param Which.Data character string determining which data files to call; defaults to ""
+#' @param Path file path name where Lookup files are stored
+#' @param prod_serv_blank character string; choose from "Products", "Services", or ""; defaults to "" for all
+#' @param customer character string; choose from "Defense", "DHS", "State and IAP", or ""; defaults to "" for all
 #'
 #' @return dataframe
 #'
@@ -14,24 +14,33 @@
 #'
 #' @export
 load.FPDS.gov.customers.df<-function(
-  Path
-  ,Choice.Data
-  ,Which.Data=""
-){
+  Path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/"
+  ,prod_serv_blank=""
+  ,customer=""){
 
-
-  customers.files<-paste(Path
-                         ,"Footing Data\\"
-                         ,list.files(path=paste(Path,"Footing Data\\",sep="")
-                                     ,pattern=paste("Footing_"
-                                                    ,Which.Data
-                                                    ,"Customers"
-                                                    ,sep=""
-                                     )
-                         )
-                         ,sep=""
-  )
-  if (file.exists(customers.files)){
+  if(!is.na(prod_serv_blank)){
+    customers.files<-paste(Path, "master/footing/"
+                           ,list.files(path= paste(Path, "master/footing/", sep = "")
+                                       ,pattern=paste("Footing_"
+                                                      ,tolower(prod_serv_blank), "_"
+                                                      ,"Customers"
+                                                      ,sep=""
+                                       )
+                           )
+                           ,sep="")
+  }
+  else if(prod_serv_blank == ""){
+    customers.files<-paste(Path, "master/footing/"
+                           ,list.files(path= paste(Path, "master/footing/", sep = "")
+                                       ,pattern=paste("Footing_"
+                                                      ,"Customers"
+                                                      ,sep=""
+                                       )
+                           )
+                           ,sep=""
+    )
+  }
+  if(any(file.exists(customers.files))==TRUE){
     FPDS.gov.customers.df<-read.tables(customers.files,
                                        header=TRUE, sep=",", na.strings="NA", dec=".", strip.white=TRUE,
                                        stringsAsFactors=TRUE
@@ -39,33 +48,32 @@ load.FPDS.gov.customers.df<-function(
 
     rm(customers.files)
 
-    FPDS.gov.customers.df<-LimitData(FPDS.gov.customers.df
-                                     ,Choice.Data$Customer[Which.Data]
-                                     ,Choice.Data$big.ProdServCode[Which.Data]
+    FPDS.gov.customers.df<-LimitData(Path, FPDS.gov.customers.df
+                                     ,customer
+                                    ,prod_serv_blank
     )
-
-    FPDS.gov.customers.df
+  FPDS.gov.customers.df
   }
+
 }
 
-
 #'
 #'
-#' @param Path A character string of path name
-#' @param Choice.Data
-#' @param Which.Data
+#' @param Path file path name where Lookup files are stored
+#' @param prod_serv_blank character string; choose from "Products", "Services", or ""; defaults to "" for all
+#' @param customer character string; choose from "Defense", "DHS", "State and IAP", or ""; defaults to "" for all
 #'
-#' @return
+#' @return dataframe
 #'
 #' @details Quality control function
 #'
 #' @export
+load.FPDS.gov.buckets.df<-function(Path = "https://github.com/CSISdefense/Lookup-Tables", prod_serv_blank="",customer=""){
+    buckets.files<-paste(Path, "/tree/master/footing/"
+                           ,list.files(path= paste(Path, "/tree/master/footing/", sep = "")
+                                       ,pattern="Footing_Buckets_"),sep="")
 
-
-load.FPDS.gov.buckets.df<-function(Path,Choice.Data,Which.Data){
-  buckets.files<-paste(Path,list.files(path=Path,pattern="Footing_Buckets_"),sep="")
-
-  FPDS.gov.buckets.df<-read.tables(buckets.files,
+FPDS.gov.buckets.df<-read.tables(buckets.files,
                                    header=TRUE, sep=",", na.strings="NA", dec=".", strip.white=TRUE,
                                    stringsAsFactors=FALSE
   )
@@ -78,10 +86,9 @@ load.FPDS.gov.buckets.df<-function(Path,Choice.Data,Which.Data){
   rm(buckets.files)
 
 
-  FPDS.gov.buckets.df<-LimitData(FPDS.gov.buckets.df
-                                 ,Choice.Data$Customer[Which.Data]
-                                 ,Choice.Data$big.ProdServCode[Which.Data]
-  )
+  FPDS.gov.buckets.df<-LimitData(Path, FPDS.gov.buckets.df
+                                 ,customer,
+                                 ,prod_serv_blank)
   FPDS.gov.buckets.df
 }
 
@@ -103,13 +110,12 @@ read.tables <- function(file.names, ...) {
 }
 
 
-
-
 #'
 #'
-#' @param FPDS.gov
-#' @param customer
-#' @param big.ProdServ
+#' @param Path
+#' @param FPDS.gov dataframe
+#' @param customer character string; choose from "Defense", "DHS", "State and IAP", or ""; defaults to "" for all
+#' @param big.ProdServ character string; choose from "Products", "Services", or ""; defaults to "" for all
 #'
 #' @return
 #'
@@ -117,13 +123,12 @@ read.tables <- function(file.names, ...) {
 #'
 #'
 #' @export
-
-LimitData <- function(
-  FPDS.gov
+LimitData <- function(Path
+  ,FPDS.gov
   ,customer=NULL
   ,big.ProdServ=NULL)
 {
-  FPDS.gov<-subset(FPDS.gov,select=-c(Filename))
+FPDS.gov<-subset(FPDS.gov,select=-c(Filename))
   FPDS.gov<-append_contract_fixes(Path,FPDS.gov)
 ##  FPDS.gov<-apply_lookups(Path,FPDS.gov)
 
@@ -132,10 +137,12 @@ LimitData <- function(
   #Classify Customers
   if("AgencyID" %in% colnames(FPDS.gov)){
     FPDS.gov<-csis360::read_and_join(FPDS.gov,
-                                         "Agency_AgencyID.csv",
-                                         by="AgencyID",
-                                         replace_na_var="AgencyID",
-                                         add_var="Customer"
+                                    "Agency_AgencyID.csv",
+                                     by="AgencyID",
+                                     replace_na_var="AgencyID",
+                                     add_var="Customer",
+                                     path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                     directory = ""
     )
   }
   else if("Contracting.Agency.ID" %in% colnames(FPDS.gov)){
@@ -144,7 +151,9 @@ LimitData <- function(
                                          "Agency_AgencyID.csv",
                                          by="AgencyID",
                                          replace_na_var="AgencyID",
-                                         add_var=c("Customer","SubCustomer")
+                                         add_var=c("Customer","SubCustomer"),
+                                     path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                     directory = ""
     )
   }
   else if("Contracting.Department.ID" %in% colnames(FPDS.gov)){
@@ -153,31 +162,37 @@ LimitData <- function(
                                          "Agency_AgencyID.csv",
                                          by="AgencyID",
                                          replace_na_var="AgencyID",
-                                         add_var="Customer"
+                                         add_var="Customer",
+                                     path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                     directory = ""
     )
   }
 
   #Classify Product or Service Codes
-  if("ProductOrServiceCode" %in% colnames(FPDS.gov))
+  if("ProductOrServiceCode" %in% colnames(FPDS.gov)){
     FPDS.gov<-csis360::read_and_join(FPDS.gov,
                                          "ProductOrServiceCodes.csv",
                                          by="ProductOrServiceCode",
                                          replace_na_var="ProductOrServiceCode",
+                                     path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                     directory = "",
                                          add_var=c("ServicesCategory","Simple","ProductServiceOrRnDarea","ProductOrServiceArea")
     )
 
-
+}
   full_data<-replace_nas_with_unlabeled(FPDS.gov,"SubCustomer","Uncategorized")
   full_data<-csis360::read_and_join(FPDS.gov,
                                     "Lookup_SubCustomer.csv",
                                     by=c("Customer","SubCustomer"),
-                                    add_var="SubCustomer.platform"
+                                    add_var="SubCustomer.platform",
+                                    path = "https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/Lookups/",
+                                    directory = ""
   )
 
 
 
 
-  if(!(is.null(customer)) && (customer=="") &&!(customer=="") && !(customer=="D3")) {
+  if(!(is.null("customer")) && (customer=="") &&!(customer=="") && !(customer=="D3")) {
     FPDS.gov<-subset(FPDS.gov,Customer==customer)
   } else if (!(is.null(customer)) && (customer=="D3")){
     FPDS.gov<-subset(FPDS.gov,Customer  %in% c("Defense","State and IAP"))
@@ -285,7 +300,7 @@ import_SQLserver_file <- function(Path
 #' @details
 #'
 #' @export
-append_contract_fixes<- function(path,df){
+append_contract_fixes<- function(Path = "https://github.com/CSISdefense/R-scripts-and-data/blob/master/Lookups/",df){
   #   print(nrow(df))
 
 
@@ -295,7 +310,7 @@ append_contract_fixes<- function(path,df){
   }
 
   append.fixed.tasks<-read.csv(
-    paste(path,"Lookups\\","APPEND_Fixed_Tasks_webtool.csv",sep=""),
+    paste(Path,"APPEND_Fixed_Tasks_webtool.csv",sep=""),
     header=TRUE, sep=",", na.strings="NA", dec=".", strip.white=TRUE,
     stringsAsFactors=TRUE,
   )
@@ -374,4 +389,25 @@ append_contract_fixes<- function(path,df){
   print(head(append.fixed.tasks))
 
   df
+}
+
+
+
+
+
+#'
+#'
+#' @param factor
+#'
+#' @return
+#'
+#' @details
+#'
+#' @export
+FactorToNumber<-function(factor){
+  if ((is.factor(factor))||(is.character(factor))){
+    factor<-gsub('\\$','',as.character( factor))
+    factor<-as.double(gsub('\\,','',as.character( factor)))
+  }
+  factor
 }

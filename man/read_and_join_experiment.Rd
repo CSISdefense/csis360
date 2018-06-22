@@ -15,9 +15,9 @@ read_and_join_experiment(data, lookup_file,
 
 \item{lookup_file}{The name of the lookup file}
 
-\item{path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/", }{The location of the lookup file}
+\item{path}{The location of the lookup file}
 
-\item{directory="Lookups\\"}{The directory within the path that holds the lookup}
+\item{directory}{The directory within the path that holds the lookup}
 
 \item{by=NULL}{The columns used to join, if not provided, matching columns will be used}
 
