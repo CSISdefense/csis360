@@ -837,23 +837,14 @@ contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentComp
                               ordered=TRUE
   )
 
-  contract$Ceil.Simple<-as.character(contract$Ceil)
+  contract$Ceil.Simple<-contract$Ceil
+  levels(contract$Ceil.Simple)<- list("10m+"=c("75m+",
+                                               "10m - <75m"),
+                                      "100k - <10m"=c("1m - <10m",
+                                                      "100k - <1m"),
+                                      "0k - <100k"=c("15k - <100k",
+                                                     "0 - <15k"))
 
-  contract$Ceil.Simple[contract$Ceil.Simple %in% c(
-    "75m+",
-    "10m - <75m")]<-"10m+"
-  contract$Ceil.Simple[contract$Ceil.Simple %in% c(
-    "1m - <10m",
-    "100k - <1m")]<-"100k - <10m"
-  contract$Ceil.Simple[contract$Ceil.Simple %in% c(
-    "15k - <100k",
-    "0 - <15k")]<-"0k - <100k"
-  contract$Ceil.Simple<-factor(contract$Ceil.Simple,
-                               levels=c("0k - <100k",
-                                        "100k - <10m",
-                                        "10m+"),
-                               ordered=TRUE
-  )
 
 
 
