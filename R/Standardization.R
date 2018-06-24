@@ -838,12 +838,12 @@ contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentComp
   )
 
   contract$Ceil.Simple<-contract$Ceil
-  levels(contract$Ceil.Simple)<- list("10m+"=c("75m+",
-                                               "10m - <75m"),
+  levels(contract$Ceil.Simple)<- list("0k - <100k"=c("15k - <100k",
+                                                     "0 - <15k"),
                                       "100k - <10m"=c("1m - <10m",
                                                       "100k - <1m"),
-                                      "0k - <100k"=c("15k - <100k",
-                                                     "0 - <15k"))
+                                      "10m+"=c("75m+",
+                                               "10m - <75m"))
 
 
 
