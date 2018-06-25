@@ -478,39 +478,52 @@ contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentComp
   contract<-contract %>% group_by(Ceil) %>%
     mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue))
 
-  contract$Ceil.Simple<-as.character(contract$Ceil)
+  if (identical(levels(contract$Ceil),c("[0,15k)",
+                               "[15k,100k)",
+                               "[100k,1m)",
+                               "[1m,10m)",
+                               "[10m,75m)",
+                               "[75m+]"
+  ))){
+    contract$Ceil.Simple<-contract$Ceil
+    levels(contract$Ceil.Simple)<- list("0k - <100k"=c("[15k,100k)",
+                                                       "[0,15k)"),
+                                        "100k - <10m"=c("[1m,10m)",
+                                                        "[100k,1m)"),
+                                        "10m+"=c("[75m+]",
+                                                 "[10m,75m)"))
 
-  contract$Ceil.Simple[contract$Ceil.Simple %in% c(
-    "75m+",
-    "10m - <75m")]<-"10m+"
-  contract$Ceil.Simple[contract$Ceil.Simple %in% c(
-    "1m - <10m",
-    "100k - <1m")]<-"100k - <10m"
-  contract$Ceil.Simple[contract$Ceil.Simple %in% c(
-    "15k - <100k",
-    "0 - <15k")]<-"0k - <100k"
-  contract$Ceil.Simple<-factor(contract$Ceil.Simple,
-                               levels=c("0k - <100k",
-                                        "100k - <10m",
-                                        "10m+"),
-                               ordered=TRUE
-  )
+    contract$Ceil.Big<-contract$Ceil
+    levels(contract$Ceil.Big)<- list("0k - <100k"=c("[15k,100k)",
+                                                    "[0,15k)"),
+                                     "100k - <10m"=c("[1m,10m)",
+                                                     "[100k,1m)"),
+                                     "10m - <75m"=c("[10m,75m)"),
+                                     "75m+"=c("[75m+]"))
+  }
+  else if (identical(levels(contract$Ceil),c("0 - <15k",
+                               "15k - <100k",
+                               "100k - <1m",
+                               "1m - <10m",
+                               "10m - <75m",
+                               "75m+"
+  ))){
+    contract$Ceil.Simple<-contract$Ceil
+    levels(contract$Ceil.Simple)<- list("0k - <100k"=c("15k - <100k",
+                                                       "0 - <15k"),
+                                        "100k - <10m"=c("1m - <10m",
+                                                        "100k - <1m"),
+                                        "10m+"=c("75m+",
+                                                 "10m - <75m"))
 
-
-  contract$Ceil.Big<-as.character(contract$Ceil)
-
-  contract$Ceil.Big[contract$Ceil.Big %in% c(
-    "100k - <1m",
-    "15k - <100k",
-    "0 - <15k")]<-"0k - <1m"
-
-  contract$Ceil.Big<-factor(contract$Ceil.Big,
-                            levels=c("0k - <1m",
-                                     "1m - <10m",
-                                     "10m - <75m",
-                                     "75m+"),
-                            ordered=TRUE
-  )
+    contract$Ceil.Big<-contract$Ceil
+    levels(contract$Ceil.Big)<- list("0k - <100k"=c("15k - <100k",
+                                                    "0 - <15k"),
+                                     "100k - <10m"=c("1m - <10m",
+                                                     "100k - <1m"),
+                                     "10m - <75m"=c("10m - <75m"),
+                                     "75m+"=c("75m+"))
+  }
 
 
 
@@ -536,6 +549,7 @@ contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentComp
                                        "(~2 years+]"),
                               ordered=TRUE
   )
+
 
 
   #n_Fixed
@@ -824,26 +838,6 @@ contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentComp
   contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
   contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
   contract$Dur[contract$UnmodifiedYearsCat<0]<-NA
-
-  contract$Dur.Simple<-as.character(contract$Dur)
-  contract$Dur.Simple[contract$Dur.Simple %in% c(
-    "[0 months,~2 months)",
-    "[~2 months,~7 months)",
-    "[~7 months-~1 year]")]<-"<~1 year"
-  contract$Dur.Simple<-factor(contract$Dur.Simple,
-                              levels=c("<~1 year",
-                                       "(~1 year,~2 years]",
-                                       "(~2 years+]"),
-                              ordered=TRUE
-  )
-
-  contract$Ceil.Simple<-contract$Ceil
-  levels(contract$Ceil.Simple)<- list("0k - <100k"=c("15k - <100k",
-                                                     "0 - <15k"),
-                                      "100k - <10m"=c("1m - <10m",
-                                                      "100k - <1m"),
-                                      "10m+"=c("75m+",
-                                               "10m - <75m"))
 
 
 
