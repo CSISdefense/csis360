@@ -478,6 +478,18 @@ transform_contract<-function(
       contract$pNewWorkUnmodifiedBaseAndAll,3)
   }
 
+
+    contract$pChange3Sig<-round(
+      contract$pChangeOrderUnmodifiedBaseAndAll,3)
+
+    contract$qCRais <- cut2(
+      contract$pChangeOrderUnmodifiedBaseAndAll,c(
+        -0.001,
+        0.001,
+        0.15)
+    )
+  }
+
   #Should include this in the original data frame but for now can drive it.
   contract$n_CBre<-contract$ChangeOrderBaseAndAllOptionsValue
 
