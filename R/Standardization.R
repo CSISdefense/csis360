@@ -459,9 +459,24 @@ transform_contract<-function(
   contract$j_Term<-jitter_binary(contract$b_Term)
 
   #n_CBre
-  # contract$pChangeOrderUnmodifiedBaseAndAll<-as.numeric(as.character(contract$pChangeOrderUnmodifiedBaseAndAll))
-  # contract$pChange3Sig<-round(
-  #   contract$pChangeOrderUnmodifiedBaseAndAll,3)
+  if ("ChangeOrderBaseAndAllOptionsValue" %in% colnames(contract) ){
+    contract$pChangeOrderUnmodifiedBaseAndAll<-contract$ChangeOrderBaseAndAllOptionsValue/
+      contract$UnmodifiedContractBaseAndAllOptionsValue
+    contract$pChangeOrderUnmodifiedBaseAndAll[
+      is.na(contract$pChangeOrderUnmodifiedBaseAndAll) & contract$SumOfisChangeOrder==0]<-0
+    contract$pChangeOrderUnmodifiedBaseAndAll<-as.numeric(as.character(contract$pChangeOrderUnmodifiedBaseAndAll))
+    contract$pChange3Sig<-round(
+      contract$pChangeOrderUnmodifiedBaseAndAll,3)
+  }
+  if ("NewWorkUnmodifiedBaseAndAll" %in% colnames(contract) ){
+    contract$pNewWorkUnmodifiedBaseAndAll<-contract$NewWorkUnmodifiedBaseAndAll/
+      contract$UnmodifiedContractBaseAndAllOptionsValue
+    contract$pNewWorkUnmodifiedBaseAndAll[
+      is.na(contract$pNewWorkUnmodifiedBaseAndAll) & contract$SumOfisChangeOrder==0]<-0
+    contract$pNewWorkUnmodifiedBaseAndAll<-as.numeric(as.character(contract$pNewWorkUnmodifiedBaseAndAll))
+    contract$pChange3Sig<-round(
+      contract$pNewWorkUnmodifiedBaseAndAll,3)
+  }
 
   #Should include this in the original data frame but for now can drive it.
   contract$n_CBre<-contract$ChangeOrderBaseAndAllOptionsValue
