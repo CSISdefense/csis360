@@ -467,6 +467,13 @@ transform_contract<-function(
     contract$pChangeOrderUnmodifiedBaseAndAll<-as.numeric(as.character(contract$pChangeOrderUnmodifiedBaseAndAll))
     contract$pChange3Sig<-round(
       contract$pChangeOrderUnmodifiedBaseAndAll,3)
+    contract$CRai <- cut2(
+      contract$pChangeOrderUnmodifiedBaseAndAll,c(
+        -0.001,
+        0.001,
+        0.15)
+    )
+
   }
   if ("NewWorkUnmodifiedBaseAndAll" %in% colnames(contract) ){
     contract$pNewWorkUnmodifiedBaseAndAll<-contract$NewWorkUnmodifiedBaseAndAll/
@@ -479,16 +486,6 @@ transform_contract<-function(
   }
 
 
-    contract$pChange3Sig<-round(
-      contract$pChangeOrderUnmodifiedBaseAndAll,3)
-
-    contract$qCRais <- cut2(
-      contract$pChangeOrderUnmodifiedBaseAndAll,c(
-        -0.001,
-        0.001,
-        0.15)
-    )
-  }
 
   #Should include this in the original data frame but for now can drive it.
   contract$n_CBre<-contract$ChangeOrderBaseAndAllOptionsValue
@@ -501,7 +498,7 @@ transform_contract<-function(
   #l_Ceil
   contract$l_Ceil<-log(contract$UnmodifiedContractBaseAndAllOptionsValue)
   contract$l_Ceil[is.infinite(contract$l_Ceil)]<-NA
-contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentCompletionDate)
+  contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentCompletionDate)
   contract<-contract %>% group_by(Ceil) %>%
     mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue))
 
@@ -527,8 +524,16 @@ contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentComp
                                                      "[100k,1m)"),
                                      "10m - <75m"=c("[10m,75m)"),
                                      "75m+"=c("[75m+]"))
-  }
-  else if (identical(levels(contract$Ceil),c("0 - <15k",
+
+    contract$Ceil.1m<-contract$Ceil
+    levels(contract$Ceil.1m)<- list("0k - <1m"=c("[0,15k)",
+                                                  "[15k,100k)",
+                                                  "[100k,1m)"
+                                                  ),
+                                     "1m - <10m"=c("[1m,10m)"),
+                                     "10m - <75m"=c("[10m,75m)"),
+                                     "75m+"=c("[75m+]"))
+  } else if (identical(levels(contract$Ceil),c("0 - <15k",
                                "15k - <100k",
                                "100k - <1m",
                                "1m - <10m",
@@ -550,6 +555,13 @@ contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentComp
                                                      "100k - <1m"),
                                      "10m - <75m"=c("10m - <75m"),
                                      "75m+"=c("75m+"))
+    contract$Ceil.1m<-contract$Ceil
+    levels(contract$Ceil.1m)<- list("0k - <1m"=c("15k - <100k",
+                                                   "0 - <15k",
+                                                   "100k - <1m"),
+                                    "1m - <10m"=c("1m - <10m"),
+                                    "10m - <75m"=c("10m - <75m"),
+                                    "75m+"=c("75m+"))
   }
 
 
@@ -581,111 +593,111 @@ contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentComp
 
   #n_Fixed
   if("FxCb" %in% colnames(contract)){
-  contract$n_Fixed<-contract$FxCb
-  levels(contract$n_Fixed)<- list("1"=c("Fixed-Price","Fixed"),
-                                  "0.5"=c("Combination or Other","Combo/Other"),
-                                  "0"=c("Cost-Based","Cost"))
-  levels(contract$FxCb)<- list("Fixed"=c("Fixed-Price","Fixed"),
-                               "Combo/Other"=c("Combination or Other","Combo/Other"),
-                               "Cost"=c("Cost-Based","Cost"))
-  contract$n_Fixed<-as.numeric(as.character(contract$n_Fixed))
+    contract$n_Fixed<-contract$FxCb
+    levels(contract$n_Fixed)<- list("1"=c("Fixed-Price","Fixed"),
+                                    "0.5"=c("Combination or Other","Combo/Other"),
+                                    "0"=c("Cost-Based","Cost"))
+    levels(contract$FxCb)<- list("Fixed"=c("Fixed-Price","Fixed"),
+                                 "Combo/Other"=c("Combination or Other","Combo/Other"),
+                                 "Cost"=c("Cost-Based","Cost"))
+    contract$n_Fixed<-as.numeric(as.character(contract$n_Fixed))
 
-  #n_Incent
-  contract$n_Incent<-contract$Fee
-  levels(contract$n_Incent) <-
-    list("1"=c("Incentive"),
-         "0.5"=c("Combination"),
-         "0"=c("Award Fee", "FFP or No Fee", "Fixed Fee", "Other Fee"))
-  contract$n_Incent<-as.numeric(as.character(contract$n_Incent))
+    #n_Incent
+    contract$n_Incent<-contract$Fee
+    levels(contract$n_Incent) <-
+      list("1"=c("Incentive"),
+           "0.5"=c("Combination"),
+           "0"=c("Award Fee", "FFP or No Fee", "Fixed Fee", "Other Fee"))
+    contract$n_Incent<-as.numeric(as.character(contract$n_Incent))
 
-  #n_NoFee
-  contract$n_NoFee<-contract$Fee
-  levels(contract$n_NoFee) <-
-    list("1"=c("FFP or No Fee"),
-         "0.5"=c("Combination"),
-         "0"=c("Award Fee", "Incentive", "Fixed Fee", "Other Fee"))
-  contract$n_NoFee<-as.numeric(as.character(contract$n_NoFee))
+    #n_NoFee
+    contract$n_NoFee<-contract$Fee
+    levels(contract$n_NoFee) <-
+      list("1"=c("FFP or No Fee"),
+           "0.5"=c("Combination"),
+           "0"=c("Award Fee", "Incentive", "Fixed Fee", "Other Fee"))
+    contract$n_NoFee<-as.numeric(as.character(contract$n_NoFee))
   }
 
   #Competition
   if("Comp" %in% colnames(contract)){
-  #Right now comp is not actually a factor, so don't need to process it
-  contract$b_Comp<-contract$Comp #Fix in Rdata, and add back comp
-  levels(contract$b_Comp) <-
-    list("0"="No Comp.",
-         "1"="Comp.")
-  contract$b_Comp<-as.integer(as.character(contract$b_Comp))
+    #Right now comp is not actually a factor, so don't need to process it
+    contract$b_Comp<-contract$Comp #Fix in Rdata, and add back comp
+    levels(contract$b_Comp) <-
+      list("0"="No Comp.",
+           "1"="Comp.")
+    contract$b_Comp<-as.integer(as.character(contract$b_Comp))
 
-  #n_Comp
-  contract$n_Comp<-contract$EffComp #Fix in Rdata, and add back comp
-  levels(contract$n_Comp) <-
-    list("0"="No Comp.",
-         "0.5"="1 Offer",
-         "1"="2+ Offers")
-  contract$n_Comp<-as.numeric(as.character(contract$n_Comp))
-
-
-
-  contract$n_Offr<-contract$Offr
-  levels(contract$n_Offr) <-
-    list("1"=c("1"),
-         "2"=c("2"),
-         "3"=c("3-4"),
-         "4"=c("5+"))
-  contract$n_Offr<-as.integer(as.character(contract$n_Offr))
-  contract$n_Offr[contract$b_Comp==0 & !is.na(contract$b_Comp)]<-0
-  contract$n_Offr[is.na(contract$b_Comp)]<-NA
-  contract$CompOffr<-factor(contract$n_Offr)
-  levels(contract$CompOffr) <-
-    list("No Competition"="0",
-         "1 offer"="1",
-         "2 offers"="2",
-         "3-4 offers"="3",
-         "5+ offers"="4")
+    #n_Comp
+    contract$n_Comp<-contract$EffComp #Fix in Rdata, and add back comp
+    levels(contract$n_Comp) <-
+      list("0"="No Comp.",
+           "0.5"="1 Offer",
+           "1"="2+ Offers")
+    contract$n_Comp<-as.numeric(as.character(contract$n_Comp))
 
 
-  #l_Offr
-  contract$l_Offr<-log(contract$UnmodifiedNumberOfOffersReceived)
-  contract$l_Offr[is.infinite(contract$l_Offr)]<-NA
 
-  contract$cb_Comp<-scale(contract$b_Comp)
-  contract$cn_Comp<-scale(contract$n_Comp)
-  contract$cn_Offr<-scale(contract$n_Offr)
-  contract$cl_Offr<-scale(contract$l_Offr)
+    contract$n_Offr<-contract$Offr
+    levels(contract$n_Offr) <-
+      list("1"=c("1"),
+           "2"=c("2"),
+           "3"=c("3-4"),
+           "4"=c("5+"))
+    contract$n_Offr<-as.integer(as.character(contract$n_Offr))
+    contract$n_Offr[contract$b_Comp==0 & !is.na(contract$b_Comp)]<-0
+    contract$n_Offr[is.na(contract$b_Comp)]<-NA
+    contract$CompOffr<-factor(contract$n_Offr)
+    levels(contract$CompOffr) <-
+      list("No Competition"="0",
+           "1 offer"="1",
+           "2 offers"="2",
+           "3-4 offers"="3",
+           "5+ offers"="4")
 
-#Urgency
-  contract$b_Urg<-NA
-  contract$b_Urg<-ifelse(contract$Urg=="Urgency Except.",1,NA)
-  contract$b_Urg[contract$Urg=="Not Urgency"]<-0
 
-  contract$NoComp<-NA
-  contract$NoComp<-ifelse(contract$Urg=="Urgency Except.","Urgency",NA)
-  contract$NoComp[contract$Urg=="Not Urgency"]<-"Other No"
-  contract$NoComp[contract$b_Comp==1]<-"Any Comp."
-  contract$NoComp<-factor(contract$NoComp,
-                           c("Any Comp.","Other No","Urgency"))
-}
+    #l_Offr
+    contract$l_Offr<-log(contract$UnmodifiedNumberOfOffersReceived)
+    contract$l_Offr[is.infinite(contract$l_Offr)]<-NA
+
+    contract$cb_Comp<-scale(contract$b_Comp)
+    contract$cn_Comp<-scale(contract$n_Comp)
+    contract$cn_Offr<-scale(contract$n_Offr)
+    contract$cl_Offr<-scale(contract$l_Offr)
+
+    #Urgency
+    contract$b_Urg<-NA
+    contract$b_Urg<-ifelse(contract$Urg=="Urgency Except.",1,NA)
+    contract$b_Urg[contract$Urg=="Not Urgency"]<-0
+
+    contract$NoComp<-NA
+    contract$NoComp<-ifelse(contract$Urg=="Urgency Except.","Urgency",NA)
+    contract$NoComp[contract$Urg=="Not Urgency"]<-"Other No"
+    contract$NoComp[contract$b_Comp==1]<-"Any Comp."
+    contract$NoComp<-factor(contract$NoComp,
+                            c("Any Comp.","Other No","Urgency"))
+  }
 
 
   #b_Intl
   if("Intl" %in% colnames(contract)){
-  contract$b_Intl<-contract$Intl
-  contract$b_Intl[contract$b_Intl=="Unlabeled"]<-NA
-  levels(contract$b_Intl) <-
-    list("0"=c("Just U.S."),
-         "1"=c("Any International"))
-  contract$b_Intl<-as.integer(as.character(contract$b_Intl))
-}
+    contract$b_Intl<-contract$Intl
+    contract$b_Intl[contract$b_Intl=="Unlabeled"]<-NA
+    levels(contract$b_Intl) <-
+      list("0"=c("Just U.S."),
+           "1"=c("Any International"))
+    contract$b_Intl<-as.integer(as.character(contract$b_Intl))
+  }
 
   if("UCA" %in% colnames(contract)){
-  #b_UCA
-  contract$b_UCA<-contract$UCA
-  levels(contract$b_UCA) <-
-    list("0"=c("Not UCA"),
-         "1"=c("UCA"))
-  contract$b_UCA<-as.integer(as.character(contract$b_UCA))
+    #b_UCA
+    contract$b_UCA<-contract$UCA
+    levels(contract$b_UCA) <-
+      list("0"=c("Not UCA"),
+           "1"=c("UCA"))
+    contract$b_UCA<-as.integer(as.character(contract$b_UCA))
 
-}
+  }
 
 
 
@@ -705,119 +717,119 @@ contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentComp
   # }
 
   if("Veh" %in% colnames(contract)){
-  levels(contract$Veh)[levels(contract$Veh)=="SINGLE AWARD IDC"]<-"S-IDC"
-  levels(contract$Veh)[levels(contract$Veh)=="MULTIPLE AWARD IDC"]<-"M-IDC"
-  contract$Veh<-factor(contract$Veh,c("Def/Pur",
-                                            "S-IDC",
-                                            "M-IDC",
-                                            "FSS/GWAC",
-                                            "BPA/BOA"))
+    levels(contract$Veh)[levels(contract$Veh)=="SINGLE AWARD IDC"]<-"S-IDC"
+    levels(contract$Veh)[levels(contract$Veh)=="MULTIPLE AWARD IDC"]<-"M-IDC"
+    contract$Veh<-factor(contract$Veh,c("Def/Pur",
+                                        "S-IDC",
+                                        "M-IDC",
+                                        "FSS/GWAC",
+                                        "BPA/BOA"))
 
-  #SIDV
-  contract$SIDV<-contract$Veh
-  levels(contract$SIDV) <-
-    list("1"=c("S-IDC"),
-         "0"=c("Def/Pur","M-IDC","FSS/GWAC","BPA/BOA"))
-  contract$SIDV<-as.integer(as.character(contract$SIDV))
+    #SIDV
+    contract$SIDV<-contract$Veh
+    levels(contract$SIDV) <-
+      list("1"=c("S-IDC"),
+           "0"=c("Def/Pur","M-IDC","FSS/GWAC","BPA/BOA"))
+    contract$SIDV<-as.integer(as.character(contract$SIDV))
 
-  #MIDV
-  contract$MIDV<-contract$Veh
-  levels(contract$MIDV) <-
-    list("1"=c("M-IDC"),
-         "0"=c("Def/Pur","S-IDC","FSS/GWAC","BPA/BOA"))
-  contract$MIDV<-as.integer(as.character(contract$MIDV))
+    #MIDV
+    contract$MIDV<-contract$Veh
+    levels(contract$MIDV) <-
+      list("1"=c("M-IDC"),
+           "0"=c("Def/Pur","S-IDC","FSS/GWAC","BPA/BOA"))
+    contract$MIDV<-as.integer(as.character(contract$MIDV))
 
-  #FSSGWAC
-  contract$FSSGWAC<-contract$Veh
-  levels(contract$FSSGWAC) <-
-    list("1"=c("FSS/GWAC"),
-         "0"=c("Def/Pur","S-IDC", "M-IDC","BPA/BOA"))
-  contract$FSSGWAC<-as.integer(as.character(contract$FSSGWAC))
+    #FSSGWAC
+    contract$FSSGWAC<-contract$Veh
+    levels(contract$FSSGWAC) <-
+      list("1"=c("FSS/GWAC"),
+           "0"=c("Def/Pur","S-IDC", "M-IDC","BPA/BOA"))
+    contract$FSSGWAC<-as.integer(as.character(contract$FSSGWAC))
 
-  #BPABOA
-  contract$BPABOA<-contract$Veh
-  levels(contract$BPABOA) <-
-    list("1"=c("BPA/BOA"),
-         "0"=c("Def/Pur","S-IDC", "M-IDC","FSS/GWAC"))
-  contract$BPABOA<-as.integer(as.character(contract$BPABOA))
+    #BPABOA
+    contract$BPABOA<-contract$Veh
+    levels(contract$BPABOA) <-
+      list("1"=c("BPA/BOA"),
+           "0"=c("Def/Pur","S-IDC", "M-IDC","FSS/GWAC"))
+    contract$BPABOA<-as.integer(as.character(contract$BPABOA))
 
-  #Crisis Dataset
-  # contract$ARRA<-0
-  # contract$ARRA[contract$MaxOfDecisionTree=="ARRA"]<-1
-  # contract$Dis<-0
-  # contract$Dis[contract$MaxOfDecisionTree=="Disaster"]<-1
-  # contract$OCO<-0
-  # contract$OCO[contract$MaxOfDecisionTree=="OCO"]<-1
-  contract$Crisis<-contract$MaxOfDecisionTree
-  levels(contract$Crisis)[levels(contract$Crisis)=="Excluded"]<-"Other"
-  contract$Crisis[is.na(contract$Crisis)]<-"Other"
-  levels(contract$Crisis)[levels(contract$Crisis)=="Disaster"]<-"Dis"
-  contract$Crisis<-factor(contract$Crisis,c("Other","ARRA","Dis","OCO"))
+    #Crisis Dataset
+    # contract$ARRA<-0
+    # contract$ARRA[contract$MaxOfDecisionTree=="ARRA"]<-1
+    # contract$Dis<-0
+    # contract$Dis[contract$MaxOfDecisionTree=="Disaster"]<-1
+    # contract$OCO<-0
+    # contract$OCO[contract$MaxOfDecisionTree=="OCO"]<-1
+    contract$Crisis<-contract$MaxOfDecisionTree
+    levels(contract$Crisis)[levels(contract$Crisis)=="Excluded"]<-"Other"
+    contract$Crisis[is.na(contract$Crisis)]<-"Other"
+    levels(contract$Crisis)[levels(contract$Crisis)=="Disaster"]<-"Dis"
+    contract$Crisis<-factor(contract$Crisis,c("Other","ARRA","Dis","OCO"))
   }
 
   #NAICS
   if("NAICS" %in% colnames(contract)){
-  if(file.exists("annual_naics6_summary.Rdata")){
-    load("annual_naics6_summary.Rdata")
-    contract$NAICS<-as.integer(as.character(contract$NAICS))
-    contract<-left_join(contract,NAICS_join, by=c("StartFY"="StartFY",
-                                                  "NAICS"="NAICS_Code"))
+    if(file.exists("annual_naics6_summary.Rdata")){
+      load("annual_naics6_summary.Rdata")
+      contract$NAICS<-as.integer(as.character(contract$NAICS))
+      contract<-left_join(contract,NAICS_join, by=c("StartFY"="StartFY",
+                                                    "NAICS"="NAICS_Code"))
 
-    #Remove 0s, they make no sense, source must be one contractors in field have 0 obligations, which is just missing data really
-    contract$HHI_lag1[contract$HHI_lag1==0]<-NA
-    contract$c_HHI_lag1<-scale(contract$HHI_lag1)
+      #Remove 0s, they make no sense, source must be one contractors in field have 0 obligations, which is just missing data really
+      contract$HHI_lag1[contract$HHI_lag1==0]<-NA
+      contract$c_HHI_lag1<-scale(contract$HHI_lag1)
 
-    contract$l_HHI_lag1<-log(contract$HHI_lag1)
-    contract$cl_HHI_lag1<-scale(contract$l_HHI_lag1)
-  }
+      contract$l_HHI_lag1<-log(contract$HHI_lag1)
+      contract$cl_HHI_lag1<-scale(contract$l_HHI_lag1)
+    }
 
   }
 
   #Office
   if("$Office" %in% colnames(contract)){
-  contract$ContractingOfficeCode<-as.character(contract$Office)
-  contract<-csis360::read_and_join( contract,
-                               "Office.ContractingOfficeCode.txt",
-                               path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
-                               directory="office\\",
-                               by="ContractingOfficeCode",
-                               add_var=c("PlaceIntlPercent","CrisisPercent"),
-                               new_var_checked=FALSE)
+    contract$ContractingOfficeCode<-as.character(contract$Office)
+    contract<-csis360::read_and_join( contract,
+                                      "Office.ContractingOfficeCode.txt",
+                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                      directory="office\\",
+                                      by="ContractingOfficeCode",
+                                      add_var=c("PlaceIntlPercent","CrisisPercent"),
+                                      new_var_checked=FALSE)
 
 
 
-  contract$OffIntl<-contract$PlaceIntlPercent
+    contract$OffIntl<-contract$PlaceIntlPercent
 
-  contract$OffPl99<-Hmisc::cut2(contract$OffIntl,c(0.01,0.50))
-  levels(contract$OffPl99) <-
-    list("US99"=c("[0.00,0.01)"),
-         "Mixed"=c("[0.01,0.50)"),
-         "Intl"=c("[0.50,1.00]"))
+    contract$OffPl99<-Hmisc::cut2(contract$OffIntl,c(0.01,0.50))
+    levels(contract$OffPl99) <-
+      list("US99"=c("[0.00,0.01)"),
+           "Mixed"=c("[0.01,0.50)"),
+           "Intl"=c("[0.50,1.00]"))
 
 
-  contract<-contract[ ,!colnames(contract) %in% c("ContractingOfficeCode")]
+    contract<-contract[ ,!colnames(contract) %in% c("ContractingOfficeCode")]
 
-  contract$Reach6<-factor(paste(contract$OffPl99,contract$Intl,sep="-"))
-  levels(contract$Reach6) <-
-    list( "US99-Dom"=c("US99-Just U.S."),
-          "Mixed-Dom"=c("Mixed-Just U.S."),
-          "Intl-Dom"=c("Intl-Just U.S."),
-          "US99-Intl"=c("US99-Any International"),
-          "Mixed-Intl"=c("Mixed-Any International"),
-          "Intl-Intl"=c("Intl-Any International"))
-  contract$Reach<-contract$Reach6
+    contract$Reach6<-factor(paste(contract$OffPl99,contract$Intl,sep="-"))
+    levels(contract$Reach6) <-
+      list( "US99-Dom"=c("US99-Just U.S."),
+            "Mixed-Dom"=c("Mixed-Just U.S."),
+            "Intl-Dom"=c("Intl-Just U.S."),
+            "US99-Intl"=c("US99-Any International"),
+            "Mixed-Intl"=c("Mixed-Any International"),
+            "Intl-Intl"=c("Intl-Any International"))
+    contract$Reach<-contract$Reach6
 
-  levels(contract$Reach) <-
-    list( "US50-Dom"=c("US99-Just U.S.","Mixed-Just U.S."),
-          "Mixed-Dom"=c(),
-          "Intl-Dom"=c("Intl-Just U.S."),
-          "US50-Intl"=c("Mixed-Any International","US99-Any International"),
-          "Intl-Intl"=c("Intl-Any International"))
+    levels(contract$Reach) <-
+      list( "US50-Dom"=c("US99-Just U.S.","Mixed-Just U.S."),
+            "Mixed-Dom"=c(),
+            "Intl-Dom"=c("Intl-Just U.S."),
+            "US50-Intl"=c("Mixed-Any International","US99-Any International"),
+            "Intl-Intl"=c("Intl-Any International"))
 
-  colnames(contract)[colnames(contract)=="CrisisPercent"]<-"OffCri"
-  contract$c_OffCri<-scale(contract$OffCri)
+    colnames(contract)[colnames(contract)=="CrisisPercent"]<-"OffCri"
+    contract$c_OffCri<-scale(contract$OffCri)
 
-  contract$OffCri<-contract$CrisisPercent
+    contract$OffCri<-contract$CrisisPercent
   }
   if("$ProductServiceOrRnDarea" %in% colnames(contract)){
     contract$ProductOrServiceCode<-as.character(contract$ProdServ)
@@ -835,12 +847,12 @@ contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentComp
                                       ),
                                       new_var_checked=FALSE)
 
-  contract$ProductServiceOrRnDarea<-factor(contract$ProductServiceOrRnDarea)
-  contract$ProductOrServiceArea<-factor(contract$ProductOrServiceArea)
-  contract$HostNation3Category<-factor(contract$HostNation3Category)
-  contract$CrisisProductOrServiceArea<-factor(contract$CrisisProductOrServiceArea)
-  contract$ProductOrServiceCodeText<-factor(contract$ProductOrServiceCodeText)
-}
+    contract$ProductServiceOrRnDarea<-factor(contract$ProductServiceOrRnDarea)
+    contract$ProductOrServiceArea<-factor(contract$ProductOrServiceArea)
+    contract$HostNation3Category<-factor(contract$HostNation3Category)
+    contract$CrisisProductOrServiceArea<-factor(contract$CrisisProductOrServiceArea)
+    contract$ProductOrServiceCodeText<-factor(contract$ProductOrServiceCodeText)
+  }
 
 
   contract$cl_Ceil<-scale(contract$l_Ceil)
