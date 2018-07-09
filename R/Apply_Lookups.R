@@ -539,7 +539,7 @@ case_match<-function(name, list){
 #' @param deflator_var The quoted name of the defalator variable variable,
 #' by default "deflator.2017"
 #' @param path The path or url for the deflator_file CSV.  By default, checks
-#' the CSISdefense Github lookups repository at CSISdefense/csis360/master/data/economic/
+#' the CSISdefense Github lookups repository at CSISdefense/csis360/Lookup-Tables/data/economic/
 #'
 #' @return Returns a data frame with the money_var deflated, using deflator_var
 #' otherwise identical to the original data frame
