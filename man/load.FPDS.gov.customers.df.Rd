@@ -4,12 +4,16 @@
 \alias{load.FPDS.gov.customers.df}
 \title{Returns a dataframe with customer data for quality control check}
 \usage{
-load.FPDS.gov.customers.df(Path, Choice.Data, Which.Data = "")
+
+  load.FPDS.gov.customers.df(Path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/",
+  prod_serv_blank = "", customer = "")
 }
 \arguments{
-\item{Path}{file path name where Footing files are stored}
+\item{Path}{file path name where Lookup files are stored}
 
-\item{Which.Data}{character string determining which data files to call; defaults to ""}
+\item{prod_serv_blank}{character string; choose from "Products", "Services", or ""; defaults to "" for all}
+
+\item{customer}{character string; choose from "Defense", "DHS", "State and IAP", or ""; defaults to "" for all}
 }
 \value{
 dataframe

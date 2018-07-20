@@ -109,6 +109,7 @@ get_plot_theme<-function(){
 #' @examples
 #'
 #' @import ggplot2
+#' @import stringr
 #' @export
 build_plot <- function(
   data,
@@ -195,10 +196,10 @@ build_plot <- function(
       if(is.numeric(data[,colnames(data)==x_var])&
         min(data[,colnames(data)==x_var])>=1 & max(data[,colnames(data)==x_var])<=7){
         mainplot<-mainplot+geom_histogram(aes_string(x=x_var),
-                                          breaks=c(1:7))
+                                          breaks=c(1:7),binwidth=1)
       }
       else{
-        mainplot<-mainplot+geom_histogram(aes_string(x=x_var))
+        mainplot<-mainplot+geom_histogram(aes_string(x=x_var),binwidth=1)
       }
     }
     else{
@@ -208,7 +209,7 @@ build_plot <- function(
                                           breaks=c(1:7))
       }
       else{
-        mainplot<-mainplot+geom_histogram(aes_string(x=x_var,fill=color_var))
+        mainplot<-mainplot+geom_histogram(aes_string(x=x_var,fill=color_var),binwidth=1)
       }
     }
   }

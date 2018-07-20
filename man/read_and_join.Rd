@@ -5,7 +5,7 @@
 \title{Read in an external file and join it with an existing data frame}
 \usage{
 read_and_join(data, lookup_file,
-  path = "https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
+  path = "https://github.com/CSISdefense/R-scripts-and-data/tree/master/",
   directory = "Lookups/", by = NULL, replace_na_var = NULL,
   overlap_var_replaced = TRUE, add_var = NULL, new_var_checked = TRUE,
   skip_check_var = NULL)
@@ -15,7 +15,7 @@ read_and_join(data, lookup_file,
 
 \item{lookup_file}{The name of the lookup file}
 
-\item{path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/", }{The location of the lookup file}
+\item{path="https://github.com/CSISdefense/R-scripts-and-data/tree/master/", }{The location of the lookup file}
 
 \item{directory="Lookups\\"}{The directory within the path that holds the lookup}
 
