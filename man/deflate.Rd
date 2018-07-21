@@ -23,7 +23,7 @@ must be a CSV with the column "fiscal.year."}
 by default "deflator.2017"}
 
 \item{path}{The path or url for the deflator_file CSV.  By default, checks
-the CSISdefense Github lookups repository at CSISdefense/csis360/master/data/economic/}
+the CSISdefense Github lookups repository at CSISdefense/csis360/Lookup-Tables/data/economic/}
 }
 \value{
 Returns a data frame with the money_var deflated, using deflator_var

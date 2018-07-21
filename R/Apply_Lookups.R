@@ -29,7 +29,8 @@
 #'
 swap_in_zip<-function(filename,path,directory=""){
   input<-paste(path,directory,filename,sep="")
-  if(!file.exists(input)){
+  #File.exist seems only to work for local files.
+  if(!file.exists(input) & !tolower(substr(input,1,4)) %in% c("http","ftp:") ){
     zip_file<-paste(substring(input,1,nchar(input)-3),"zip",sep="")
     if (!file.exists(zip_file)){
       stop(paste(input,"does not exist"))
@@ -215,6 +216,7 @@ remove_bom<-function(data
 #'   lookup_file=lookup_file)
 #'
 #' @import utils
+#' @import stringr
 #' @export
 read_and_join<-function(
   data,
@@ -567,6 +569,8 @@ deflate <- function(
   directory="economic/",
   deflator_dropped=TRUE
   ){
+  #Tiblbes run into trouble with the [[]] new variable specifying.
+  data<-as.data.frame(data)
 
   if(!fy_var %in% colnames(data))
     stop(paste(fy_var," is not present in data."))
