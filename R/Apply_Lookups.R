@@ -387,7 +387,7 @@ read_and_join_experiment<-function(
     new_var_checked=TRUE,
     skip_check_var=NULL,
     zip_file=NULL,
-    col_types=NA
+    col_types=NULL
     ){
 
 
