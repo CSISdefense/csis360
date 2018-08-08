@@ -95,6 +95,7 @@ FPDS.gov.buckets.df<-read.tables(buckets.files,
 #' Bind multiple csv files into one dataframe
 #'
 #' @param file.names list each filename of data with same column names
+#' @param file.names="csv" type of file to input, presently "csv" or "xls"
 #'
 #' @return combined data from multiple files into one data table
 #' with an extra column identifying which file the line of data came from
@@ -104,9 +105,14 @@ FPDS.gov.buckets.df<-read.tables(buckets.files,
 #'
 #' @export
 #Source: http://stackoverflow.com/questions/2104483/how-to-read-table-multiple-files-into-a-single-table-in-r
-read.tables <- function(file.names, ...) {
+read.tables <- function(file.names, file.type="csv",...) {
   require(plyr)
+  if(file.type=="csv"){
   ldply(file.names, function(fn) data.frame(Filename=fn, read.csv(fn, ...)))
+  }
+  else if (file.type=="xls"){
+    ldply(file.names, function(fn) data.frame(Filename=fn, read.xlsx2(fn, ...)))
+  }
 }
 
 
