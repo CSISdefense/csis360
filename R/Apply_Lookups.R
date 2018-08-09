@@ -27,7 +27,7 @@
 #'
 #' @examples swap_in_zip(filename="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv)
 #'
-swap_in_zip<-function(filename,path,directory){
+swap_in_zip<-function(filename,path,directory=""){
   input<-paste(path,directory,filename,sep="")
   #File.exist seems only to work for local files.
   if(!file.exists(input) & !tolower(substr(input,1,4)) %in% c("http","ftp:") ){
@@ -386,7 +386,8 @@ read_and_join_experiment<-function(
     add_var=NULL,
     new_var_checked=TRUE,
     skip_check_var=NULL,
-    zip_file=NULL
+    zip_file=NULL,
+    col_types=NULL
     ){
 
 
@@ -442,7 +443,8 @@ case_match<-function(name, list){
       col_names=TRUE,
       delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
       na=c("NA","NULL"),
-      trim_ws=TRUE
+      trim_ws=TRUE,
+      col_types=col_types
     )
 
     #Remove byte order marks present in UTF encoded files
