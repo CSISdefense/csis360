@@ -498,7 +498,9 @@ transform_contract<-function(
   #l_Ceil
   contract$l_Ceil<-log(contract$UnmodifiedContractBaseAndAllOptionsValue)
   contract$l_Ceil[is.infinite(contract$l_Ceil)]<-NA
-  contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentCompletionDate)
+  if ("UnmodifiedCurrentCompletionDate" %in% colnames(contract) ){
+    contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentCompletionDate)
+  }
   contract<-contract %>% group_by(Ceil) %>%
     mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue))
 
@@ -753,27 +755,51 @@ transform_contract<-function(
            "0"=c("Def/Pur","S-IDC", "M-IDC","FSS/GWAC"))
     contract$BPABOA<-as.integer(as.character(contract$BPABOA))
 
-    #Crisis Dataset
-    # contract$ARRA<-0
-    # contract$ARRA[contract$MaxOfDecisionTree=="ARRA"]<-1
-    # contract$Dis<-0
-    # contract$Dis[contract$MaxOfDecisionTree=="Disaster"]<-1
-    # contract$OCO<-0
-    # contract$OCO[contract$MaxOfDecisionTree=="OCO"]<-1
-    contract$Crisis<-contract$MaxOfDecisionTree
-    levels(contract$Crisis)[levels(contract$Crisis)=="Excluded"]<-"Other"
-    contract$Crisis[is.na(contract$Crisis)]<-"Other"
-    levels(contract$Crisis)[levels(contract$Crisis)=="Disaster"]<-"Dis"
-    contract$Crisis<-factor(contract$Crisis,c("Other","ARRA","Dis","OCO"))
+    if("MaxOfDecisionTree" %in% colnames(contract)){
+      #Crisis Dataset
+      # contract$ARRA<-0
+      # contract$ARRA[contract$MaxOfDecisionTree=="ARRA"]<-1
+      # contract$Dis<-0
+      # contract$Dis[contract$MaxOfDecisionTree=="Disaster"]<-1
+      # contract$OCO<-0
+      # contract$OCO[contract$MaxOfDecisionTree=="OCO"]<-1
+      contract$Crisis<-contract$MaxOfDecisionTree
+      levels(contract$Crisis)[levels(contract$Crisis)=="Excluded"]<-"Other"
+      contract$Crisis[is.na(contract$Crisis)]<-"Other"
+      levels(contract$Crisis)[levels(contract$Crisis)=="Disaster"]<-"Dis"
+      contract$Crisis<-factor(contract$Crisis,c("Other","ARRA","Dis","OCO"))
+    }
   }
 
   #NAICS
   if("NAICS" %in% colnames(contract)){
-    if(file.exists("annual_naics6_summary.Rdata")){
-      load("annual_naics6_summary.Rdata")
+    if(file.exists("output//naics_join.Rdata")){
+      load("output//naics_join.Rdata")
+
+      # contract<-left_join(contract,NAICS_join, by=c("StartFY"="StartFY",
+      #                                               "NAICS"="NAICS_Code"))
+
       contract$NAICS<-as.integer(as.character(contract$NAICS))
-      contract<-left_join(contract,NAICS_join, by=c("StartFY"="StartFY",
-                                                    "NAICS"="NAICS_Code"))
+      contract$NAICS5<-as.integer(substr(contract$NAICS,1,5))
+      contract$NAICS4<-as.integer(substr(contract$NAICS,1,4))
+      contract$NAICS3<-as.integer(substr(contract$NAICS,1,3))
+      contract$NAICS2<-create_naics2(contract$NAICS)
+      contract$StartCY<-contract$StartFY
+
+      contract<-left_join(contract,NAICS6_join, by=c("StartCY"="CalendarYear",
+                                                     "NAICS"="NAICS6"))
+
+      contract<-left_join(contract,NAICS5_join, by=c("StartCY"="CalendarYear",
+                                                     "NAICS5"="NAICS5"))
+
+      contract<-left_join(contract,NAICS4_join, by=c("StartCY"="CalendarYear",
+                                                "NAICS4"="NAICS4"))
+      contract<-left_join(contract,NAICS3_join, by=c("StartCY"="CalendarYear",
+                                                     "NAICS3"="NAICS3"))
+      contract<-left_join(contract,NAICS2_join, by=c("StartCY"="CalendarYear",
+                                                     "NAICS2"="NAICS2"))
+
+
 
       #Remove 0s, they make no sense, source must be one contractors in field have 0 obligations, which is just missing data really
       contract$HHI_lag1[contract$HHI_lag1==0]<-NA
@@ -869,9 +895,10 @@ transform_contract<-function(
   contract$ObligationWT<-contract$Action.Obligation
   contract$ObligationWT[contract$ObligationWT<0]<-NA
 
-  contract<-contract %>% group_by(Ceil) %>%
-    mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue))
-
+  if(colnames(contract) %in% "UnmodifiedContractBaseAndAllOptionsValue"){
+    contract<-contract %>% group_by(Ceil) %>%
+      mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue))
+  }
 
 
   contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
