@@ -767,15 +767,18 @@ transform_contract<-function(
     contract$Crisis<-factor(contract$Crisis,c("Other","ARRA","Dis","OCO"))
   }
 
+  #Calendar Year
+  contract$CYear<-year(contract$SignedDate)
+
   #NAICS
   if("NAICS" %in% colnames(contract)){
-    if(file.exists("annual_naics6_summary.Rdata")){
-      load("annual_naics6_summary.Rdata")
-      contract$NAICS<-as.integer(as.character(contract$NAICS))
-      contract<-left_join(contract,NAICS_join, by=c("StartFY"="StartFY",
-                                                    "NAICS"="NAICS_Code"))
+    if(file.exists("output//naics_join.Rdata")){
+      load("output//naics_join.Rdata")
+      # contract$NAICS<-as.integer(as.character(contract$NAICS))
+      contract<-left_join(contract,NAICS6_join, by=c("CalendarYear"="CalendarYear",
+                                                    "NAICS"="NAICS6"))
 
-      #Remove 0s, they make no sense, source must be one contractors in field have 0 obligations, which is just missing data really
+      #Remove 0s, they make no sense, source is be one contractors in subsector with <= 0 obligations, which is just missing data really
       contract$HHI_lag1[contract$HHI_lag1==0]<-NA
       contract$c_HHI_lag1<-scale(contract$HHI_lag1)
 
