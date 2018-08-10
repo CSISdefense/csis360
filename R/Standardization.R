@@ -773,7 +773,7 @@ transform_contract<-function(
   }
 
   #Calendar Year
-  contract$CYear<-lubridate::year(contract$MinOfSignedDate)
+  contract$StartCY<-lubridate::year(contract$MinOfSignedDate)
 
   #NAICS
   if("NAICS" %in% colnames(contract)){
