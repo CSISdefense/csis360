@@ -401,6 +401,7 @@ format_period_average <- function(
 #' @examples transform_contract(def)
 #'
 #' @import dplyr
+#' @import lubridate
 #' @export
 transform_contract<-function(
   contract
@@ -772,7 +773,7 @@ transform_contract<-function(
   }
 
   #Calendar Year
-  contract$CYear<-year(contract$SignedDate)
+  contract$CYear<-lubridate::year(contract$MinOfSignedDate)
 
   #NAICS
   if("NAICS" %in% colnames(contract)){
@@ -787,7 +788,7 @@ transform_contract<-function(
       contract$NAICS4<-as.integer(substr(contract$NAICS,1,4))
       contract$NAICS3<-as.integer(substr(contract$NAICS,1,3))
       contract$NAICS2<-create_naics2(contract$NAICS)
-      contract$StartCY<-contract$StartFY
+
 
       contract<-left_join(contract,NAICS6_join, by=c("StartCY"="CalendarYear",
                                                      "NAICS"="NAICS6"))
@@ -805,11 +806,35 @@ transform_contract<-function(
 
 
       #Remove 0s, they make no sense, source must be one contractors in field have 0 obligations, which is just missing data really
-      contract$HHI_lag1[contract$HHI_lag1==0]<-NA
-      contract$c_HHI_lag1<-scale(contract$HHI_lag1)
+      contract$def6_HHI_lag1[contract$def6_HHI_lag1==0]<-NA
+      contract$c_def6_HHI_lag1<-scale(contract$def6_HHI_lag1)
 
-      contract$l_HHI_lag1<-log(contract$HHI_lag1)
-      contract$cl_HHI_lag1<-scale(contract$l_HHI_lag1)
+      contract$l_def6_HHI_lag1<-log(contract$def6_HHI_lag1)
+      contract$cl_def6_HHI_lag1<-scale(contract$l_def6_HHI_lag1)
+
+      contract$def5_HHI_lag1[contract$def5_HHI_lag1==0]<-NA
+      contract$c_def5_HHI_lag1<-scale(contract$def5_HHI_lag1)
+
+      contract$l_def5_HHI_lag1<-log(contract$def5_HHI_lag1)
+      contract$cl_def5_HHI_lag1<-scale(contract$l_def5_HHI_lag1)
+
+      contract$def4_HHI_lag1[contract$def4_HHI_lag1==0]<-NA
+      contract$c_def4_HHI_lag1<-scale(contract$def4_HHI_lag1)
+
+      contract$l_def4_HHI_lag1<-log(contract$def4_HHI_lag1)
+      contract$cl_def4_HHI_lag1<-scale(contract$l_def4_HHI_lag1)
+
+      contract$def3_HHI_lag1[contract$def3_HHI_lag1==0]<-NA
+      contract$c_def3_HHI_lag1<-scale(contract$def3_HHI_lag1)
+
+      contract$l_def3_HHI_lag1<-log(contract$def3_HHI_lag1)
+      contract$cl_def3_HHI_lag1<-scale(contract$l_def3_HHI_lag1)
+
+      contract$def2_HHI_lag1[contract$def2_HHI_lag1==0]<-NA
+      contract$c_def2_HHI_lag1<-scale(contract$def2_HHI_lag1)
+
+      contract$l_def2_HHI_lag1<-log(contract$def2_HHI_lag1)
+      contract$cl_def2_HHI_lag1<-scale(contract$l_def2_HHI_lag1)
     }
 
   }
