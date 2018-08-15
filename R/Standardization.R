@@ -411,6 +411,10 @@ transform_contract<-function(
   #Newwork and change
   # contract$pNewWork3Sig<-round(
   # contract$pNewWorkUnmodifiedBaseAndAll,3)
+  cap<-function(column,cap){
+    column[column>cap]<-cap
+    column
+  }
 
 
 
@@ -423,13 +427,21 @@ transform_contract<-function(
                         ]<-"Defense"
     contract$Is.Defense<-factor(contract$Is.Defense)
 
+    contract$Who[contract$Who=="Uncategorized"]<-NA
 
     #b_ODoD
     contract$b_ODoD<-contract$Who
     levels(contract$b_ODoD)<- list("1"=c("Other DoD"),
                                    "0"=c("Air Force","Army","Navy"))
-    contract$b_ODoD[contract$b_ODoD=="Uncategorized"]<-NA
+
     contract$b_ODoD<-as.integer(as.character(contract$b_ODoD))
+
+    contract$ODoD<-contract$Who
+    levels(contract$ODoD)<- list("Military Departments"=c("Air Force","Army","Navy"),
+                            "Other DoD"=c("Other DoD"))
+
+
+
 
 
   }
@@ -620,6 +632,33 @@ transform_contract<-function(
            "0.5"=c("Combination"),
            "0"=c("Award Fee", "Incentive", "Fixed Fee", "Other Fee"))
     contract$n_NoFee<-as.numeric(as.character(contract$n_NoFee))
+
+
+
+    contract$Pricing<-as.character(contract$FxCb )
+    summary(contract$Fee)
+    summary(factor(contract$Pricing))
+    contract$Pricing[contract$Pricing %in% c("Fixed","Fixed-Price") & contract$Fee=="FFP or No Fee"]<-"FFP"
+    contract$Pricing[contract$Pricing %in% c("Fixed","Fixed-Price") & contract$Fee!="FFP or No Fee"]<-"Other FP"
+    contract$Pricing[contract$Pricing %in% c("Cost","Cost-Based") & contract$Fee=="Other Fee"]<-"T&M/LH/FPLOE"
+    contract$Pricing[contract$Pricing %in% c("Combo/Other")]<-"Combination or Other"
+    contract$Pricing[contract$Pricing %in% c("Cost")]<-"Cost-Based"
+    contract$Pricing<-factor(contract$Pricing,c("FFP","Other FP","Combination or Other",
+                                      "Cost-Based","T&M/LH/FPLOE"))
+    summary(contract$Fee)
+    summary(factor(contract$Pricing))
+    contract$PricingFee<-as.character(contract$Pricing)
+    contract$PricingFee[contract$Fee=="Incentive"]<-"Incentive"
+    # contract$PricingFee[contract$PricingFee %in% c("Other FP","FFP")] <-"Other FP"
+    contract$PricingFee[contract$PricingFee %in% c("Cost-Based")] <-"Other CB"
+    # contract$PricingFee<-factor(contract$PricingFee,c("Other FP","Incentive",
+    #                                         "Combination or Other",
+    #                                   "Other CB","T&M/LH/FPLOE"))
+    contract$PricingFee<-factor(contract$PricingFee,c("FFP","Other FP","Incentive",
+                                            "Combination or Other",
+                                            "Other CB","T&M/LH/FPLOE"))
+    summary(contract$PricingFee)
+
   }
 
   #Competition
@@ -663,10 +702,10 @@ transform_contract<-function(
     contract$l_Offr<-log(contract$UnmodifiedNumberOfOffersReceived)
     contract$l_Offr[is.infinite(contract$l_Offr)]<-NA
 
-    contract$cb_Comp<-scale(contract$b_Comp)
-    contract$cn_Comp<-scale(contract$n_Comp)
-    contract$cn_Offr<-scale(contract$n_Offr)
-    contract$cl_Offr<-scale(contract$l_Offr)
+    contract$cb_Comp<-arm::rescale(contract$b_Comp)
+    contract$cn_Comp<-arm::rescale(contract$n_Comp)
+    contract$cn_Offr<-arm::rescale(contract$n_Offr)
+    contract$cl_Offr<-arm::rescale(contract$l_Offr)
 
     #Urgency
     contract$b_Urg<-NA
@@ -807,34 +846,92 @@ transform_contract<-function(
 
       #Remove 0s, they make no sense, source must be one contractors in field have 0 obligations, which is just missing data really
       contract$def6_HHI_lag1[contract$def6_HHI_lag1==0]<-NA
-      contract$c_def6_HHI_lag1<-scale(contract$def6_HHI_lag1)
+      contract$c_def6_HHI_lag1<-arm::rescale(contract$def6_HHI_lag1)
 
       contract$l_def6_HHI_lag1<-log(contract$def6_HHI_lag1)
-      contract$cl_def6_HHI_lag1<-scale(contract$l_def6_HHI_lag1)
+      contract$cl_def6_HHI_lag1<-arm::rescale(contract$l_def6_HHI_lag1)
 
       contract$def5_HHI_lag1[contract$def5_HHI_lag1==0]<-NA
-      contract$c_def5_HHI_lag1<-scale(contract$def5_HHI_lag1)
+      contract$c_def5_HHI_lag1<-arm::rescale(contract$def5_HHI_lag1)
 
       contract$l_def5_HHI_lag1<-log(contract$def5_HHI_lag1)
-      contract$cl_def5_HHI_lag1<-scale(contract$l_def5_HHI_lag1)
+      contract$cl_def5_HHI_lag1<-arm::rescale(contract$l_def5_HHI_lag1)
 
       contract$def4_HHI_lag1[contract$def4_HHI_lag1==0]<-NA
-      contract$c_def4_HHI_lag1<-scale(contract$def4_HHI_lag1)
+      contract$c_def4_HHI_lag1<-arm::rescale(contract$def4_HHI_lag1)
 
       contract$l_def4_HHI_lag1<-log(contract$def4_HHI_lag1)
-      contract$cl_def4_HHI_lag1<-scale(contract$l_def4_HHI_lag1)
+      contract$cl_def4_HHI_lag1<-arm::rescale(contract$l_def4_HHI_lag1)
 
       contract$def3_HHI_lag1[contract$def3_HHI_lag1==0]<-NA
-      contract$c_def3_HHI_lag1<-scale(contract$def3_HHI_lag1)
+      contract$c_def3_HHI_lag1<-arm::rescale(contract$def3_HHI_lag1)
 
       contract$l_def3_HHI_lag1<-log(contract$def3_HHI_lag1)
-      contract$cl_def3_HHI_lag1<-scale(contract$l_def3_HHI_lag1)
+      contract$cl_def3_HHI_lag1<-arm::rescale(contract$l_def3_HHI_lag1)
 
       contract$def2_HHI_lag1[contract$def2_HHI_lag1==0]<-NA
-      contract$c_def2_HHI_lag1<-scale(contract$def2_HHI_lag1)
+      contract$c_def2_HHI_lag1<-arm::rescale(contract$def2_HHI_lag1)
 
       contract$l_def2_HHI_lag1<-log(contract$def2_HHI_lag1)
-      contract$cl_def2_HHI_lag1<-scale(contract$l_def2_HHI_lag1)
+      contract$cl_def2_HHI_lag1<-arm::rescale(contract$l_def2_HHI_lag1)
+
+
+      contract$capped_def6_ratio_lag1<-cap(contract$def6_ratio_lag1,1)
+      contract$l_def6_ratio_lag1<-log(contract$def6_ratio_lag1)
+      contract$cl_def6_ratio_lag1<-arm::rescale(contract$def6_ratio_lag1)
+
+      contract$capped_def5_ratio_lag1<-cap(contract$def5_ratio_lag1,1)
+      contract$l_def5_ratio_lag1<-log(contract$def5_ratio_lag1)
+      contract$cl_def5_ratio_lag1<-arm::rescale(contract$def5_ratio_lag1)
+
+      contract$capped_def4_ratio_lag1<-cap(contract$def4_ratio_lag1,1)
+      contract$l_def4_ratio_lag1<-log(contract$def4_ratio_lag1)
+      contract$cl_def4_ratio_lag1<-arm::rescale(contract$def4_ratio_lag1)
+
+
+      contract$capped_def3_ratio_lag1<-cap(contract$def3_ratio_lag1,1)
+      contract$l_def3_ratio_lag1<-log(contract$def3_ratio_lag1)
+      contract$cl_def3_ratio_lag1<-arm::rescale(contract$def3_ratio_lag1)
+
+      contract$capped_def2_ratio_lag1<-cap(contract$def2_ratio_lag1,1)
+      contract$l_def2_ratio_lag1<-log(contract$def2_ratio_lag1)
+      contract$cl_def2_ratio_lag1<-arm::rescale(contract$def2_ratio_lag1)
+
+
+      contract$l_def6_obl_lag1<-log(contract$def6_obl_lag1)
+      contract$cl_def6_obl_lag1<-arm::rescale(contract$l_def6_obl_lag1)
+      contract$l_def5_obl_lag1<-log(contract$def5_obl_lag1)
+      contract$cl_def5_obl_lag1<-arm::rescale(contract$l_def5_obl_lag1)
+      contract$l_def4_obl_lag1<-log(contract$def4_obl_lag1)
+      contract$cl_def4_obl_lag1<-arm::rescale(contract$l_def4_obl_lag1)
+      contract$l_def3_obl_lag1<-log(contract$def3_obl_lag1)
+      contract$cl_def3_obl_lag1<-arm::rescale(contract$l_def3_obl_lag1)
+      contract$l_def2_obl_lag1<-log(contract$def2_obl_lag1)
+      contract$cl_def2_obl_lag1<-arm::rescale(contract$l_def2_obl_lag1)
+
+
+
+      contract$l_US6_avg_sal_lag1<-log(contract$US6_avg_sal_lag1)
+      contract$cl_US6_avg_sal_lag1<-arm::rescale(contract$l_US6_avg_sal_lag1)
+
+
+      contract$l_US5_avg_sal_lag1<-log(contract$US5_avg_sal_lag1)
+      contract$cl_US5_avg_sal_lag1<-arm::rescale(contract$l_US5_avg_sal_lag1)
+
+
+      contract$l_US4_avg_sal_lag1<-log(contract$US4_avg_sal_lag1)
+      contract$cl_US4_avg_sal_lag1<-arm::rescale(contract$l_US4_avg_sal_lag1)
+
+      contract$l_US3_avg_sal_lag1<-log(contract$US3_avg_sal_lag1)
+      contract$cl_US3_avg_sal_lag1<-arm::rescale(contract$l_US3_avg_sal_lag1)
+
+      contract$l_US2_avg_sal_lag1<-log(contract$US2_avg_sal_lag1)
+      contract$cl_US2_avg_sal_lag1<-arm::rescale(contract$l_US2_avg_sal_lag1)
+
+
+
+
+
     }
 
   }
@@ -881,7 +978,7 @@ transform_contract<-function(
             "Intl-Intl"=c("Intl-Any International"))
 
     colnames(contract)[colnames(contract)=="CrisisPercent"]<-"OffCri"
-    contract$c_OffCri<-scale(contract$OffCri)
+    contract$c_OffCri<-arm::rescale(contract$OffCri)
 
     contract$OffCri<-contract$CrisisPercent
   }
@@ -909,8 +1006,8 @@ transform_contract<-function(
   }
 
 
-  contract$cl_Ceil<-scale(contract$l_Ceil)
-  contract$cl_Days<-scale(contract$l_Days)
+  contract$cl_Ceil<-arm::rescale(contract$l_Ceil)
+  contract$cl_Days<-arm::rescale(contract$l_Days)
 
 
 
