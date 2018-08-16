@@ -898,14 +898,19 @@ transform_contract<-function(
       contract$cl_def2_ratio_lag1<-arm::rescale(contract$def2_ratio_lag1)
 
 
+      contract$def6_obl_lag1[contract$def6_obl_lag1<=0]<-NA
       contract$l_def6_obl_lag1<-log(contract$def6_obl_lag1)
       contract$cl_def6_obl_lag1<-arm::rescale(contract$l_def6_obl_lag1)
+      contract$def5_obl_lag1[contract$def5_obl_lag1<=0]<-NA
       contract$l_def5_obl_lag1<-log(contract$def5_obl_lag1)
       contract$cl_def5_obl_lag1<-arm::rescale(contract$l_def5_obl_lag1)
+      contract$def4_obl_lag1[contract$def4_obl_lag1<=0]<-NA
       contract$l_def4_obl_lag1<-log(contract$def4_obl_lag1)
       contract$cl_def4_obl_lag1<-arm::rescale(contract$l_def4_obl_lag1)
+      contract$def3_obl_lag1[contract$def3_obl_lag1<=0]<-NA
       contract$l_def3_obl_lag1<-log(contract$def3_obl_lag1)
       contract$cl_def3_obl_lag1<-arm::rescale(contract$l_def3_obl_lag1)
+      contract$def2_obl_lag1[contract$def2_obl_lag1<=0]<-NA
       contract$l_def2_obl_lag1<-log(contract$def2_obl_lag1)
       contract$cl_def2_obl_lag1<-arm::rescale(contract$l_def2_obl_lag1)
 
