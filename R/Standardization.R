@@ -237,12 +237,14 @@ prepare_labels_and_colors<-function(data
 #' @param   facet_var Facet variable, as string
 #' @param   labels_and_colors A csis360 lookup data.frame with factor information
 #' @param   group If TRUE aggregate
+#' @param   drop_missing_labels If TRUE, drop levels to avoid residual levels from labels_and_colors.
 #'
 #' @return Returns a tibble of formatted data
 #'
 #' @export
 format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = NA, end_fy = NA,
-                                 color_var="None", facet_var="None", labels_and_colors=NULL, group=TRUE){
+                                 color_var="None", facet_var="None", labels_and_colors=NULL, group=TRUE,
+                                 drop_missing_labels=TRUE){
 
   shown_data <- data
 
@@ -339,6 +341,8 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
                 labels=c(subset(labels_and_colors,column==facet_var)$Label)
         )
     }
+    if(drop_missing_labels==TRUE)
+      shown_data<-droplevels(shown_data)
   }
 
   # return the ggplot-ready data

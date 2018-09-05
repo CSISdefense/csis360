@@ -4,7 +4,7 @@
 \alias{swap_in_zip}
 \title{When passed a file that doesn't exist, check for the zip version}
 \usage{
-swap_in_zip(filename, path, directory)
+swap_in_zip(filename, path, directory = "")
 }
 \arguments{
 \item{filename}{The name of the data file}

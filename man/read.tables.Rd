@@ -4,10 +4,12 @@
 \alias{read.tables}
 \title{Bind multiple csv files into one dataframe}
 \usage{
-read.tables(file.names, ...)
+read.tables(file.names, file.type = "csv", ...)
 }
 \arguments{
 \item{file.names}{list each filename of data with same column names}
+
+\item{file.names="csv"}{type of file to input, presently "csv" or "xls"}
 }
 \value{
 combined data from multiple files into one data table
