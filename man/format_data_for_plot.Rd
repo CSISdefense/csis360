@@ -6,7 +6,7 @@
 \usage{
 format_data_for_plot(data, fy_var, y_var, share = FALSE, start_fy = NA,
   end_fy = NA, color_var = "None", facet_var = "None",
-  labels_and_colors = NULL, group = TRUE)
+  labels_and_colors = NULL, group = TRUE, drop_missing_labels = TRUE)
 }
 \arguments{
 \item{data}{A data frame to format for the plot, as a tibble}
@@ -28,6 +28,8 @@ format_data_for_plot(data, fy_var, y_var, share = FALSE, start_fy = NA,
 \item{labels_and_colors}{A csis360 lookup data.frame with factor information}
 
 \item{group}{If TRUE aggregate}
+
+\item{drop_missing_labels}{If TRUE, drop levels to avoid residual levels from labels_and_colors.}
 }
 \value{
 Returns a tibble of formatted data

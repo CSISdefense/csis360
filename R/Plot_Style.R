@@ -260,7 +260,8 @@ build_plot <- function(
     }
   }
 
-  #For now, assuming numeric var_x means a year
+  #For now, assuming numeric var_x means a year. Here we limit the data to only what
+  # is covered in the year range passed by shiny, if any.
   if(chart_geom %in% c("Line Chart","Bar Chart"))
   if(is.numeric(data[,x_var])){
     start_fy<-min(data[,colnames(data)==x_var])
