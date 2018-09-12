@@ -542,6 +542,85 @@ transform_contract<-function(
   #l_Ceil
   contract$l_Ceil<-na_non_positive_log(contract$UnmodifiedContractBaseAndAllOptionsValue)
 
+  #Break the count of days into four categories.
+  contract$qDuration<-cut2(contract$UnmodifiedDays,cuts=c(61,214,366,732))
+
+  if (levels(contract$qDuration)[[2]]=="[   61,  214)"){
+    contract$qDuration<-factor(contract$qDuration,
+
+                               levels=c("[    0,   61)",
+                                        "[   61,  214)",
+                                        "[  214,  366)",
+                                        "[  366,  732)",
+                                        "[  732,33192]"),
+                               labels=c("[0 months,~2 months)",
+                                        "[~2 months,~7 months)",
+                                        "[~7 months-~1 year]",
+                                        "(~1 year,~2 years]",
+                                        "(~2 years+]"),
+                               ordered=TRUE
+    )
+  }
+
+
+  lowroundedcutoffs<-c(15000,100000,1000000,30000000)
+  highroundedcutoffs<-c(15000,100000,1000000,10000000,75000000)
+  contract$qLowCeiling <- cut2(contract$UnmodifiedContractBaseAndAllOptionsValue,cuts=lowroundedcutoffs)
+  contract$qHighCeiling <- cut2(contract$UnmodifiedContractBaseAndAllOptionsValue,cuts=highroundedcutoffs)
+  rm(lowroundedcutoffs,highroundedcutoffs)
+
+
+
+
+  if (all(levels(contract$qHighCeiling)==c("[0.00e+00,1.50e+04)",
+                                           "[1.50e+04,1.00e+05)",
+                                           "[1.00e+05,1.00e+06)",
+                                           "[1.00e+06,1.00e+07)",
+                                           "[1.00e+07,7.50e+07)",
+                                           "[7.50e+07,3.36e+12]"))){
+    contract$qHighCeiling<-factor(contract$qHighCeiling,
+
+                                  levels=c("[0.00e+00,1.50e+04)",
+                                           "[1.50e+04,1.00e+05)",
+                                           "[1.00e+05,1.00e+06)",
+                                           "[1.00e+06,1.00e+07)",
+                                           "[1.00e+07,7.50e+07)",
+                                           "[7.50e+07,3.36e+12]"),
+                                  labels=c("[0,15k)",
+                                           "[15k,100k)",
+                                           "[100k,1m)",
+                                           "[1m,10m)",
+                                           "[10m,75m)",
+                                           "[75m+]"),
+                                  ordered=TRUE
+    )
+  }
+
+  if (all(levels(contract$qLowCeiling)==c("[0.00e+00,1.50e+04)",
+                                          "[1.50e+04,1.00e+05)",
+                                          "[1.00e+05,1.00e+06)",
+                                          "[1.00e+06,3.00e+07)",
+                                          "[3.00e+07,3.36e+12]"))){
+    contract$qLowCeiling<-factor(contract$qLowCeiling,
+
+                                 levels=c("[0.00e+00,1.50e+04)",
+                                          "[1.50e+04,1.00e+05)",
+                                          "[1.00e+05,1.00e+06)",
+                                          "[1.00e+06,3.00e+07)",
+                                          "[3.00e+07,3.36e+12]"),
+                                 labels=c("[0,15k)",
+                                          "[15k,100k)",
+                                          "[100k,1m)",
+                                          "[1m,30m)",
+                                          "[30m+]"),
+                                 ordered=TRUE
+    )
+  }
+
+
+  summary(subset(contract$qCRais,contract$SumOfisChangeOrder>0    ))
+
+
   if ("UnmodifiedCurrentCompletionDate" %in% colnames(contract) ){
     contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentCompletionDate)
   }
