@@ -478,6 +478,26 @@ transform_contract<-function(
   }
 
 
+  contract$qNChg <- cut2(contract$SumOfisChangeOrder,c(1,2,3))
+
+
+  # contract$pChangeOrderObligated<-contract$ChangeOrderObligatedAmount/
+  #   contract$Action.Obligation
+  # contract$pChangeOrderObligated[is.na(contract$pChangeOrderObligated)&
+  #     contract$SumOfisChangeOrder==0]<-0
+  contract$pChangeOrderUnmodifiedBaseAndAll<-contract$ChangeOrderBaseAndAllOptionsValue/
+    contract$UnmodifiedContractBaseAndAllOptionsValue
+  contract$pChangeOrderUnmodifiedBaseAndAll[
+    is.na(contract$pChangeOrderUnmodifiedBaseAndAll) & contract$SumOfisChangeOrder==0]<-0
+
+
+  contract$qCRais <- cut2(
+    contract$pChangeOrderUnmodifiedBaseAndAll,c(
+      -0.001,
+      0.001,
+      0.15)
+  )
+
   #PSR_What
   if("PSR_What" %in% colnames(contract)){
     contract$PSR_What<-factor(paste(as.character(contract$PSR),
@@ -705,6 +725,21 @@ transform_contract<-function(
            "1"="2+ Offers")
     contract$n_Comp<-as.numeric(as.character(contract$n_Comp))
 
+    contract$Offr <- cut2(contract$UnmodifiedNumberOfOffersReceived,cuts=c(1,2,3,5))
+
+    if (all(levels(contract$Offr)==c("  1","  2","[  3,  5)","[  5,999]"))){
+      contract$Offr<-factor(contract$Offr,
+                            levels=c("  1","  2","[  3,  5)","[  5,999]"),
+                            labels=c("1","2","3-4","5+"),
+                            ordered=TRUE
+      )
+    }
+
+    #Set number of offers =1 when there is a NA and no competition
+    contract$Offr[is.na(contract$Offr)&
+                    !is.na(contract$UnmodifiedIsSomeCompetition)&
+                    contract$UnmodifiedIsSomeCompetition==0
+                  ]<-"1"
 
 
     contract$n_Offr<-contract$Offr
