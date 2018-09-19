@@ -808,35 +808,31 @@ transform_contract<-function(
            "1"="2+ Offers")
     # contract$n_Comp<-as.numeric(as.character(contract$n_Comp))
 
-    contract$Offr <- cut2(contract$UnmodifiedNumberOfOffersReceived,cuts=c(1,2,3,5))
-
-    if (all(levels(contract$Offr)==c("  1","  2","[  3,  5)","[  5,999]"))){
-      contract$Offr<-factor(contract$Offr,
-                            levels=c("  1","  2","[  3,  5)","[  5,999]"),
-                            labels=c("1","2","3-4","5+"),
-                            ordered=TRUE
-      )
-    }
-
-    #Set number of offers =1 when there is a NA and no competition
-    contract$Offr[is.na(contract$Offr)&
-                    !is.na(contract$UnmodifiedIsSomeCompetition)&
-                    contract$UnmodifiedIsSomeCompetition==0
-                  ]<-"1"
 
 
-    contract$n_Offr<-cut2(contract$UnmodifiedNumberOfOffersReceived,c(2,3,5))
-    levels(contract$n_Offr) <-
-      list("1"=c("1"),
-           "2"=c("2"),
-           "3-4"=c("  3,  5)"),
+
+    contract$q_Offr<-cut2(contract$UnmodifiedNumberOfOffersReceived,c(2,3,5))
+    levels(contract$q_Offr) <-
+      list("1"=c("1","  1"),
+           "2"=c("2","  2"),
+           "3-4"=c("[  3,  5)"),
            "5+"=c("[  5,999]")
-           )
+      )
+    #Set number of offers =1 when there is a NA and no competition
+    #This seems to be redundant, but no harm in it.
+    contract$q_Offr[is.na(contract$q_Offr)&
+                 !is.na(contract$b_Comp)&
+                 contract$b_Comp==0
+               ]<-"1"
+
     levels(contract$n_Offr) <-
       list("1"=c("1"),
            "2"=c("2"),
            "3"=c("3-4"),
            "4"=c("5+"))
+
+
+
     contract$n_Offr<-as.integer(as.character(contract$n_Offr))
     contract$n_Offr[contract$b_Comp==0 & !is.na(contract$b_Comp)]<-0
     contract$n_Offr[is.na(contract$b_Comp)]<-NA
