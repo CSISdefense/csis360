@@ -869,6 +869,9 @@ transform_contract<-function(
 
 
   #b_Intl
+  contract$Intl <- factor(contract$Intl,
+                          c("Just U.S.", "Any International"))   #Manually remove "NA" from levels of variable Intl
+
   if("Intl" %in% colnames(contract)){
     contract$b_Intl<-contract$Intl
     contract$b_Intl[contract$b_Intl=="Unlabeled"]<-NA
