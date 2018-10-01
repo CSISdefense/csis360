@@ -237,12 +237,14 @@ prepare_labels_and_colors<-function(data
 #' @param   facet_var Facet variable, as string
 #' @param   labels_and_colors A csis360 lookup data.frame with factor information
 #' @param   group If TRUE aggregate
+#' @param   drop_missing_labels If TRUE, drop levels to avoid residual levels from labels_and_colors.
 #'
 #' @return Returns a tibble of formatted data
 #'
 #' @export
 format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = NA, end_fy = NA,
-                                 color_var="None", facet_var="None", labels_and_colors=NULL, group=TRUE){
+                                 color_var="None", facet_var="None", labels_and_colors=NULL, group=TRUE,
+                                 drop_missing_labels=TRUE){
 
   shown_data <- data
 
@@ -339,6 +341,8 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
                 labels=c(subset(labels_and_colors,column==facet_var)$Label)
         )
     }
+    if(drop_missing_labels==TRUE)
+      shown_data<-droplevels(shown_data)
   }
 
   # return the ggplot-ready data
@@ -383,6 +387,24 @@ format_period_average <- function(
 }
 
 
+#######Log setting 0s and negatives to NA
+#' Set non-positive values to na and then log.
+#'
+#' @param x A list of numbers
+#'
+#' @return The list of number logs, with 0 and negative set to NA
+#'
+#' @details This is a function to use when the data should never
+#' be 0s or negatives. It saves the step of setting them to na.
+#'
+#' @examples x<-c(0,2,3,-4); transform_contract(x)
+#'
+#' @import
+#' @export
+na_non_positive_log<-function(x){
+  x[x<=0]<-NA
+  log(x)
+}
 
 
 #***********************Standardize Variable Names
@@ -407,6 +429,16 @@ transform_contract<-function(
   contract
 ){
 
+  create_naics2<-function(NAICS){
+    NAICS2<-substring(NAICS,1,2)
+    NAICS2[NAICS2 %in% c('31','32','33')]<-'31-33'
+    NAICS2[NAICS2 %in% c('44','45')]<-'44-45'
+    NAICS2[NAICS2 %in% c('48','49')]<-'48-49'
+    NAICS2<-factor(NAICS2)
+    NAICS2
+  }
+
+
   # contract$pNewWorkUnmodifiedBaseAndAll<-as.numeric(as.character(contract$pNewWorkUnmodifiedBaseAndAll))
   #Newwork and change
   # contract$pNewWork3Sig<-round(
@@ -415,7 +447,6 @@ transform_contract<-function(
     column[column>cap]<-cap
     column
   }
-
 
 
   #Customer
@@ -438,7 +469,7 @@ transform_contract<-function(
 
     contract$ODoD<-contract$Who
     levels(contract$ODoD)<- list("Military Departments"=c("Air Force","Army","Navy"),
-                            "Other DoD"=c("Other DoD"))
+                                 "Other DoD"=c("Other DoD"))
 
 
 
@@ -446,6 +477,26 @@ transform_contract<-function(
 
   }
 
+
+  contract$qNChg <- cut2(contract$SumOfisChangeOrder,c(1,2,3))
+
+
+  # contract$pChangeOrderObligated<-contract$ChangeOrderObligatedAmount/
+  #   contract$Action.Obligation
+  # contract$pChangeOrderObligated[is.na(contract$pChangeOrderObligated)&
+  #     contract$SumOfisChangeOrder==0]<-0
+  contract$pChangeOrderUnmodifiedBaseAndAll<-contract$ChangeOrderBaseAndAllOptionsValue/
+    contract$UnmodifiedContractBaseAndAllOptionsValue
+  contract$pChangeOrderUnmodifiedBaseAndAll[
+    is.na(contract$pChangeOrderUnmodifiedBaseAndAll) & contract$SumOfisChangeOrder==0]<-0
+
+
+  contract$qCRais <- cut2(
+    contract$pChangeOrderUnmodifiedBaseAndAll,c(
+      -0.001,
+      0.001,
+      0.15)
+  )
 
   #PSR_What
   if("PSR_What" %in% colnames(contract)){
@@ -453,26 +504,27 @@ transform_contract<-function(
                                     as.character(contract$What),sep="."))
     contract$PSR_What[contract$PSR_What=="Unlabeled"]<-NA
   }
-  #b_CBre
-  contract$b_CBre<-ifelse(contract$CBre=="Ceiling Breach",1,NA)
-  contract$b_CBre[contract$CBre=="None"]<-0
-
-
-  #Create a jittered version of CBre for display purposes
-  #Unlike geom_jitter, this caps values at 0 and 1
-  contract$j_CBre<-jitter_binary(contract$b_CBre)
 
 
   #b_Term
-  contract$b_Term<-ifelse(contract$Term=="Terminated",1,NA)
-  contract$b_Term[contract$Term=="Unterminated"]<-0
-
-  #Create a jittered version of Term for display purposes
-  #Unlike geom_jitter, this caps values at 0 and 1
-  contract$j_Term<-jitter_binary(contract$b_Term)
+  if("Term" %in% colnames(contract)){
+    contract$b_Term<-ifelse(contract$Term=="Terminated",1,NA)
+    contract$b_Term[contract$Term=="Unterminated"]<-0
+    #Create a jittered version of Term for display purposes
+    #Unlike geom_jitter, this caps values at 0 and 1
+    contract$j_Term<-jitter_binary(contract$b_Term)
+  }
 
   #n_CBre
   if ("ChangeOrderBaseAndAllOptionsValue" %in% colnames(contract) ){
+    #b_CBre
+    if("CBre" %in% colnames(contract)){
+      contract$b_CBre<-ifelse(contract$CBre=="Ceiling Breach",1,NA)
+      contract$b_CBre[contract$CBre=="None"]<-0
+      #Create a jittered version of CBre for display purposes
+      #Unlike geom_jitter, this caps values at 0 and 1
+      contract$j_CBre<-jitter_binary(contract$b_CBre)
+    }
     contract$pChangeOrderUnmodifiedBaseAndAll<-contract$ChangeOrderBaseAndAllOptionsValue/
       contract$UnmodifiedContractBaseAndAllOptionsValue
     contract$pChangeOrderUnmodifiedBaseAndAll[
@@ -486,7 +538,13 @@ transform_contract<-function(
         0.001,
         0.15)
     )
+    #Should include this in the original data frame but for now can drive it.
+    contract$n_CBre<-contract$ChangeOrderBaseAndAllOptionsValue
 
+    #l_CBre
+    contract$l_CBre<-NA
+    contract$l_CBre[contract$b_CBre==1 & !is.na(contract$b_CBre)]<-
+      na_non_positive_log(contract$n_CBre[contract$b_CBre==1 & !is.na(contract$b_CBre)])
   }
   if ("NewWorkUnmodifiedBaseAndAll" %in% colnames(contract) ){
     contract$pNewWorkUnmodifiedBaseAndAll<-contract$NewWorkUnmodifiedBaseAndAll/
@@ -500,97 +558,169 @@ transform_contract<-function(
 
 
 
-  #Should include this in the original data frame but for now can drive it.
-  contract$n_CBre<-contract$ChangeOrderBaseAndAllOptionsValue
 
-  #l_CBre
-  contract$l_CBre<-NA
-  contract$l_CBre[contract$b_CBre==1 & !is.na(contract$b_CBre)]<-
-    log(contract$n_CBre[contract$b_CBre==1 & !is.na(contract$b_CBre)])
 
-  #l_Ceil
-  contract$l_Ceil<-log(contract$UnmodifiedContractBaseAndAllOptionsValue)
-  contract$l_Ceil[is.infinite(contract$l_Ceil)]<-NA
-  if ("UnmodifiedCurrentCompletionDate" %in% colnames(contract) ){
-    contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentCompletionDate)
+  #Break the count of days into four categories.
+  contract$qDuration<-cut2(contract$UnmodifiedDays,cuts=c(61,214,366,732))
+
+  if (levels(contract$qDuration)[[2]]=="[   61,  214)"){
+    contract$qDuration<-factor(contract$qDuration,
+
+                               levels=c("[    0,   61)",
+                                        "[   61,  214)",
+                                        "[  214,  366)",
+                                        "[  366,  732)",
+                                        "[  732,33192]"),
+                               labels=c("[0 months,~2 months)",
+                                        "[~2 months,~7 months)",
+                                        "[~7 months-~1 year]",
+                                        "(~1 year,~2 years]",
+                                        "(~2 years+]"),
+                               ordered=TRUE
+    )
   }
-  contract<-contract %>% group_by(Ceil) %>%
-    mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue))
 
-  if (identical(levels(contract$Ceil),c("[0,15k)",
-                               "[15k,100k)",
-                               "[100k,1m)",
-                               "[1m,10m)",
-                               "[10m,75m)",
-                               "[75m+]"
-  ))){
-    contract$Ceil.Simple<-contract$Ceil
-    levels(contract$Ceil.Simple)<- list("0k - <100k"=c("[15k,100k)",
-                                                       "[0,15k)"),
-                                        "100k - <10m"=c("[1m,10m)",
-                                                        "[100k,1m)"),
-                                        "10m+"=c("[75m+]",
-                                                 "[10m,75m)"))
+  if ("UnmodifiedContractBaseAndAllOptionsValue" %in% colnames(contract) ){
+    #l_Ceil
+    contract$l_Ceil<-na_non_positive_log(contract$UnmodifiedContractBaseAndAllOptionsValue)
 
-    contract$Ceil.Big<-contract$Ceil
-    levels(contract$Ceil.Big)<- list("0k - <100k"=c("[15k,100k)",
-                                                    "[0,15k)"),
-                                     "100k - <10m"=c("[1m,10m)",
-                                                     "[100k,1m)"),
-                                     "10m - <75m"=c("[10m,75m)"),
-                                     "75m+"=c("[75m+]"))
+    lowroundedcutoffs<-c(15000,100000,1000000,30000000)
+    highroundedcutoffs<-c(15000,100000,1000000,10000000,75000000)
+    contract$qLowCeiling <- cut2(contract$UnmodifiedContractBaseAndAllOptionsValue,cuts=lowroundedcutoffs)
+    contract$qHighCeiling <- cut2(contract$UnmodifiedContractBaseAndAllOptionsValue,cuts=highroundedcutoffs)
+    rm(lowroundedcutoffs,highroundedcutoffs)
 
-    contract$Ceil.1m<-contract$Ceil
-    levels(contract$Ceil.1m)<- list("0k - <1m"=c("[0,15k)",
+
+
+
+    if (all(levels(contract$qHighCeiling)==c("[0.00e+00,1.50e+04)",
+                                             "[1.50e+04,1.00e+05)",
+                                             "[1.00e+05,1.00e+06)",
+                                             "[1.00e+06,1.00e+07)",
+                                             "[1.00e+07,7.50e+07)",
+                                             "[7.50e+07,3.36e+12]"))){
+      contract$qHighCeiling<-factor(contract$qHighCeiling,
+
+                                    levels=c("[0.00e+00,1.50e+04)",
+                                             "[1.50e+04,1.00e+05)",
+                                             "[1.00e+05,1.00e+06)",
+                                             "[1.00e+06,1.00e+07)",
+                                             "[1.00e+07,7.50e+07)",
+                                             "[7.50e+07,3.36e+12]"),
+                                    labels=c("[0,15k)",
+                                             "[15k,100k)",
+                                             "[100k,1m)",
+                                             "[1m,10m)",
+                                             "[10m,75m)",
+                                             "[75m+]"),
+                                    ordered=TRUE
+      )
+    }
+    if (all(levels(contract$qLowCeiling)==c("[0.00e+00,1.50e+04)",
+                                            "[1.50e+04,1.00e+05)",
+                                            "[1.00e+05,1.00e+06)",
+                                            "[1.00e+06,3.00e+07)",
+                                            "[3.00e+07,3.36e+12]"))){
+      contract$qLowCeiling<-factor(contract$qLowCeiling,
+
+                                   levels=c("[0.00e+00,1.50e+04)",
+                                            "[1.50e+04,1.00e+05)",
+                                            "[1.00e+05,1.00e+06)",
+                                            "[1.00e+06,3.00e+07)",
+                                            "[3.00e+07,3.36e+12]"),
+                                   labels=c("[0,15k)",
+                                            "[15k,100k)",
+                                            "[100k,1m)",
+                                            "[1m,30m)",
+                                            "[30m+]"),
+                                   ordered=TRUE
+      )
+    }
+
+    contract<-contract %>% group_by(qHighCeiling) %>%
+      mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue))
+
+    if (identical(levels(contract$qHighCeiling),c("[0,15k)",
                                                   "[15k,100k)",
-                                                  "[100k,1m)"
-                                                  ),
-                                     "1m - <10m"=c("[1m,10m)"),
-                                     "10m - <75m"=c("[10m,75m)"),
-                                     "75m+"=c("[75m+]"))
-  } else if (identical(levels(contract$Ceil),c("0 - <15k",
-                               "15k - <100k",
-                               "100k - <1m",
-                               "1m - <10m",
-                               "10m - <75m",
-                               "75m+"
-  ))){
-    contract$Ceil.Simple<-contract$Ceil
-    levels(contract$Ceil.Simple)<- list("0k - <100k"=c("15k - <100k",
-                                                       "0 - <15k"),
-                                        "100k - <10m"=c("1m - <10m",
-                                                        "100k - <1m"),
-                                        "10m+"=c("75m+",
-                                                 "10m - <75m"))
+                                                  "[100k,1m)",
+                                                  "[1m,10m)",
+                                                  "[10m,75m)",
+                                                  "[75m+]"
+    ))){
+      contract$Ceil.Simple<-contract$qHighCeiling
+      levels(contract$Ceil.Simple)<- list("0k - <100k"=c("[15k,100k)",
+                                                         "[0,15k)"),
+                                          "100k - <10m"=c("[1m,10m)",
+                                                          "[100k,1m)"),
+                                          "10m+"=c("[75m+]",
+                                                   "[10m,75m)"))
 
-    contract$Ceil.Big<-contract$Ceil
-    levels(contract$Ceil.Big)<- list("0k - <100k"=c("15k - <100k",
-                                                    "0 - <15k"),
-                                     "100k - <10m"=c("1m - <10m",
-                                                     "100k - <1m"),
-                                     "10m - <75m"=c("10m - <75m"),
-                                     "75m+"=c("75m+"))
-    contract$Ceil.1m<-contract$Ceil
-    levels(contract$Ceil.1m)<- list("0k - <1m"=c("15k - <100k",
+      contract$Ceil.Big<-contract$Ceil
+      levels(contract$Ceil.Big)<- list("0k - <100k"=c("[15k,100k)",
+                                                      "[0,15k)"),
+                                       "100k - <10m"=c("[1m,10m)",
+                                                       "[100k,1m)"),
+                                       "10m - <75m"=c("[10m,75m)"),
+                                       "75m+"=c("[75m+]"))
+
+      contract$Ceil.1m<-contract$Ceil
+      levels(contract$Ceil.1m)<- list("0k - <1m"=c("[0,15k)",
+                                                   "[15k,100k)",
+                                                   "[100k,1m)"
+      ),
+      "1m - <10m"=c("[1m,10m)"),
+      "10m - <75m"=c("[10m,75m)"),
+      "75m+"=c("[75m+]"))
+    } else if (identical(levels(contract$qHighCeiling),c("0 - <15k",
+                                                         "15k - <100k",
+                                                         "100k - <1m",
+                                                         "1m - <10m",
+                                                         "10m - <75m",
+                                                         "75m+"
+    ))){
+      contract$Ceil.Simple<-contract$qHighCeiling
+      levels(contract$Ceil.Simple)<- list("0k - <100k"=c("15k - <100k",
+                                                         "0 - <15k"),
+                                          "100k - <10m"=c("1m - <10m",
+                                                          "100k - <1m"),
+                                          "10m+"=c("75m+",
+                                                   "10m - <75m"))
+
+      contract$Ceil.Big<-contract$qHighCeiling
+      levels(contract$Ceil.Big)<- list("0k - <100k"=c("15k - <100k",
+                                                      "0 - <15k"),
+                                       "100k - <10m"=c("1m - <10m",
+                                                       "100k - <1m"),
+                                       "10m - <75m"=c("10m - <75m"),
+                                       "75m+"=c("75m+"))
+      contract$Ceil.1m<-contract$qHighCeiling
+      levels(contract$Ceil.1m)<- list("0k - <1m"=c("15k - <100k",
                                                    "0 - <15k",
                                                    "100k - <1m"),
-                                    "1m - <10m"=c("1m - <10m"),
-                                    "10m - <75m"=c("10m - <75m"),
-                                    "75m+"=c("75m+"))
+                                      "1m - <10m"=c("1m - <10m"),
+                                      "10m - <75m"=c("10m - <75m"),
+                                      "75m+"=c("75m+"))
+    }
+
+
+
+  }
+
+
+
+
+  if ("UnmodifiedCurrentCompletionDate" %in% colnames(contract) ){
+    contract$UnmodifiedCurrentCompletionDate<-as.Date(contract$UnmodifiedCurrentCompletionDate)
   }
 
 
 
   #l_Days
-  contract$l_Days<-NA
-  contract$l_Days[!is.na(contract$UnmodifiedDays)&contract$UnmodifiedDays>0]<-
-    log(contract$UnmodifiedDays[!is.na(contract$UnmodifiedDays)&contract$UnmodifiedDays>0])
-  contract$l_Days[is.infinite(contract$l_Days)]<-NA
-
+  contract$l_Days<-na_non_positive_log(contract$UnmodifiedDays)
 
   contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
   contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
-  contract$Dur[contract$UnmodifiedYearsCat<0]<-NA
+  contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
 
   contract$Dur.Simple<-as.character(contract$Dur)
   contract$Dur.Simple[contract$Dur.Simple %in% c(
@@ -644,7 +774,7 @@ transform_contract<-function(
     contract$Pricing[contract$Pricing %in% c("Combo/Other")]<-"Combination or Other"
     contract$Pricing[contract$Pricing %in% c("Cost")]<-"Cost-Based"
     contract$Pricing<-factor(contract$Pricing,c("FFP","Other FP","Combination or Other",
-                                      "Cost-Based","T&M/LH/FPLOE"))
+                                                "Cost-Based","T&M/LH/FPLOE"))
     summary(contract$Fee)
     summary(factor(contract$Pricing))
     contract$PricingFee<-as.character(contract$Pricing)
@@ -655,8 +785,8 @@ transform_contract<-function(
     #                                         "Combination or Other",
     #                                   "Other CB","T&M/LH/FPLOE"))
     contract$PricingFee<-factor(contract$PricingFee,c("FFP","Other FP","Incentive",
-                                            "Combination or Other",
-                                            "Other CB","T&M/LH/FPLOE"))
+                                                      "Combination or Other",
+                                                      "Other CB","T&M/LH/FPLOE"))
     summary(contract$PricingFee)
 
   }
@@ -676,16 +806,33 @@ transform_contract<-function(
       list("0"="No Comp.",
            "0.5"="1 Offer",
            "1"="2+ Offers")
-    contract$n_Comp<-as.numeric(as.character(contract$n_Comp))
+    # contract$n_Comp<-as.numeric(as.character(contract$n_Comp))
 
 
 
-    contract$n_Offr<-contract$Offr
+
+    contract$q_Offr<-cut2(contract$UnmodifiedNumberOfOffersReceived,c(2,3,5))
+    levels(contract$q_Offr) <-
+      list("1"=c("1","  1"),
+           "2"=c("2","  2"),
+           "3-4"=c("[  3,  5)"),
+           "5+"=c("[  5,999]")
+      )
+    #Set number of offers =1 when there is a NA and no competition
+    #This seems to be redundant, but no harm in it.
+    contract$q_Offr[is.na(contract$q_Offr)&
+                 !is.na(contract$b_Comp)&
+                 contract$b_Comp==0
+               ]<-"1"
+
     levels(contract$n_Offr) <-
       list("1"=c("1"),
            "2"=c("2"),
            "3"=c("3-4"),
            "4"=c("5+"))
+
+
+
     contract$n_Offr<-as.integer(as.character(contract$n_Offr))
     contract$n_Offr[contract$b_Comp==0 & !is.na(contract$b_Comp)]<-0
     contract$n_Offr[is.na(contract$b_Comp)]<-NA
@@ -699,8 +846,8 @@ transform_contract<-function(
 
 
     #l_Offr
-    contract$l_Offr<-log(contract$UnmodifiedNumberOfOffersReceived)
-    contract$l_Offr[is.infinite(contract$l_Offr)]<-NA
+    contract$l_Offr<-na_non_positive_log(contract$UnmodifiedNumberOfOffersReceived)
+
 
     contract$cb_Comp<-arm::rescale(contract$b_Comp)
     contract$cn_Comp<-arm::rescale(contract$n_Comp)
@@ -722,6 +869,9 @@ transform_contract<-function(
 
 
   #b_Intl
+  contract$Intl <- factor(contract$Intl,
+                          c("Just U.S.", "Any International"))   #Manually remove "NA" from levels of variable Intl
+
   if("Intl" %in% colnames(contract)){
     contract$b_Intl<-contract$Intl
     contract$b_Intl[contract$b_Intl=="Unlabeled"]<-NA
@@ -812,7 +962,9 @@ transform_contract<-function(
   }
 
   #Calendar Year
-  contract$StartCY<-lubridate::year(contract$MinOfSignedDate)
+  if("MinOfSignedDate" %in% colnames(contract)){
+    contract$StartCY<-lubridate::year(contract$MinOfSignedDate)
+  }
 
   #NAICS
   if("NAICS" %in% colnames(contract)){
@@ -836,7 +988,7 @@ transform_contract<-function(
                                                      "NAICS5"="NAICS5"))
 
       contract<-left_join(contract,NAICS4_join, by=c("StartCY"="CalendarYear",
-                                                "NAICS4"="NAICS4"))
+                                                     "NAICS4"="NAICS4"))
       contract<-left_join(contract,NAICS3_join, by=c("StartCY"="CalendarYear",
                                                      "NAICS3"="NAICS3"))
       contract<-left_join(contract,NAICS2_join, by=c("StartCY"="CalendarYear",
@@ -848,89 +1000,84 @@ transform_contract<-function(
       contract$def6_HHI_lag1[contract$def6_HHI_lag1==0]<-NA
       contract$c_def6_HHI_lag1<-arm::rescale(contract$def6_HHI_lag1)
 
-      contract$l_def6_HHI_lag1<-log(contract$def6_HHI_lag1)
+      contract$l_def6_HHI_lag1<-na_non_positive_log(contract$def6_HHI_lag1)
       contract$cl_def6_HHI_lag1<-arm::rescale(contract$l_def6_HHI_lag1)
 
       contract$def5_HHI_lag1[contract$def5_HHI_lag1==0]<-NA
       contract$c_def5_HHI_lag1<-arm::rescale(contract$def5_HHI_lag1)
 
-      contract$l_def5_HHI_lag1<-log(contract$def5_HHI_lag1)
+      contract$l_def5_HHI_lag1<-na_non_positive_log(contract$def5_HHI_lag1)
       contract$cl_def5_HHI_lag1<-arm::rescale(contract$l_def5_HHI_lag1)
 
       contract$def4_HHI_lag1[contract$def4_HHI_lag1==0]<-NA
       contract$c_def4_HHI_lag1<-arm::rescale(contract$def4_HHI_lag1)
 
-      contract$l_def4_HHI_lag1<-log(contract$def4_HHI_lag1)
+      contract$l_def4_HHI_lag1<-na_non_positive_log(contract$def4_HHI_lag1)
       contract$cl_def4_HHI_lag1<-arm::rescale(contract$l_def4_HHI_lag1)
 
       contract$def3_HHI_lag1[contract$def3_HHI_lag1==0]<-NA
       contract$c_def3_HHI_lag1<-arm::rescale(contract$def3_HHI_lag1)
 
-      contract$l_def3_HHI_lag1<-log(contract$def3_HHI_lag1)
+      contract$l_def3_HHI_lag1<-na_non_positive_log(contract$def3_HHI_lag1)
       contract$cl_def3_HHI_lag1<-arm::rescale(contract$l_def3_HHI_lag1)
 
       contract$def2_HHI_lag1[contract$def2_HHI_lag1==0]<-NA
       contract$c_def2_HHI_lag1<-arm::rescale(contract$def2_HHI_lag1)
 
-      contract$l_def2_HHI_lag1<-log(contract$def2_HHI_lag1)
+      contract$l_def2_HHI_lag1<-na_non_positive_log(contract$def2_HHI_lag1)
       contract$cl_def2_HHI_lag1<-arm::rescale(contract$l_def2_HHI_lag1)
 
 
       contract$capped_def6_ratio_lag1<-cap(contract$def6_ratio_lag1,1)
-      contract$l_def6_ratio_lag1<-log(contract$def6_ratio_lag1)
+      contract$l_def6_ratio_lag1<-na_non_positive_log(contract$def6_ratio_lag1)
       contract$cl_def6_ratio_lag1<-arm::rescale(contract$def6_ratio_lag1)
 
       contract$capped_def5_ratio_lag1<-cap(contract$def5_ratio_lag1,1)
-      contract$l_def5_ratio_lag1<-log(contract$def5_ratio_lag1)
+      contract$l_def5_ratio_lag1<-na_non_positive_log(contract$def5_ratio_lag1)
       contract$cl_def5_ratio_lag1<-arm::rescale(contract$def5_ratio_lag1)
 
       contract$capped_def4_ratio_lag1<-cap(contract$def4_ratio_lag1,1)
-      contract$l_def4_ratio_lag1<-log(contract$def4_ratio_lag1)
+      contract$l_def4_ratio_lag1<-na_non_positive_log(contract$def4_ratio_lag1)
       contract$cl_def4_ratio_lag1<-arm::rescale(contract$def4_ratio_lag1)
 
 
       contract$capped_def3_ratio_lag1<-cap(contract$def3_ratio_lag1,1)
-      contract$l_def3_ratio_lag1<-log(contract$def3_ratio_lag1)
+      contract$l_def3_ratio_lag1<-na_non_positive_log(contract$def3_ratio_lag1)
       contract$cl_def3_ratio_lag1<-arm::rescale(contract$def3_ratio_lag1)
 
       contract$capped_def2_ratio_lag1<-cap(contract$def2_ratio_lag1,1)
-      contract$l_def2_ratio_lag1<-log(contract$def2_ratio_lag1)
+      contract$l_def2_ratio_lag1<-na_non_positive_log(contract$def2_ratio_lag1)
       contract$cl_def2_ratio_lag1<-arm::rescale(contract$def2_ratio_lag1)
 
 
-      contract$def6_obl_lag1[contract$def6_obl_lag1<=0]<-NA
-      contract$l_def6_obl_lag1<-log(contract$def6_obl_lag1)
+      contract$l_def6_obl_lag1<-na_non_positive_log(contract$def6_obl_lag1)
       contract$cl_def6_obl_lag1<-arm::rescale(contract$l_def6_obl_lag1)
-      contract$def5_obl_lag1[contract$def5_obl_lag1<=0]<-NA
-      contract$l_def5_obl_lag1<-log(contract$def5_obl_lag1)
+      contract$l_def5_obl_lag1<-na_non_positive_log(contract$def5_obl_lag1)
       contract$cl_def5_obl_lag1<-arm::rescale(contract$l_def5_obl_lag1)
-      contract$def4_obl_lag1[contract$def4_obl_lag1<=0]<-NA
-      contract$l_def4_obl_lag1<-log(contract$def4_obl_lag1)
+      contract$l_def4_obl_lag1<-na_non_positive_log(contract$def4_obl_lag1)
       contract$cl_def4_obl_lag1<-arm::rescale(contract$l_def4_obl_lag1)
-      contract$def3_obl_lag1[contract$def3_obl_lag1<=0]<-NA
-      contract$l_def3_obl_lag1<-log(contract$def3_obl_lag1)
+      contract$l_def3_obl_lag1<-na_non_positive_log(contract$def3_obl_lag1)
       contract$cl_def3_obl_lag1<-arm::rescale(contract$l_def3_obl_lag1)
-      contract$def2_obl_lag1[contract$def2_obl_lag1<=0]<-NA
-      contract$l_def2_obl_lag1<-log(contract$def2_obl_lag1)
+      contract$l_def2_obl_lag1<-na_non_positive_log(contract$def2_obl_lag1)
       contract$cl_def2_obl_lag1<-arm::rescale(contract$l_def2_obl_lag1)
 
 
 
-      contract$l_US6_avg_sal_lag1<-log(contract$US6_avg_sal_lag1)
+      contract$l_US6_avg_sal_lag1<-na_non_positive_log(contract$US6_avg_sal_lag1)
       contract$cl_US6_avg_sal_lag1<-arm::rescale(contract$l_US6_avg_sal_lag1)
 
 
-      contract$l_US5_avg_sal_lag1<-log(contract$US5_avg_sal_lag1)
+      contract$l_US5_avg_sal_lag1<-na_non_positive_log(contract$US5_avg_sal_lag1)
       contract$cl_US5_avg_sal_lag1<-arm::rescale(contract$l_US5_avg_sal_lag1)
 
 
-      contract$l_US4_avg_sal_lag1<-log(contract$US4_avg_sal_lag1)
+      contract$l_US4_avg_sal_lag1<-na_non_positive_log(contract$US4_avg_sal_lag1)
       contract$cl_US4_avg_sal_lag1<-arm::rescale(contract$l_US4_avg_sal_lag1)
 
-      contract$l_US3_avg_sal_lag1<-log(contract$US3_avg_sal_lag1)
+      contract$l_US3_avg_sal_lag1<-na_non_positive_log(contract$US3_avg_sal_lag1)
       contract$cl_US3_avg_sal_lag1<-arm::rescale(contract$l_US3_avg_sal_lag1)
 
-      contract$l_US2_avg_sal_lag1<-log(contract$US2_avg_sal_lag1)
+      contract$l_US2_avg_sal_lag1<-na_non_positive_log(contract$US2_avg_sal_lag1)
       contract$cl_US2_avg_sal_lag1<-arm::rescale(contract$l_US2_avg_sal_lag1)
 
 
@@ -1026,17 +1173,16 @@ transform_contract<-function(
   contract$ObligationWT<-contract$Action.Obligation
   contract$ObligationWT[contract$ObligationWT<0]<-NA
 
-  if(colnames(contract) %in% "UnmodifiedContractBaseAndAllOptionsValue"){
-    contract<-contract %>% group_by(Ceil) %>%
-      mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue))
-  }
 
 
   contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
   contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
-  contract$Dur[contract$UnmodifiedYearsCat<0]<-NA
+  contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
 
 
+
+  #Removing l_s just to reduce size. They can be derived easily.
+  contract<-contract[!colnames(contract) %in% colnames(contract)[grep("^l_",colnames(contract))]]
 
 
   contract
