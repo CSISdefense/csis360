@@ -824,8 +824,8 @@ transform_contract<-function(
                  !is.na(contract$b_Comp)&
                  contract$b_Comp==0
                ]<-"1"
-
-    levels(contract$n_Offr) <-
+    contract$nq_Offr<-contract$q_Offr
+    levels(contract$nq_Offr) <-
       list("1"=c("1"),
            "2"=c("2"),
            "3"=c("3-4"),
@@ -833,10 +833,10 @@ transform_contract<-function(
 
 
 
-    contract$n_Offr<-as.integer(as.character(contract$n_Offr))
-    contract$n_Offr[contract$b_Comp==0 & !is.na(contract$b_Comp)]<-0
-    contract$n_Offr[is.na(contract$b_Comp)]<-NA
-    contract$CompOffr<-factor(contract$n_Offr)
+    contract$nq_Offr<-as.integer(as.character(contract$nq_Offr))
+    contract$nq_Offr[contract$b_Comp==0 & !is.na(contract$b_Comp)]<-0
+    contract$nq_Offr[is.na(contract$b_Comp)]<-NA
+    contract$CompOffr<-factor(contract$nq_Offr)
     levels(contract$CompOffr) <-
       list("No Competition"="0",
            "1 offer"="1",
@@ -851,7 +851,7 @@ transform_contract<-function(
 
     contract$cb_Comp<-arm::rescale(contract$b_Comp)
     contract$cn_Comp<-arm::rescale(contract$n_Comp)
-    contract$cn_Offr<-arm::rescale(contract$n_Offr)
+    contract$cn_Offr<-arm::rescale(contract$nq_Offr)
     contract$cl_Offr<-arm::rescale(contract$l_Offr)
 
     #Urgency
@@ -980,6 +980,9 @@ transform_contract<-function(
       contract$NAICS3<-as.integer(substr(contract$NAICS,1,3))
       contract$NAICS2<-create_naics2(contract$NAICS)
 
+      #This critical NAICS6 split in 2 from 2012 to 2017 and would prevent analysis of 7% of obligations if not reunited.
+      contract$NAICS[substr(contract$NAICS,1,5)==54171 &
+                                        !is.na(contract$NAICS)]<-54171
 
       contract<-left_join(contract,NAICS6_join, by=c("StartCY"="CalendarYear",
                                                      "NAICS"="NAICS6"))
