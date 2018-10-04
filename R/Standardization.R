@@ -1139,6 +1139,7 @@ transform_contract<-function(
   }
   if("$ProductServiceOrRnDarea" %in% colnames(contract)){
     contract$ProductOrServiceCode<-as.character(contract$ProdServ)
+    contract$ProdServ[contract$ProdServ==""]<-NA
     contract<-csis360::read_and_join( contract,
                                       "ProductOrServiceCodes.csv",
                                       path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
