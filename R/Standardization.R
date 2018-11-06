@@ -722,18 +722,19 @@ transform_contract<-function(
   contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
   contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
 
-  contract$Dur.Simple<-as.character(contract$Dur)
-  contract$Dur.Simple[contract$Dur.Simple %in% c(
-    "[0 months,~2 months)",
-    "[~2 months,~7 months)",
-    "[~7 months-~1 year]")]<-"<~1 year"
-  contract$Dur.Simple<-factor(contract$Dur.Simple,
-                              levels=c("<~1 year",
-                                       "(~1 year,~2 years]",
-                                       "(~2 years+]"),
-                              ordered=TRUE
-  )
-
+  if("qDuration" %in% colnames(contract)){
+    contract$Dur.Simple<-as.character(contract$qDuration)
+    contract$Dur.Simple[contract$Dur.Simple %in% c(
+      "[0 months,~2 months)",
+      "[~2 months,~7 months)",
+      "[~7 months-~1 year]")]<-"<~1 year"
+    contract$qDuration.Simple<-factor(contract$Dur.Simple,
+                                      levels=c("<~1 year",
+                                               "(~1 year,~2 years]",
+                                               "(~2 years+]"),
+                                      ordered=TRUE
+    )
+  }
 
 
   #n_Fixed
@@ -1103,8 +1104,7 @@ transform_contract<-function(
                                       new_var_checked=FALSE)
 
 
-
-    contract$OffIntl<-contract$PlaceIntlPercent
+    colnames(contract)[colnames(contract)=="PlaceIntlPercent"]<-"OffIntl"
 
     contract$OffPl99<-Hmisc::cut2(contract$OffIntl,c(0.01,0.50))
     levels(contract$OffPl99) <-
@@ -1135,7 +1135,6 @@ transform_contract<-function(
     colnames(contract)[colnames(contract)=="CrisisPercent"]<-"OffCri"
     contract$c_OffCri<-arm::rescale(contract$OffCri)
 
-    contract$OffCri<-contract$CrisisPercent
   }
   if("$ProductServiceOrRnDarea" %in% colnames(contract)){
     contract$ProductOrServiceCode<-as.character(contract$ProdServ)
