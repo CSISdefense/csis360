@@ -560,8 +560,7 @@ transform_contract<-function(
 
 
 
-  #Break the count of days into four categories.
-  contract$qDuration<-cut2(contract$UnmodifiedDays,cuts=c(61,214,366,732))
+
 
   if (levels(contract$qDuration)[[2]]=="[   61,  214)"){
     contract$qDuration<-factor(contract$qDuration,
@@ -716,13 +715,20 @@ transform_contract<-function(
 
 
   #l_Days
-  contract$l_Days<-na_non_positive_log(contract$UnmodifiedDays)
+  if("UnmodifiedDays" %in% colnames(contract)){
 
-  contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
-  contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
-  contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
+    contract$UnmodifiedDays[contract$UnmodifiedDays<0]<-NA
+    contract$capped_UnmodifiedDays <- ifelse(contract$UnmodifiedDays > 3650, 3650, contract$UnmodifiedDays)
+    contract$l_Days<-na_non_positive_log(contract$UnmodifiedDays)
 
-  if("qDuration" %in% colnames(contract)){
+
+    contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
+    contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
+
+    #Break the count of days into four categories.
+    contract$qDuration<-cut2(contract$UnmodifiedDays,cuts=c(61,214,366,732))
+    contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
+
     contract$Dur.Simple<-as.character(contract$qDuration)
     contract$Dur.Simple[contract$Dur.Simple %in% c(
       "[0 months,~2 months)",
@@ -734,6 +740,7 @@ transform_contract<-function(
                                                "(~2 years+]"),
                                       ordered=TRUE
     )
+
   }
 
 
@@ -1093,7 +1100,7 @@ transform_contract<-function(
   }
 
   #Office
-  if("$Office" %in% colnames(contract)){
+  if("Office" %in% colnames(contract)){
     contract$ContractingOfficeCode<-as.character(contract$Office)
     contract<-csis360::read_and_join( contract,
                                       "Office.ContractingOfficeCode.txt",
@@ -1177,9 +1184,6 @@ transform_contract<-function(
 
 
 
-  contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
-  contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
-  contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
 
 
 
