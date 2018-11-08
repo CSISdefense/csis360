@@ -560,8 +560,7 @@ transform_contract<-function(
 
 
 
-  #Break the count of days into four categories.
-  contract$qDuration<-cut2(contract$UnmodifiedDays,cuts=c(61,214,366,732))
+
 
   if (levels(contract$qDuration)[[2]]=="[   61,  214)"){
     contract$qDuration<-factor(contract$qDuration,
@@ -716,24 +715,33 @@ transform_contract<-function(
 
 
   #l_Days
-  contract$l_Days<-na_non_positive_log(contract$UnmodifiedDays)
+  if("UnmodifiedDays" %in% colnames(contract)){
 
-  contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
-  contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
-  contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
+    contract$UnmodifiedDays[contract$UnmodifiedDays<0]<-NA
+    contract$capped_UnmodifiedDays <- ifelse(contract$UnmodifiedDays > 3650, 3650, contract$UnmodifiedDays)
+    contract$l_Days<-na_non_positive_log(contract$UnmodifiedDays)
 
-  contract$Dur.Simple<-as.character(contract$Dur)
-  contract$Dur.Simple[contract$Dur.Simple %in% c(
-    "[0 months,~2 months)",
-    "[~2 months,~7 months)",
-    "[~7 months-~1 year]")]<-"<~1 year"
-  contract$Dur.Simple<-factor(contract$Dur.Simple,
-                              levels=c("<~1 year",
-                                       "(~1 year,~2 years]",
-                                       "(~2 years+]"),
-                              ordered=TRUE
-  )
 
+    contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
+    contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
+
+    #Break the count of days into four categories.
+    contract$qDuration<-cut2(contract$UnmodifiedDays,cuts=c(61,214,366,732))
+    contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
+
+    contract$Dur.Simple<-as.character(contract$qDuration)
+    contract$Dur.Simple[contract$Dur.Simple %in% c(
+      "[0 months,~2 months)",
+      "[~2 months,~7 months)",
+      "[~7 months-~1 year]")]<-"<~1 year"
+    contract$qDuration.Simple<-factor(contract$Dur.Simple,
+                                      levels=c("<~1 year",
+                                               "(~1 year,~2 years]",
+                                               "(~2 years+]"),
+                                      ordered=TRUE
+    )
+
+  }
 
 
   #n_Fixed
@@ -1112,7 +1120,7 @@ transform_contract<-function(
   }
 
   #Office
-  if("$Office" %in% colnames(contract)){
+  if("Office" %in% colnames(contract)){
     contract$ContractingOfficeCode<-as.character(contract$Office)
     contract<-csis360::read_and_join( contract,
                                       "Office.ContractingOfficeCode.txt",
@@ -1123,8 +1131,7 @@ transform_contract<-function(
                                       new_var_checked=FALSE)
 
 
-
-    contract$OffIntl<-contract$PlaceIntlPercent
+    colnames(contract)[colnames(contract)=="PlaceIntlPercent"]<-"OffIntl"
 
     contract$OffPl99<-Hmisc::cut2(contract$OffIntl,c(0.01,0.50))
     levels(contract$OffPl99) <-
@@ -1155,7 +1162,6 @@ transform_contract<-function(
     colnames(contract)[colnames(contract)=="CrisisPercent"]<-"OffCri"
     contract$c_OffCri<-arm::rescale(contract$OffCri)
 
-    contract$OffCri<-contract$CrisisPercent
   }
   if("$ProductServiceOrRnDarea" %in% colnames(contract)){
     contract$ProductOrServiceCode<-as.character(contract$ProdServ)
@@ -1198,9 +1204,6 @@ transform_contract<-function(
 
 
 
-  contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
-  contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
-  contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
 
 
 
