@@ -865,6 +865,26 @@ transform_contract<-function(
     contract$NoComp[contract$b_Comp==1]<-"Any Comp."
     contract$NoComp<-factor(contract$NoComp,
                             c("Any Comp.","Other No","Urgency"))
+
+    contract$NoCompOffr<-contract$CompOffr
+    levels(contract$NoCompOffr) <-
+      list("No Competition"="No Competition",
+           "1 offer"="1 offer",
+           "2-4 offers"=c("2 offers","3-4 offers"),
+           "5+ offers"="5+ offers")
+    contract$NoCompOffr<-as.character(contract$NoCompOffr)
+    contract$NoCompOffr[is.na(contract$NoComp) |
+                            contract$NoComp!="Any Comp."]<-
+      as.character(contract$NoComp[is.na(contract$NoComp) |
+                                       contract$NoComp!="Any Comp."])
+    contract$NoCompOffr<-factor(contract$NoCompOffr,c(
+      c("Other No",
+        "Urgency",
+        "1 offer",
+        "2-4 offers",
+        "5+ offers"
+      )
+    ))
   }
 
 
