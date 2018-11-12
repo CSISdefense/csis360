@@ -721,6 +721,8 @@ transform_contract<-function(
     contract$capped_UnmodifiedDays <- ifelse(contract$UnmodifiedDays > 3650, 3650, contract$UnmodifiedDays)
     contract$l_Days<-na_non_positive_log(contract$UnmodifiedDays)
 
+    contract$capped_l_Days<-na_non_positive_log(contract$capped_UnmodifiedDays)
+    contract$capped_cl_Days<-arm::rescale(contract$capped_l_Days)
 
     contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
     contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
@@ -1209,6 +1211,7 @@ transform_contract<-function(
 
   #Removing l_s just to reduce size. They can be derived easily.
   contract<-contract[!colnames(contract) %in% colnames(contract)[grep("^l_",colnames(contract))]]
+  contract<-contract[!colnames(contract) %in% colnames(contract)[grep("^capped_l_",colnames(contract))]]
 
 
   contract
