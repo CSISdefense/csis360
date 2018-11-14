@@ -57,7 +57,7 @@ add_preassigned_scales<-function(
     )+scale_fill_manual(
       values = subset(labels_and_colors,column==var & (Label %in% levels(plot$data[,var])|variable %in% levels(plot$data[,var])))$RGB,
       # limits=c(subset(labels_and_colors,column==var)$variable),
-      limits=c(subset(labels_and_colors,column==var & (Label %in% levels(plot$data[,var])|variables %in% levels(plot$data[,var])))$Label)
+      limits=c(subset(labels_and_colors,column==var & (Label %in% levels(plot$data[,var])|variable %in% levels(plot$data[,var])))$Label)
     )
   }
   else{

@@ -153,6 +153,11 @@ prepare_labels_and_colors<-function(data
   else {
     column_key<-subset(column_key, !is.na(coloration.key))
   }
+  warning("Remember to add the fix to duplicate levels in lookup_coloration_key")
+  #You should really check for and handle duplicate keys.
+  #Example shiny.vendorsize was in coloration twice and it caused
+  #a duplicate factor level error. This could be caught and removed
+  #here while throwing a warning to fix lookup_coloration_key
 
   names.data<-NULL
   for(v in (1:nrow(column_key))){
