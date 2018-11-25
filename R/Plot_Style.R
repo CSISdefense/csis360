@@ -115,7 +115,7 @@ build_plot <- function(
   data,
   chart_geom = "Line Chart",
   share = FALSE,
-  x_var,
+  x_var=NULL,
   y_var, #Name of variable to plot on y-axis
   color_var="None",       # name of coloration variable, as string
   facet_var="None",        # name of facet variable, as string
@@ -124,20 +124,23 @@ build_plot <- function(
   labels_and_colors=NULL,
   column_key=NULL
 ){
+  data<-as.data.frame(data)
   mainplot <- ggplot(data = data)
+  #Assume 1st row if no x_var provided.
+if(is.null(x_var)) x_var<-names(data)[1]
 
   # add a line layer, broken out by color if requested
   if(chart_geom == "Line Chart"){
     if(color_var == "None"){
       mainplot <- mainplot +
         geom_line(aes_q(
-          x = as.name(names(data)[1]),
+          x = as.name(x_var),
           y = as.name(y_var)
         ))
     } else {
       mainplot <- mainplot +
         geom_line(aes_q(
-          x = as.name(names(data)[1]),
+          x = as.name(x_var),
           y = as.name(y_var),
           color = as.name(color_var)
         )) +
@@ -266,19 +269,19 @@ build_plot <- function(
   if(is.numeric(data[,x_var])){
     start_fy<-min(data[,colnames(data)==x_var])
     end_fy<-max(data[,colnames(data)==x_var])
-    if(facet_var != "None"){
-      mainplot<-mainplot+scale_x_continuous(
-        breaks = function(x) {seq(start_fy, end_fy, by = 2)},
-        labels = function(x){str_sub(as.character(x), -2, -1)}
-      )
-    }
-    else{
-      mainplot <- mainplot +
-        scale_x_continuous(
-          breaks = function(x){seq(start_fy, end_fy, by = 1)},
-          labels = function(x){str_sub(as.character(x), -2, -1)}
-        )
-    }
+    # if(facet_var != "None"){
+    #   mainplot<-mainplot+scale_x_continuous(
+    #     breaks = function(x) {seq(start_fy, end_fy, by = 2)},
+    #     labels = function(x){str_sub(as.character(x), -2, -1)}
+    #   )
+    # }
+    # else{
+    #   mainplot <- mainplot +
+    #     scale_x_continuous(
+    #       breaks = function(x){seq(start_fy, end_fy, by = 1)},
+    #       labels = function(x){str_sub(as.character(x), -2, -1)}
+    #     )
+    # }
   }
 
   # add y-axis labeling
