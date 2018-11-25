@@ -153,6 +153,11 @@ prepare_labels_and_colors<-function(data
   else {
     column_key<-subset(column_key, !is.na(coloration.key))
   }
+  warning("Remember to add the fix to duplicate levels in lookup_coloration_key")
+  #You should really check for and handle duplicate keys.
+  #Example shiny.vendorsize was in coloration twice and it caused
+  #a duplicate factor level error. This could be caught and removed
+  #here while throwing a warning to fix lookup_coloration_key
 
   names.data<-NULL
   for(v in (1:nrow(column_key))){
@@ -560,8 +565,7 @@ transform_contract<-function(
 
 
 
-  #Break the count of days into four categories.
-  contract$qDuration<-cut2(contract$UnmodifiedDays,cuts=c(61,214,366,732))
+
 
   if (levels(contract$qDuration)[[2]]=="[   61,  214)"){
     contract$qDuration<-factor(contract$qDuration,
@@ -716,24 +720,35 @@ transform_contract<-function(
 
 
   #l_Days
-  contract$l_Days<-na_non_positive_log(contract$UnmodifiedDays)
+  if("UnmodifiedDays" %in% colnames(contract)){
 
-  contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
-  contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
-  contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
+    contract$UnmodifiedDays[contract$UnmodifiedDays<0]<-NA
+    contract$capped_UnmodifiedDays <- ifelse(contract$UnmodifiedDays > 3650, 3650, contract$UnmodifiedDays)
+    contract$l_Days<-na_non_positive_log(contract$UnmodifiedDays)
 
-  contract$Dur.Simple<-as.character(contract$Dur)
-  contract$Dur.Simple[contract$Dur.Simple %in% c(
-    "[0 months,~2 months)",
-    "[~2 months,~7 months)",
-    "[~7 months-~1 year]")]<-"<~1 year"
-  contract$Dur.Simple<-factor(contract$Dur.Simple,
-                              levels=c("<~1 year",
-                                       "(~1 year,~2 years]",
-                                       "(~2 years+]"),
-                              ordered=TRUE
-  )
+    contract$capped_l_Days<-na_non_positive_log(contract$capped_UnmodifiedDays)
+    contract$capped_cl_Days<-arm::rescale(contract$capped_l_Days)
 
+    contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
+    contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
+
+    #Break the count of days into four categories.
+    contract$qDuration<-cut2(contract$UnmodifiedDays,cuts=c(61,214,366,732))
+    contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
+
+    contract$Dur.Simple<-as.character(contract$qDuration)
+    contract$Dur.Simple[contract$Dur.Simple %in% c(
+      "[0 months,~2 months)",
+      "[~2 months,~7 months)",
+      "[~7 months-~1 year]")]<-"<~1 year"
+    contract$qDuration.Simple<-factor(contract$Dur.Simple,
+                                      levels=c("<~1 year",
+                                               "(~1 year,~2 years]",
+                                               "(~2 years+]"),
+                                      ordered=TRUE
+    )
+
+  }
 
 
   #n_Fixed
@@ -865,6 +880,26 @@ transform_contract<-function(
     contract$NoComp[contract$b_Comp==1]<-"Any Comp."
     contract$NoComp<-factor(contract$NoComp,
                             c("Any Comp.","Other No","Urgency"))
+
+    contract$NoCompOffr<-contract$CompOffr
+    levels(contract$NoCompOffr) <-
+      list("No Competition"="No Competition",
+           "1 offer"="1 offer",
+           "2-4 offers"=c("2 offers","3-4 offers"),
+           "5+ offers"="5+ offers")
+    contract$NoCompOffr<-as.character(contract$NoCompOffr)
+    contract$NoCompOffr[is.na(contract$NoComp) |
+                            contract$NoComp!="Any Comp."]<-
+      as.character(contract$NoComp[is.na(contract$NoComp) |
+                                       contract$NoComp!="Any Comp."])
+    contract$NoCompOffr<-factor(contract$NoCompOffr,c(
+      c("Other No",
+        "Urgency",
+        "1 offer",
+        "2-4 offers",
+        "5+ offers"
+      )
+    ))
   }
 
 
@@ -1092,7 +1127,7 @@ transform_contract<-function(
   }
 
   #Office
-  if("$Office" %in% colnames(contract)){
+  if("Office" %in% colnames(contract)){
     contract$ContractingOfficeCode<-as.character(contract$Office)
     contract<-csis360::read_and_join( contract,
                                       "Office.ContractingOfficeCode.txt",
@@ -1103,8 +1138,7 @@ transform_contract<-function(
                                       new_var_checked=FALSE)
 
 
-
-    contract$OffIntl<-contract$PlaceIntlPercent
+    colnames(contract)[colnames(contract)=="PlaceIntlPercent"]<-"OffIntl"
 
     contract$OffPl99<-Hmisc::cut2(contract$OffIntl,c(0.01,0.50))
     levels(contract$OffPl99) <-
@@ -1135,7 +1169,6 @@ transform_contract<-function(
     colnames(contract)[colnames(contract)=="CrisisPercent"]<-"OffCri"
     contract$c_OffCri<-arm::rescale(contract$OffCri)
 
-    contract$OffCri<-contract$CrisisPercent
   }
   if("$ProductServiceOrRnDarea" %in% colnames(contract)){
     contract$ProductOrServiceCode<-as.character(contract$ProdServ)
@@ -1178,14 +1211,12 @@ transform_contract<-function(
 
 
 
-  contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
-  contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
-  contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
 
 
 
   #Removing l_s just to reduce size. They can be derived easily.
   contract<-contract[!colnames(contract) %in% colnames(contract)[grep("^l_",colnames(contract))]]
+  contract<-contract[!colnames(contract) %in% colnames(contract)[grep("^capped_l_",colnames(contract))]]
 
 
   contract
