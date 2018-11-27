@@ -558,27 +558,6 @@ transform_contract<-function(
 
 
 
-
-
-
-
-  if (levels(contract$qDuration)[[2]]=="[   61,  214)"){
-    contract$qDuration<-factor(contract$qDuration,
-
-                               levels=c("[    0,   61)",
-                                        "[   61,  214)",
-                                        "[  214,  366)",
-                                        "[  366,  732)",
-                                        "[  732,33192]"),
-                               labels=c("[0 months,~2 months)",
-                                        "[~2 months,~7 months)",
-                                        "[~7 months-~1 year]",
-                                        "(~1 year,~2 years]",
-                                        "(~2 years+]"),
-                               ordered=TRUE
-    )
-  }
-
   if ("UnmodifiedContractBaseAndAllOptionsValue" %in% colnames(contract) ){
     #l_Ceil
     contract$l_Ceil<-na_non_positive_log(contract$UnmodifiedContractBaseAndAllOptionsValue)
@@ -713,6 +692,8 @@ transform_contract<-function(
   }
 
 
+  #Rename standardization
+  colnames(contract)[colnames(contract)=="Dur"]<-"qDuration"
 
   #l_Days
   if("UnmodifiedDays" %in% colnames(contract)){
@@ -731,6 +712,8 @@ transform_contract<-function(
     contract$qDuration<-cut2(contract$UnmodifiedDays,cuts=c(61,214,366,732))
     contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
 
+
+
     contract$Dur.Simple<-as.character(contract$qDuration)
     contract$Dur.Simple[contract$Dur.Simple %in% c(
       "[0 months,~2 months)",
@@ -743,6 +726,24 @@ transform_contract<-function(
                                       ordered=TRUE
     )
 
+  }
+  else if ("qDuration" %in% colnames(contract)){
+    if (levels(contract$qDuration)[[2]]=="[   61,  214)"){
+      contract$qDuration<-factor(contract$qDuration,
+
+                                 levels=c("[    0,   61)",
+                                          "[   61,  214)",
+                                          "[  214,  366)",
+                                          "[  366,  732)",
+                                          "[  732,33192]"),
+                                 labels=c("[0 months,~2 months)",
+                                          "[~2 months,~7 months)",
+                                          "[~7 months-~1 year]",
+                                          "(~1 year,~2 years]",
+                                          "(~2 years+]"),
+                                 ordered=TRUE
+      )
+    }
   }
 
 
@@ -898,11 +899,12 @@ transform_contract<-function(
   }
 
 
-  #b_Intl
-  contract$Intl <- factor(contract$Intl,
-                          c("Just U.S.", "Any International"))   #Manually remove "NA" from levels of variable Intl
 
   if("Intl" %in% colnames(contract)){
+    #b_Intl
+    contract$Intl <- factor(contract$Intl,
+                            c("Just U.S.", "Any International"))   #Manually remove "NA" from levels of variable Intl
+
     contract$b_Intl<-contract$Intl
     contract$b_Intl[contract$b_Intl=="Unlabeled"]<-NA
     levels(contract$b_Intl) <-
@@ -991,7 +993,7 @@ transform_contract<-function(
   }
 
   #NAICS
-  if("NAICS" %in% colnames(contract)){
+  if("NAICS" %in% colnames(contract) & "StartCY" %in% colnames(contract) ){
     if(file.exists("output//naics_join.Rdata")){
       load("output//naics_join.Rdata")
 
@@ -1138,25 +1140,27 @@ transform_contract<-function(
 
     contract<-contract[ ,!colnames(contract) %in% c("ContractingOfficeCode")]
 
-    contract$Reach6<-factor(paste(contract$OffPl99,contract$Intl,sep="-"))
-    levels(contract$Reach6) <-
-      list( "US99-Dom"=c("US99-Just U.S."),
-            "Mixed-Dom"=c("Mixed-Just U.S."),
-            "Intl-Dom"=c("Intl-Just U.S."),
-            "US99-Intl"=c("US99-Any International"),
-            "Mixed-Intl"=c("Mixed-Any International"),
-            "Intl-Intl"=c("Intl-Any International"))
-    contract$Reach<-contract$Reach6
-
-    levels(contract$Reach) <-
-      list( "US50-Dom"=c("US99-Just U.S.","Mixed-Just U.S."),
-            "Mixed-Dom"=c(),
-            "Intl-Dom"=c("Intl-Just U.S."),
-            "US50-Intl"=c("Mixed-Any International","US99-Any International"),
-            "Intl-Intl"=c("Intl-Any International"))
-
     colnames(contract)[colnames(contract)=="CrisisPercent"]<-"OffCri"
     contract$c_OffCri<-arm::rescale(contract$OffCri)
+
+    if("Intl" %in% colnames(contract)){
+      contract$Reach6<-factor(paste(contract$OffPl99,contract$Intl,sep="-"))
+      levels(contract$Reach6) <-
+        list( "US99-Dom"=c("US99-Just U.S."),
+              "Mixed-Dom"=c("Mixed-Just U.S."),
+              "Intl-Dom"=c("Intl-Just U.S."),
+              "US99-Intl"=c("US99-Any International"),
+              "Mixed-Intl"=c("Mixed-Any International"),
+              "Intl-Intl"=c("Intl-Any International"))
+      contract$Reach<-contract$Reach6
+
+      levels(contract$Reach) <-
+        list( "US50-Dom"=c("US99-Just U.S.","Mixed-Just U.S."),
+              "Mixed-Dom"=c(),
+              "Intl-Dom"=c("Intl-Just U.S."),
+              "US50-Intl"=c("Mixed-Any International","US99-Any International"),
+              "Intl-Intl"=c("Intl-Any International"))
+    }
 
   }
   if("$ProductServiceOrRnDarea" %in% colnames(contract)){

@@ -50,9 +50,19 @@ add_preassigned_scales<-function(
       "#353535"))
   #If a column name is passed and it is in labels_and_colors
   if(var!="None" & any(labels_and_colors$column==var)){
+    if(is.character(plot$data[,var])) plot$data[,var]<-factor(plot$data[,var])
+
+    #Rename factor to use label values
+    oldname<-subset(labels_and_colors,column==var & (!Label %in% levels(plot$data[,var])&variable %in% levels(plot$data[,var])))$variable
+    newname<-subset(labels_and_colors,column==var & (!Label %in% levels(plot$data[,var])&variable %in% levels(plot$data[,var])))$Label
+    plot$data[,var]<-plyr::mapvalues(plot$data[,var],oldname,newname)
+    var_label<-subset(labels_and_colors,column==var & (Label %in% levels(plot$data[,var])|variable %in% levels(plot$data[,var])))
+    var_label$Display.Order<-as.numeric(var_label$Display.Order)
+    var_label<-var_label[order(var_label$Display.Order),]
+
+    plot$data[,var]<-factor(plot$data[,var],levels=var_label$Label)
     plot<-plot+scale_color_manual(
       values = subset(labels_and_colors,column==var & (Label %in% levels(plot$data[,var])|variable %in% levels(plot$data[,var])))$RGB,
-      # limits=c(subset(labels_and_colors,column==var)$variable),
       limits=c(subset(labels_and_colors,column==var & (Label %in% levels(plot$data[,var])|variable %in% levels(plot$data[,var])))$Label)
     )+scale_fill_manual(
       values = subset(labels_and_colors,column==var & (Label %in% levels(plot$data[,var])|variable %in% levels(plot$data[,var])))$RGB,
