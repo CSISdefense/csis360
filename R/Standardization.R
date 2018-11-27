@@ -153,11 +153,6 @@ prepare_labels_and_colors<-function(data
   else {
     column_key<-subset(column_key, !is.na(coloration.key))
   }
-  warning("Remember to add the fix to duplicate levels in lookup_coloration_key")
-  #You should really check for and handle duplicate keys.
-  #Example shiny.vendorsize was in coloration twice and it caused
-  #a duplicate factor level error. This could be caught and removed
-  #here while throwing a warning to fix lookup_coloration_key
 
   names.data<-NULL
   for(v in (1:nrow(column_key))){
@@ -927,12 +922,6 @@ transform_contract<-function(
   }
 
 
-
-  # contract$DecisionTree<-as.character(contract$MaxOfDecisionTree)
-  # contract$DecisionTree[
-  #   contract$DecisionTree=="Excluded"|
-  #     is.na(contract$DecisionTree)]<-"All Other"
-  # contract$DecisionTree<-factor(contract$DecisionTree,levels=c("OCO","Disaster","ARRA","All Other"))
   #
   # if(!"Is.Defense" %in% colnames(contract)){
   #   contract$Is.Defense<-as.character(contract$Who)
@@ -980,7 +969,7 @@ transform_contract<-function(
            "0"=c("Def/Pur","S-IDC", "M-IDC","FSS/GWAC"))
     contract$BPABOA<-as.integer(as.character(contract$BPABOA))
 
-    if("MaxOfDecisionTree" %in% colnames(contract)){
+    if("Crisis" %in% colnames(contract)){
       #Crisis Dataset
       # contract$ARRA<-0
       # contract$ARRA[contract$MaxOfDecisionTree=="ARRA"]<-1
@@ -988,7 +977,7 @@ transform_contract<-function(
       # contract$Dis[contract$MaxOfDecisionTree=="Disaster"]<-1
       # contract$OCO<-0
       # contract$OCO[contract$MaxOfDecisionTree=="OCO"]<-1
-      contract$Crisis<-contract$MaxOfDecisionTree
+
       levels(contract$Crisis)[levels(contract$Crisis)=="Excluded"]<-"Other"
       contract$Crisis[is.na(contract$Crisis)]<-"Other"
       levels(contract$Crisis)[levels(contract$Crisis)=="Disaster"]<-"Dis"
