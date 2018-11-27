@@ -1151,25 +1151,27 @@ transform_contract<-function(
 
     contract<-contract[ ,!colnames(contract) %in% c("ContractingOfficeCode")]
 
-    contract$Reach6<-factor(paste(contract$OffPl99,contract$Intl,sep="-"))
-    levels(contract$Reach6) <-
-      list( "US99-Dom"=c("US99-Just U.S."),
-            "Mixed-Dom"=c("Mixed-Just U.S."),
-            "Intl-Dom"=c("Intl-Just U.S."),
-            "US99-Intl"=c("US99-Any International"),
-            "Mixed-Intl"=c("Mixed-Any International"),
-            "Intl-Intl"=c("Intl-Any International"))
-    contract$Reach<-contract$Reach6
-
-    levels(contract$Reach) <-
-      list( "US50-Dom"=c("US99-Just U.S.","Mixed-Just U.S."),
-            "Mixed-Dom"=c(),
-            "Intl-Dom"=c("Intl-Just U.S."),
-            "US50-Intl"=c("Mixed-Any International","US99-Any International"),
-            "Intl-Intl"=c("Intl-Any International"))
-
     colnames(contract)[colnames(contract)=="CrisisPercent"]<-"OffCri"
     contract$c_OffCri<-arm::rescale(contract$OffCri)
+
+    if("Intl" %in% colnames(contract)){
+      contract$Reach6<-factor(paste(contract$OffPl99,contract$Intl,sep="-"))
+      levels(contract$Reach6) <-
+        list( "US99-Dom"=c("US99-Just U.S."),
+              "Mixed-Dom"=c("Mixed-Just U.S."),
+              "Intl-Dom"=c("Intl-Just U.S."),
+              "US99-Intl"=c("US99-Any International"),
+              "Mixed-Intl"=c("Mixed-Any International"),
+              "Intl-Intl"=c("Intl-Any International"))
+      contract$Reach<-contract$Reach6
+
+      levels(contract$Reach) <-
+        list( "US50-Dom"=c("US99-Just U.S.","Mixed-Just U.S."),
+              "Mixed-Dom"=c(),
+              "Intl-Dom"=c("Intl-Just U.S."),
+              "US50-Intl"=c("Mixed-Any International","US99-Any International"),
+              "Intl-Intl"=c("Intl-Any International"))
+    }
 
   }
   if("$ProductServiceOrRnDarea" %in% colnames(contract)){
