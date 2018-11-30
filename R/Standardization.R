@@ -709,25 +709,11 @@ transform_contract<-function(
     contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
 
     #Break the count of days into four categories.
-    contract$qDuration<-cut2(contract$UnmodifiedDays,cuts=c(61,214,366,732))
-    contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
+    if (!"qDuration" %in% colnames(contract)){
 
+      contract$qDuration<-cut2(contract$UnmodifiedDays,cuts=c(61,214,366,732))
+    }
 
-
-    contract$Dur.Simple<-as.character(contract$qDuration)
-    contract$Dur.Simple[contract$Dur.Simple %in% c(
-      "[0 months,~2 months)",
-      "[~2 months,~7 months)",
-      "[~7 months-~1 year]")]<-"<~1 year"
-    contract$qDuration.Simple<-factor(contract$Dur.Simple,
-                                      levels=c("<~1 year",
-                                               "(~1 year,~2 years]",
-                                               "(~2 years+]"),
-                                      ordered=TRUE
-    )
-
-  }
-  else if ("qDuration" %in% colnames(contract)){
     if (levels(contract$qDuration)[[2]]=="[   61,  214)"){
       contract$qDuration<-factor(contract$qDuration,
 
@@ -744,6 +730,23 @@ transform_contract<-function(
                                  ordered=TRUE
       )
     }
+
+    contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
+
+
+
+    contract$Dur.Simple<-as.character(contract$qDuration)
+    contract$Dur.Simple[contract$Dur.Simple %in% c(
+      "[0 months,~2 months)",
+      "[~2 months,~7 months)",
+      "[~7 months-~1 year]")]<-"<~1 year"
+    contract$qDuration.Simple<-factor(contract$Dur.Simple,
+                                      levels=c("<~1 year",
+                                               "(~1 year,~2 years]",
+                                               "(~2 years+]"),
+                                      ordered=TRUE
+    )
+
   }
 
 
@@ -979,7 +982,7 @@ transform_contract<-function(
       # contract$Dis[contract$MaxOfDecisionTree=="Disaster"]<-1
       # contract$OCO<-0
       # contract$OCO[contract$MaxOfDecisionTree=="OCO"]<-1
-
+      contract$Crisis<-factor(contract$Crisis)
       levels(contract$Crisis)[levels(contract$Crisis)=="Excluded"]<-"Other"
       contract$Crisis[is.na(contract$Crisis)]<-"Other"
       levels(contract$Crisis)[levels(contract$Crisis)=="Disaster"]<-"Dis"
