@@ -1134,8 +1134,8 @@ transform_contract<-function(
 
     colnames(contract)[colnames(contract)=="PlaceIntlPercent"]<-"OffIntl"
 
-    contract$OffPl99<-Hmisc::cut2(contract$OffIntl,c(0.01,0.50))
-    levels(contract$OffPl99) <-
+    contract$OffPlace<-Hmisc::cut2(contract$OffIntl,c(0.01,0.50))
+    levels(contract$OffPlace) <-
       list("US99"=c("[0.00,0.01)"),
            "Mixed"=c("[0.01,0.50)"),
            "Intl"=c("[0.50,1.00]"))
@@ -1147,7 +1147,7 @@ transform_contract<-function(
     contract$c_OffCri<-arm::rescale(contract$OffCri)
 
     if("Intl" %in% colnames(contract)){
-      contract$Reach6<-factor(paste(contract$OffPl99,contract$Intl,sep="-"))
+      contract$Reach6<-factor(paste(contract$OffPlace,contract$Intl,sep="-"))
       levels(contract$Reach6) <-
         list( "US99-Dom"=c("US99-Just U.S."),
               "Mixed-Dom"=c("Mixed-Just U.S."),
