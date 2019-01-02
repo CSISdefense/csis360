@@ -55,8 +55,9 @@ get_plot_theme<-function(){
     hjust = 0.5))
   t<-t+theme(axis.text.x = element_text(
     family = "Open Sans",
-    vjust = 7,
-    margin = margin(0,0,0,0)))
+    # vjust = 7#,This was what was causing the x-axis numbering to overlap with the plot.
+    margin = margin(0,0,0,0)
+    ))
   t<-t+theme(axis.text.y = element_text(
     family = "Open Sans",
     color ="#554449",
@@ -77,8 +78,8 @@ get_plot_theme<-function(){
   t<-t+theme(legend.title = element_blank()) +
     theme(legend.position = 'bottom') +
     theme(legend.background = element_rect(fill = "white")
-    )+
-    theme(plot.caption = element_text(size=7, face = "italic", vjust= -0.15, color = "gray25"))
+    )#+
+    # theme(plot.caption = element_text(size=7, face = "italic", vjust= -0.15, color = "gray25"))
   return(t)
 }
 
