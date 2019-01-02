@@ -78,8 +78,8 @@ get_plot_theme<-function(){
   t<-t+theme(legend.title = element_blank()) +
     theme(legend.position = 'bottom') +
     theme(legend.background = element_rect(fill = "white")
-    )#+
-    # theme(plot.caption = element_text(size=7, face = "italic", vjust= -0.15, color = "gray25"))
+    )+
+    theme(plot.caption = element_text(size=7, face = "italic", vjust= -0.15, color = "gray25"))
   return(t)
 }
 
