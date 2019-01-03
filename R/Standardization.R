@@ -100,7 +100,7 @@ standardize_variable_names<- function(data,
 #' @export
 prepare_labels_and_colors<-function(data
                                     ,var=NULL
-                                    ,na_replaced=FALSE
+                                    ,na_replaced=TRUE
                                     ,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/"
                                     #                                  ,VAR.override.coloration=NA
                                     ,missing_allowed=FALSE
@@ -183,7 +183,6 @@ prepare_labels_and_colors<-function(data
          !is.na(unique(NA.labels[1,c]))&
          unique(NA.labels[1,c])=="Unlabeled")
       {
-
         labels_category_data<-rbind(labels_category_data,
                                     data.frame(coloration.key=column_key$coloration.key[v],
                                                variable="Unlabeled",
@@ -195,7 +194,8 @@ prepare_labels_and_colors<-function(data
                                                size=NA,
                                                alpha=NA,
                                                text.color="default grey",
-                                               text.RGB="#554449"
+                                               text.RGB="#554449",
+                                               abbreviation="Unlabeled"
                                     ))
       }
       else{
