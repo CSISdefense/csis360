@@ -106,9 +106,7 @@ prepare_labels_and_colors<-function(data
                                     ,missing_allowed=FALSE
 )
 {
-  if(na_replaced==TRUE){
-    data<-replace_nas_with_unlabeled(data,var)
-  }
+
 
   data<-as.data.frame(data)
 
@@ -156,6 +154,10 @@ prepare_labels_and_colors<-function(data
 
   names.data<-NULL
   for(v in (1:nrow(column_key))){
+    if(na_replaced==TRUE){
+      data<-replace_nas_with_unlabeled(data,column_key$column[v])
+    }
+
     #Limit the lookup table to those series that match the variable
     labels_category_data<-subset(coloration, coloration.key==
                                    column_key$coloration.key[v] )
