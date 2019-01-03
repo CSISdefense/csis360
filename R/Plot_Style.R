@@ -80,7 +80,7 @@ get_plot_theme<-function(){
               legend.position = 'bottom',
               legend.background = element_rect(fill = "white"),
               legend.margin=margin(0,0,0,0),
-              legend.box.margin=margin(-20,-10,-10,-10)# +
+              legend.box.margin=margin(-20,-10,0,-10)# +
               # theme(legend.spacing.x = unit(1.0, 'cm'))
   )+
     theme(plot.caption = element_text(size=8,
