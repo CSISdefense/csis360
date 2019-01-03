@@ -77,11 +77,17 @@ get_plot_theme<-function(){
       family = "Open Sans",
       color ="#554449",
       margin = margin(2,2,2,2))) +
-    theme(legend.position = 'bottom') +
-    theme(legend.background = element_rect(fill = "white")# +
+    theme(legend.position = 'bottom',
+          legend.background = element_rect(fill = "white"),
+          legend.margin = margin(t=-0.75, unit="cm")
+          # +
     # theme(legend.spacing.x = unit(1.0, 'cm'))
     )+
-    theme(plot.caption = element_text(size=7, face = "italic", vjust= -0.15, color = "gray25"))
+    theme(plot.caption = element_text(size=8,
+                                      face = "italic",
+                                      vjust= -0.15,
+          family = "Open Sans",
+          color ="#003366"))
   return(t)
 }
 
