@@ -161,7 +161,7 @@ prepare_labels_and_colors<-function(data
     #Limit the lookup table to those series that match the variable
     labels_category_data<-subset(coloration, coloration.key==
                                    column_key$coloration.key[v] )
-
+    #Error checking for duplicates in lookup_coloration.csv
     if(anyDuplicated(labels_category_data$variable)>0){
       print(labels_category_data$variable[
         duplicated(labels_category_data$variable)])
@@ -172,16 +172,18 @@ prepare_labels_and_colors<-function(data
       )
     }
     c<-as.character(column_key$column[v])
+    k<-as.character(column_key$coloration.key[v])
     #Check for any values in the current field that are not assigned a color.
-    NA.labels<-subset(data,!(data.frame(data)[,c] %in% labels_category_data$variable))
+    values<-unique(data.frame(data)[,c])
+    NA.labels<-values[!values %in% labels_category_data$variable]
 
 
 
-    if (nrow(NA.labels)>0){
+    if (length(NA.labels)>0){
       #Unlabeled is highly standardized, adding automatically
-      if(length(unique(NA.labels[,c]))==1 &
-         !is.na(unique(NA.labels[1,c]))&
-         unique(NA.labels[1,c])=="Unlabeled")
+      if(length(NA.labels)==1 &
+         !is.na(NA.labels[1])&
+         NA.labels[1]=="Unlabeled")
       {
         labels_category_data<-rbind(labels_category_data,
                                     data.frame(coloration.key=column_key$coloration.key[v],
@@ -203,11 +205,11 @@ prepare_labels_and_colors<-function(data
           return(NA)
         else{
           #Otherwise create an error.
-          print(unique(NA.labels[,c]))
-          stop(paste("Lookup_Coloration.csv is missing"
-                     ,length(unique(NA.labels[,c]))
-                     ,"label(s) for category="
-                     ,c, ". See above for a list of missing labels.")
+          print(as.character(NA.labels))
+          stop(paste("Lookup_Coloration.csv is missing "
+                     ,length(NA.labels)
+                     ," label(s) for column="
+                     ,c," & key=",k, ". See above for a list of missing labels.", sep="")
 
           )
         }
