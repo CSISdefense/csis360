@@ -1,4 +1,4 @@
-#' Take existing data frame and associate colors with values
+ #' Take existing data frame and associate colors with values
 #'
 #' @param plot The existing ggplot, needed to add more than one scale
 #' @param labels_and_colors A csis360 lookup data.frame with factor information

@@ -79,7 +79,7 @@ get_plot_theme<-function(){
                 margin = margin(2,2,2,2)),
               legend.position = 'bottom',
               legend.background = element_rect(fill = "white"),
-              legend.margin=margin(0,0,0,0),
+              # legend.margin=margin(0,0,0,0),
           legend.margin = margin(t=-0.75, unit="cm")
   )+
     theme(plot.caption = element_text(size=8,
@@ -361,3 +361,289 @@ if(is.null(x_var)) x_var<-names(data)[1]
   return(mainplot)
 }
 
+
+
+LatticePlotWrapper_csis360<-function(VAR.color.legend.label
+                             ,VAR.main.label
+                             ,VAR.X.label
+                             ,VAR.Y.label
+                             ,VAR.Coloration
+                             ,VAR.long.DF
+                             ,VAR.ncol=NA
+                             ,VAR.x.variable
+                             ,VAR.y.variable
+                             ,VAR.y.series
+                             ,VAR.facet.primary=NA
+                             ,VAR.facet.secondary=NA
+                             ,MovingAverage=1
+                             ,MovingSides=1
+                             ,DataLabels=NA
+                             #                       ,VAR.override.coloration=NA
+){
+  #     debug(PrepareLabelsAndColors)
+
+  if("Graph" %in% names(VAR.long.DF)){
+    VAR.long.DF<-subset(VAR.long.DF, Graph==TRUE)
+    VAR.long.DF[,VAR.y.series]
+  }
+  if(is.na(VAR.y.series)) VAR.y.series<-VAR.facet.primary
+
+  #Prepare labels for the category variable
+  #   if(is.na(VAR.override.coloration)){
+  labels.category.DF<-subset(VAR.Coloration,column==VAR.y.series)
+
+
+
+  #   }
+  #   else{
+  #     labels.category.DF<-PrepareLabelsAndColors(VAR.Coloration
+  #                                       ,VAR.long.DF
+  #                                       ,VAR.override.coloration
+  #     )
+  #   }
+
+  # color.list<-c(labels.category.DF$RGB)
+  # names(color.list)<-c(labels.category.DF$variable)
+
+
+
+  old.theme<-theme_set(theme_grey())
+  if(!is.na(VAR.facet.primary)){
+    labels.primary.DF<-subset(VAR.Coloration,column==VAR.facet.primary)
+  }
+
+  if(is.na(VAR.facet.primary)){
+    VAR.long.DF<-aggregate(VAR.long.DF[,VAR.y.variable]
+                           , by=list(VAR.long.DF[,VAR.x.variable]
+                                     ,VAR.long.DF[,VAR.y.series]
+                           )
+                           ,FUN = "sum"
+                           ,na.rm =TRUE
+    )
+    names(VAR.long.DF)<-c("x.variable","category","y.variable")
+
+    if(is.numeric(MovingAverage) & MovingAverage>1){
+      VAR.long.DF$y.raw<-VAR.long.DF$y.variable
+      VAR.long.DF<-ddply(VAR.long.DF,
+                         .(category),
+                         .fun=TransformFilter,
+                         MovingAverage,
+                         MovingSides
+      )
+      VAR.long.DF$y.variable<-VAR.long.DF$MovingAverage
+    }
+
+    VAR.long.DF<-ddply(VAR.long.DF,
+                       .(x.variable),
+                       mutate,
+                       ytextposition=cumsum(y.variable)-0.5*y.variable)#.(Fiscal.Year)
+
+  }
+  #Reduce the number of rows by aggregating to one row per unique entry in the VAR.facet.primary column.
+  else if(is.na(VAR.facet.secondary)){
+    VAR.long.DF<-aggregate(VAR.long.DF[,VAR.y.variable]
+                           , by=list(VAR.long.DF[,VAR.x.variable]
+                                     ,VAR.long.DF[,VAR.y.series]
+                                     ,VAR.long.DF[,VAR.facet.primary]
+                           )
+                           ,FUN = "sum"
+                           ,na.rm =TRUE
+    )
+    names(VAR.long.DF)<-c("x.variable","category","primary","y.variable")
+
+    if(is.numeric(MovingAverage) & MovingAverage>1){
+      VAR.long.DF$y.raw<-VAR.long.DF$y.variable
+      VAR.long.DF<-ddply(VAR.long.DF,
+                         .(category,primary),
+                         .fun=TransformFilter,
+                         MovingAverage,
+                         MovingSides
+      )
+      VAR.long.DF$y.variable<-VAR.long.DF$MovingAverage
+    }
+
+    VAR.long.DF<-ddply(VAR.long.DF,
+                       .(x.variable,primary),
+                       mutate,
+                       ytextposition=cumsum(y.variable)-0.5*y.variable)#.(Fiscal.Year)
+
+  }
+  else{
+    labels.secondary.DF<-subset(VAR.Coloration,column==VAR.facet.secondary)
+
+    VAR.long.DF<-aggregate(VAR.long.DF[,VAR.y.variable]
+                           , by=list(VAR.long.DF[,VAR.x.variable]
+                                     ,VAR.long.DF[,VAR.y.series]
+                                     ,VAR.long.DF[,VAR.facet.primary]
+                                     ,VAR.long.DF[,VAR.facet.secondary]
+                           )
+                           ,FUN = "sum"
+                           ,na.rm =TRUE
+    )
+    names(VAR.long.DF)<-c("x.variable","category","primary","secondary","y.variable")
+
+    if(is.numeric(MovingAverage) & MovingAverage>1){
+      VAR.long.DF$y.raw<-VAR.long.DF$y.variable
+      VAR.long.DF<-ddply(VAR.long.DF,
+                         .(category,primary,secondary),
+                         .fun=TransformFilter,
+                         MovingAverage,
+                         MovingSides
+      )
+      VAR.long.DF$y.variable<-VAR.long.DF$MovingAverage
+    }
+
+    VAR.long.DF<-ddply(VAR.long.DF,
+                       .(x.variable,primary,secondary),
+                       mutate,
+                       ytextposition=cumsum(y.variable)-0.5*y.variable)#.(Fiscal.Year)
+
+
+    VAR.long.DF$secondary<-factor(VAR.long.DF$secondary
+                                  ,levels=c(labels.secondary.DF$variable)
+                                  ,labels=c(labels.secondary.DF$Label)
+                                  ,ordered=TRUE)
+    rm(labels.secondary.DF)
+
+  }
+
+  VAR.long.DF$category<-factor(VAR.long.DF$category,
+                               levels=labels.category.DF$variable)
+
+  if(!is.na(VAR.facet.primary)){
+    VAR.long.DF$primary<-factor(VAR.long.DF$primary,
+                                levels=c(labels.primary.DF$variable),
+                                labels=c(labels.primary.DF$Label),
+                                ordered=TRUE)
+  }
+
+  original<-ggplot(
+    aes_string(x="x.variable"
+               , y="y.variable"
+               , fill="category")
+    , data=VAR.long.DF
+
+  )+ geom_bar(stat="identity")+
+    xlab(VAR.X.label)+
+    ylab(VAR.Y.label)+
+    ggtitle(VAR.main.label, subtitle = NULL)+
+    get_plot_theme()
+
+
+
+
+
+  tick.marks<-2
+  print.figure<-original
+
+
+  if(class(VAR.long.DF$x.variable)=="Date"){
+    print.figure<-print.figure+scale_x_date(
+      breaks=date_breaks("2 years"),
+      #                 c(seq(
+      #                     as.numeric(format(min(VAR.long.DF$x.variable),"%Y")),
+      #                     as.numeric(format(max(VAR.long.DF$x.variable),"%Y")),
+      #                     by=tick.marks)),
+      labels=date_format("'%y")
+      #                 paste("'",format(as.Date(as.character(
+      #                     c(seq(
+      #                         as.numeric(format(min(VAR.long.DF$x.variable),"%Y")),
+      #                         as.numeric(format(max(VAR.long.DF$x.variable),"%Y")),
+      #                         by=tick.marks))
+      #                 ),"%Y"),"%y"),sep="")
+    )
+  }
+
+  #   print.figure<-print.figure+geom_bar(
+  #     colour="black",
+  #     stat = "identity",
+  #     property= "identity"
+  #   )
+
+  #, labels=c(labels.category.DF$Label) Section labels don't work with facets.
+  #  http://www.cookbook-r.com/Graphs/Facets_(ggplot2)/
+
+  print.figure<-print.figure+scale_fill_manual(
+    VAR.color.legend.label
+    ,  values=c(labels.category.DF$RGB)
+    , limits=c(labels.category.DF$variable)
+    , labels=c(labels.category.DF$Label)
+
+  )
+
+  #Don't add numbers at all if there's over 10 facets or 500 rows
+  if(isTRUE(DataLabels) |
+     (is.na(DataLabels) &
+      length(levels(VAR.long.DF$primary))<=10 & nrow(VAR.long.DF)<200
+     )){
+    #Drop the labeling detail for crowded graphs.
+    NumericalDetail<-1
+    if(nrow(VAR.long.DF)>50){ NumericalDetail<-0 }
+    print.figure<-print.figure+
+      geom_text(aes(label=VariableNumericalFormat(y.variable,NumericalDetail)
+                    #                     format(round(y.variable,3),  scientific=FALSE, trim=TRUE, big.mark=",")
+                    #                   format(y.variable, digits=1, drop0trailing=TRUE, trim=TRUE, big.mark=",")
+                    #apply(y.variable,VariableNumericalFormat)
+                    ,y=ytextposition
+      )
+      ,size=geom.text.size
+      ,hjust=0.5
+      ,vjust=0.5
+      #,color=color.list This doesn't work yet
+      )
+  }
+
+  if(!is.na(VAR.facet.primary)){
+    if(is.na(VAR.facet.secondary)){
+      if(!is.na(VAR.ncol)){
+        print.figure<-print.figure+facet_wrap(~ primary
+                                              ,ncol=VAR.ncol
+                                              #                                           , labeller=Label_Wrap
+                                              #                                           , scales="fixed", space="free_y"
+        )+scale_y_continuous(labels=comma)
+      }
+      else{
+        print.figure<-print.figure+facet_wrap(~ primary
+                                              #                                           ,ncol=VAR.ncol
+                                              #                                           , labeller=Label_Wrap
+                                              #                                           , scales="fixed", space="free_y"
+        )+scale_y_continuous(labels=comma)
+      }
+      # +scale_y_continuous(expand=c(0,0.75)#)+scale_y_continuous(expand=c(0,0.75)
+      #     )
+
+
+    }
+    else{
+      print.figure<-print.figure+facet_grid(primary ~ secondary
+                                            # , labeller=Label_Wrap
+                                            , scales="free_y" #The scales actually do stay fixed
+                                            , space="free_y"#But only because the space is free
+      )+scale_y_continuous(expand=c(0,0.75)
+                           ,labels=comma
+      )+theme(strip.text.y=element_text(size=axis.text.size,family="times",face="bold",angle=0)
+      )
+
+    }
+  }
+
+  #
+
+  print.figure<-print.figure+
+    theme(axis.text.x=element_text(size=axis.text.size))+
+    theme(axis.text.y=element_text(size=axis.text.size))+
+    theme(strip.text.x=element_text(size=strip.text.size,face="bold"))+
+    theme(strip.text.y=element_text(size=strip.text.size))+
+    theme(axis.title.x=element_text(size=axis.text.size))+
+    theme(axis.title.y=element_text(size=axis.text.size, angle=90))+
+    theme(plot.title=element_text(size=title.text.size))+
+    theme(legend.position="none")+
+    theme(legend.title=element_text(size=legend.text.size,hjust=0))+
+    theme(legend.text=element_text(size=legend.text.size))
+  #     theme(legend.key.width=unit(0.1,"npc"))
+  #   print.figure<-facetAdjust(print.figure,"down")
+
+  print.figure
+
+
+}
