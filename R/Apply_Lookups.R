@@ -221,7 +221,7 @@ remove_bom<-function(data
 read_and_join<-function(
   data,
   lookup_file,
-  path="https://github.com/CSISdefense/R-scripts-and-data/tree/master/",
+  path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
   directory="Lookups/",
   by=NULL,
   replace_na_var=NULL,
