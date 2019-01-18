@@ -79,8 +79,8 @@ get_plot_theme<-function(){
                 margin = margin(2,2,2,2)),
               legend.position = 'bottom',
               legend.background = element_rect(fill = "white"),
-              # legend.margin=margin(0,0,0,0),
-          legend.margin = margin(t=-0.75, unit="cm")
+              legend.margin=margin(0,0,0,0)
+          # legend.margin = margin(t=-0.75, unit="cm")
   )+
     theme(plot.caption = element_text(size=8,
                                       family = "Open Sans",
