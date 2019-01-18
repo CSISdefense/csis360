@@ -266,7 +266,7 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
 
   if(!is.na(start_fy) & !is.na(end_fy)){
     # filter by year - see https://tinyurl.com/lm2u8xs
-    shown_data %<>%
+    shown_data <-shown_data  %>%
       filter_(paste0(fy_var, ">=", as.character(start_fy), "&", fy_var,
                      "<=", as.character(end_fy)))
   }
@@ -292,7 +292,7 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
         share_vars <- c(-1,-2)
 
       # spread the shares breakout variable across multiple columns
-      shown_data %<>%
+      shown_data<-shown_data %>%
         spread_(color_var, y_var)
 
       #
@@ -308,7 +308,7 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
       # divide each column by the total column, to get each column as shares
       shown_data[share_vars] <-
         sapply(shown_data[share_vars], function(x){x / shown_data$total})
-      shown_data %<>% select(-total)
+      shown_data <- shown_data %>% select(-total)
 
       # gather the data back to long form
       shown_data <- gather_(
@@ -323,7 +323,7 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
     # This is going to make a very boring chart of 100% shares,b
     # but it's handled here to avoid displaying an error.
     if(color_var == "None"){
-      shown_data %<>%
+      shown_data<-shown_data %>%
         mutate(total = 1)
       shown_data <- shown_data[which(names(shown_data) != y_var)]
       names(shown_data)[which(names(shown_data) == "total")] <- y_var

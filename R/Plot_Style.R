@@ -36,6 +36,7 @@ jitter_binary<-function(a, jitt = 0.05){
 #' @import ggplot2
 #' @export
 get_plot_theme<-function(){
+  showtext_auto()
 
   t<-theme(
     panel.background = element_rect(fill = "#F4F4F4"),
@@ -45,7 +46,8 @@ get_plot_theme<-function(){
     panel.grid.minor.x = element_blank(),
     panel.grid.major.y = element_line(size=.1, color="gray"),
     panel.grid.minor.y = element_line(size=.1, color="lightgray"),
-    axis.ticks = element_blank()
+    axis.ticks = element_blank()#,
+    # text=element_text(family="Open Sans")
   )
   t<-t+theme(plot.title = element_text(
     family = "Open Sans",
@@ -79,8 +81,8 @@ get_plot_theme<-function(){
                 margin = margin(2,2,2,2)),
               legend.position = 'bottom',
               legend.background = element_rect(fill = "white"),
-              # legend.margin=margin(0,0,0,0),
-          legend.margin = margin(t=-0.75, unit="cm")
+              legend.margin=margin(0,0,0,0),
+          # legend.margin = margin(t=-0.75, unit="cm")
   )+
     theme(plot.caption = element_text(size=8,
                                       family = "Open Sans",
@@ -433,10 +435,10 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
       VAR.long.DF$y.variable<-VAR.long.DF$MovingAverage
     }
 
-    VAR.long.DF<-ddply(VAR.long.DF,
-                       .(x.variable),
-                       mutate,
+    VAR.long.DF<-VAR.long.DF %>% group_by(x.variable) %>%
+      dplyr::mutate(
                        ytextposition=cumsum(y.variable)-0.5*y.variable)#.(Fiscal.Year)
+
 
   }
   #Reduce the number of rows by aggregating to one row per unique entry in the VAR.facet.primary column.
@@ -462,9 +464,9 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
       VAR.long.DF$y.variable<-VAR.long.DF$MovingAverage
     }
 
-    VAR.long.DF<-ddply(VAR.long.DF,
-                       .(x.variable,primary),
-                       mutate,
+    VAR.long.DF<-VAR.long.DF %>%
+                       group_by(x.variable,primary) %>%
+                       dplyr::mutate(
                        ytextposition=cumsum(y.variable)-0.5*y.variable)#.(Fiscal.Year)
 
   }
@@ -493,9 +495,9 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
       VAR.long.DF$y.variable<-VAR.long.DF$MovingAverage
     }
 
-    VAR.long.DF<-ddply(VAR.long.DF,
-                       .(x.variable,primary,secondary),
-                       mutate,
+    VAR.long.DF<-VAR.long.DF %>%
+                       group_by(x.variable,primary,secondary) %>%
+                       mutate(
                        ytextposition=cumsum(y.variable)-0.5*y.variable)#.(Fiscal.Year)
 
 
@@ -621,7 +623,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
                                             , space="free_y"#But only because the space is free
       )+scale_y_continuous(expand=c(0,0.75)
                            ,labels=comma
-      )+theme(strip.text.y=element_text(size=axis.text.size,family="times",face="bold",angle=0)
+      )+theme(strip.text.y=element_text(size=axis.text.size,family="Open Sans",face="bold",angle=0)
       )
 
     }
@@ -647,3 +649,6 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
 
 
 }
+
+
+
