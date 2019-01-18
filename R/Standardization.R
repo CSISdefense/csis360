@@ -293,7 +293,7 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
 
       # spread the shares breakout variable across multiple columns
       shown_data<-shown_data %>%
-        spread_(color_var, y_var)
+        spread(color_var, y_var)
 
       #
       # NOTE: NAs replaced with 0 here; potential data quality issue
