@@ -1,4 +1,157 @@
- #' Take existing data frame and associate colors with values
+#' Prepare Labels And Colors
+#'
+#' @param data the data frame to be joined
+#' @param var the variables (column names) for which to prepare colors; by default all will be done
+#' @param na_replaced if TRUE, replace NA values with var before adding colors
+#' @param path The location of the lookup file
+#'
+#' @return A new data frame built on the variable var. It will
+#' include colors, and order, and proper name labels.
+#'
+#' @details This function applies standard colors and orders to a
+#' column var in a data frame data. Colors and order are drawn from pre-existing lookup tables.
+#' When values are missing or wrong, these tables must be manually updated.
+#' This function is badly optimized, reading in multiple csvs every time.
+#' It is intend for use in data preparation source code and not to be used in a
+#' real time web environment.
+#'
+#' @examples FullData<-standardize_variable_names(Path,
+#'   FullData)
+#'
+#' @export
+prepare_labels_and_colors<-function(data
+                                    ,var=NULL
+                                    ,na_replaced=TRUE
+                                    ,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/"
+                                    #                                  ,VAR.override.coloration=NA
+                                    ,missing_allowed=FALSE
+)
+{
+
+
+  data<-as.data.frame(data)
+
+  #Confirm that the category is even available in the data set.
+  if(!is.null(var)){
+    if(!var %in% names(data)){
+      stop(paste(var,"column is not found in data."))
+    }
+  }
+
+  #Read in coloration
+  coloration<-read.csv(
+
+    paste(path,"Lookup_Coloration.csv",sep=""),
+    header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
+    stringsAsFactors=FALSE
+  )
+
+  #Fix oddities involving coloration text
+  coloration$variable <- gsub("\\\\n","\n",coloration$variable)
+  coloration$Label <- gsub("\\\\n","\n",coloration$Label)
+
+
+  #Translate the category name into the appropriate coloration.key
+  #This is used because we have more category names than coloration.key
+  column_key<-get_column_key(data)
+
+  #If a column has been passed
+  if(!is.null(var)){
+    column_key<-subset(column_key, column==var)
+
+    #Should adjust this to give proper errors for multiple vars
+    #when only one is missing
+    if(any(is.na(column_key$coloration.key))){
+      if(missing_allowed)
+        return(NA)
+      else
+        stop(paste(var,"is missing from Lookup_column_key.csv"))
+    }
+
+  }
+  else {
+    column_key<-subset(column_key, !is.na(coloration.key))
+  }
+
+  names.data<-NULL
+  for(v in (1:nrow(column_key))){
+    if(na_replaced==TRUE){
+      data<-replace_nas_with_unlabeled(data,column_key$column[v])
+    }
+
+    #Limit the lookup table to those series that match the variable
+    labels_category_data<-subset(coloration, coloration.key==
+                                   column_key$coloration.key[v] )
+    #Error checking for duplicates in lookup_coloration.csv
+    if(anyDuplicated(labels_category_data$variable)>0){
+      print(labels_category_data$variable[
+        duplicated(labels_category_data$variable)])
+      stop(paste("Lookup_Coloration.csv has"
+                 ,sum(duplicated(labels_category_data$variable))
+                 ,"duplicate value(s) for category="
+                 ,column_key$coloration.key[v], ". See above for a list of missing labels")
+      )
+    }
+    c<-as.character(column_key$column[v])
+    k<-as.character(column_key$coloration.key[v])
+    #Check for any values in the current field that are not assigned a color.
+    values<-unique(data.frame(data)[,c])
+    NA.labels<-values[!values %in% labels_category_data$variable]
+
+
+
+    if (length(NA.labels)>0){
+      #Unlabeled is highly standardized, adding automatically
+      if(length(NA.labels)==1 &
+         !is.na(NA.labels[1])&
+         NA.labels[1]=="Unlabeled")
+      {
+        labels_category_data<-rbind(labels_category_data,
+                                    data.frame(coloration.key=column_key$coloration.key[v],
+                                               variable="Unlabeled",
+                                               Label="Unlabeled",
+                                               Display.Order= 999,
+                                               Color="reddish gray",
+                                               RGB= "#967878",
+                                               shape=NA,
+                                               size=NA,
+                                               alpha=NA,
+                                               text.color="default grey",
+                                               text.RGB="#554449",
+                                               abbreviation="Unlabeled"
+                                    ))
+      }
+      else{
+        if(missing_allowed)
+          return(NA)
+        else{
+          #Otherwise create an error.
+          print(as.character(NA.labels))
+          stop(paste("Lookup_Coloration.csv is missing "
+                     ,length(NA.labels)
+                     ," label(s) for column="
+                     ,c," & key=",k, ". See above for a list of missing labels.", sep="")
+
+          )
+        }
+      }
+    }
+
+    labels_category_data<-subset(labels_category_data
+                                 , variable %in% unique(data[,c]))
+
+
+    #Order the names.data and then pass on the same order to the actual data in data
+    labels_category_data$Display.Order<-as.numeric(as.character(labels_category_data$Display.Order))
+    labels_category_data<-labels_category_data[order(labels_category_data$Display.Order),]
+    labels_category_data$column<-c
+    names.data<-rbind(names.data,labels_category_data)
+  }
+  names.data
+}
+
+
+#' Take existing data frame and associate colors with values
 #'
 #' @param plot The existing ggplot, needed to add more than one scale
 #' @param labels_and_colors A csis360 lookup data.frame with factor information
@@ -83,75 +236,6 @@ add_preassigned_scales<-function(
   return(plot)
 }
 
-#' Returns data in the appropriate format for the user-specified plot
-#'
-#' @param data The data to format for the plot, as a tibble
-#' @param x_var x-axis
-#' @param y_var y-axis
-#' @param breakout TESTTESTTESTTESTTEST
-#' @param aggregate aggregation function; defaults to sum
-#'
-#' @return A tibble of formatted data
-#'
-#' @details
-#'
-#'
-#'
-#' @export
-group_data_for_plot <-function(
-  data,   # data to format for the plot, as a tibble
-  x_var,
-  y_var,
-  breakout,
-  aggregate ="sum"
-  #
-  # Returns:
-  #   a tibble of formatted data
-){
-  # account for potential spaces in breakout and x_var
-  # note that this doesn't test for whether quotes already exist
-
-  if(grepl(" ", x_var)) x_var <- paste0("`", x_var, "`")
-  if(length(breakout) >= 1){
-    if(grepl(" ", breakout[1])) breakout[1] <- paste0("`", breakout[1], "`")
-  }
-  if(length(breakout) == 2){
-    if(grepl(" ", breakout[2])) breakout[2] <- paste0("`", breakout[2], "`")
-  }
-
-  # aggregate to the level of [fiscal year x breakout]
-  # the evaluation for dplyr::summarize_ was a pain in the ass to figure out;
-  # see stack overflow at https://tinyurl.com/z82ywf3
-
-  if(aggregate=="sum"){
-    if(length(breakout) == 0){
-      data %<>%
-        group_by_(x_var) %>%
-        summarize_(
-          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
-    } else {
-      data %<>%
-        group_by_(.dots = c(x_var, breakout)) %>%
-        summarize_(
-          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
-    }
-  } else if (aggregate=="mean"){
-    if(length(breakout) == 0){
-      data %<>%
-        group_by_(x_var) %>%
-        summarize_(
-          agg_val = lazyeval::interp(~mean(var, na.rm = TRUE), var = as.name(y_var)))
-    } else {
-      data %<>%
-        group_by_(.dots = c(x_var, breakout)) %>%
-        summarize_(
-          agg_val = lazyeval::interp(~mean(var, na.rm = TRUE), var = as.name(y_var)))
-    }
-  } else (stop(paste,"group_data_for_plot does not know how to handle aggregate = ",aggregate))
-
-  names(data)[which(names(data) == "agg_val")] <- y_var
-  return(data)
-}
 
 
 #' Get Label

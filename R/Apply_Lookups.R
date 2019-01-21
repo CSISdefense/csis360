@@ -98,7 +98,7 @@ replace_nas_with_unlabeled<- function(data,
   if(any(is.na(data[,var]))){
     #Make sure the replacement value is in the is within the list of levels
     # if (!(replacement %in% levels(data[,var]))){
-      data[,var]<-addNA(data[,var],ifany=TRUE)
+    data[,var]<-addNA(data[,var],ifany=TRUE)
     # }
     levels(data[,var])[is.na(levels(data[,var]))] <- replacement
   }
@@ -128,15 +128,15 @@ replace_nas_with_unlabeled<- function(data,
 #'
 #' @export
 na_check<-function(data
-  , input_var
-  , output_var
-  , lookup_file
+                   , input_var
+                   , output_var
+                   , lookup_file
 ){
 
 
   #Limit just to relevant columns
   na_check.df<-subset(data
-    , select=c(input_var,output_var)
+                      , select=c(input_var,output_var)
   )
 
   #Drop cases where there is an na in the input_var
@@ -148,10 +148,10 @@ na_check<-function(data
   if(nrow(na_check.df)>0){
     print(unique(na_check.df))
     stop(paste(nrow(na_check.df)
-      ,"rows of NAs generated in "
-      ,paste(output_var,collapse=", ")
-      ,"from "
-      ,lookup_file)
+               ,"rows of NAs generated in "
+               ,paste(output_var,collapse=", ")
+               ,"from "
+               ,lookup_file)
     )
   }
 }
@@ -242,7 +242,7 @@ read_and_join<-function(
 
   #This doesn't  work for URLs. Worth trying again later with some parsing
   # if (!file.exists(paste(path,directory,lookup_file,sep=""))){
-    # stop(paste(path,directory,lookup_file," does not exist.",sep=""))
+  # stop(paste(path,directory,lookup_file," does not exist.",sep=""))
   # }
 
   #Read in the lookup file
@@ -256,6 +256,7 @@ read_and_join<-function(
     strip.white=TRUE,
     stringsAsFactors=FALSE  #This can get weird when true, as sometimes it confuses numerical variables and factors
   )
+
 
   #Remove byte order marks present in UTF encoded files
   data<-remove_bom(data)
@@ -271,8 +272,10 @@ read_and_join<-function(
     by<-by[!by %in% colnames(data)]
     stop(paste(paste(by,collapse=" & "),"not present in data"))
   }
-
-
+  if(any(duplicated(lookup[,by]))){
+    print(unique(lookup[duplicated(lookup[,by]),by]))
+    stop(paste("Duplicate entries in lookup for by variables: ",by))
+  }
   #Handle any fields in both data and lookup held in common not used in the joining
   if(!is.null(by)){
     droplist<-names(lookup)[names(lookup) %in% names(data)]
@@ -334,9 +337,9 @@ read_and_join<-function(
     }
 
     na_check(data,
-      input_var=by,
-      output_var=add_var,
-      lookup_file = lookup_file)
+             input_var=by,
+             output_var=add_var,
+             lookup_file = lookup_file)
   }
 
   data
@@ -376,36 +379,36 @@ read_and_join<-function(
 #' @import utils
 #' @export
 read_and_join_experiment<-function(
-    data,
-    lookup_file,
-    path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
-    directory="Lookups\\",
-    by=NULL,
-    replace_na_var=NULL,
-    overlap_var_replaced=TRUE,
-    add_var=NULL,
-    new_var_checked=TRUE,
-    skip_check_var=NULL,
-    zip_file=NULL,
-    col_types=NULL
-    ){
+  data,
+  lookup_file,
+  path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
+  directory="Lookups\\",
+  by=NULL,
+  replace_na_var=NULL,
+  overlap_var_replaced=TRUE,
+  add_var=NULL,
+  new_var_checked=TRUE,
+  skip_check_var=NULL,
+  zip_file=NULL,
+  col_types=NULL
+){
 
 
-case_match<-function(name, list){
-  if(!name %in% (list)){
-    if(tolower(name) %in% tolower(list)){
-      name<-list[tolower(list)==tolower(name)]
+  case_match<-function(name, list){
+    if(!name %in% (list)){
+      if(tolower(name) %in% tolower(list)){
+        name<-list[tolower(list)==tolower(name)]
+      }
     }
+    name
   }
-  name
-}
 
 
-    #Replace NAs in input column if requested
-    if(!is.null(replace_na_var)){
-      data<-replace_nas_with_unlabeled(data,
-                                       replace_na_var)
-    }
+  #Replace NAs in input column if requested
+  if(!is.null(replace_na_var)){
+    data<-replace_nas_with_unlabeled(data,
+                                     replace_na_var)
+  }
 
   if(is.data.frame(lookup_file))
     stop("lookup_file parameter is a data frame, it should be a filename, e.g. 'lookup_customer.csv'.")
@@ -438,99 +441,102 @@ case_match<-function(name, list){
   else{
     input<-swap_in_zip(lookup_file,path,directory)
   }
-    lookup<-readr::read_delim(
-      input,
-      col_names=TRUE,
-      delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
-      na=c("NA","NULL"),
-      trim_ws=TRUE,
-      col_types=col_types
-    )
+  lookup<-readr::read_delim(
+    input,
+    col_names=TRUE,
+    delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
+    na=c("NA","NULL"),
+    trim_ws=TRUE,
+    col_types=col_types
+  )
 
-    #Remove byte order marks present in UTF encoded files
-    data<-remove_bom(data)
-    lookup<-remove_bom(lookup)
-
-
-    #Raise an error if by is missing from either file
-    if(any(!by %in% colnames(lookup))){
-      by<-by[!by %in% colnames(lookup)]
-      stop(paste(paste(by,collapse=" & "), "not present in lookup"))
-    }
-    if(any(!by %in% colnames(data))){
-      by<-by[!by %in% colnames(data)]
-      stop(paste(paste(by,collapse=" & "),"not present in data"))
-    }
+  #Remove byte order marks present in UTF encoded files
+  data<-remove_bom(data)
+  lookup<-remove_bom(lookup)
 
 
-    #Handle any fields in both data and lookup held in common not used in the joining
-    if(!is.null(by)){
-      droplist<-names(lookup)[names(lookup) %in% names(data)]
-      droplist<-droplist[!droplist %in% by]
-      if(length(droplist)>0){
-        if(overlap_var_replaced)
-          data<-data[,!names(data) %in% droplist]
-        else
-          lookup<-lookup[,!names(lookup) %in% droplist]
-      }
-    }
-
-    #Fixes for Excel's penchant to drop leading 0s.
-    if("Contracting.Agency.ID" %in% names(lookup) & "data" %in% names(lookup)){
-      lookup$Contracting.Agency.ID<-factor(str_pad(lookup$Contracting.Agency.ID,4,side="left",pad="0"))
-      data$Contracting.Agency.ID<-as.character(data$Contracting.Agency.ID)
-      data$Contracting.Agency.ID[is.na(data$Contracting.Agency.ID=="")]<-"0000"
-      data$Contracting.Agency.ID<-factor(str_pad(data$Contracting.Agency.ID,4,side="left",pad="0"))
-    }
-
-    #Make sure CSIScontractIDs are numeric and not a factor
-    if("CSIScontractID" %in% colnames(lookup)){
-      if(!is.numeric(lookup$CSIScontractID)){
-        lookup$CSIScontractID<-as.numeric(as.character(lookup$CSIScontractID))
-      }
-    }
-
-    #Conduct the join
-    if(is.null(by)){
-      data<- plyr::join(
-        data,
-        lookup,
-        match="first"
-      )
-    }
-    else{
-      data<- plyr::join(
-        data,
-        lookup,
-        match="first",
-        by=by
-      )
-    }
-
-    #If add_var is specified, dropped new fields not in add_var
-    if(!is.null(add_var)){
-      droplist<-names(lookup)[!names(lookup) %in% by
-                              &!names(lookup) %in% add_var]
-      data<-data[,!names(data) %in% droplist]
-    }
-    #If add_var is not specified, set it equal to all new vars
-    else{
-      add_var<-colnames(lookup)[!colnames(lookup) %in% by]
-    }
-
-    if(!is.null(by)&new_var_checked==TRUE){
-      if(!is.null(skip_check_var)){
-        add_var<-add_var[!add_var %in% skip_check_var]
-      }
-
-      na_check(data,
-               input_var=by,
-               output_var=add_var,
-               lookup_file = lookup_file)
-    }
-
-    data
+  #Raise an error if by is missing from either file
+  if(any(!by %in% colnames(lookup))){
+    by<-by[!by %in% colnames(lookup)]
+    stop(paste(paste(by,collapse=" & "), "not present in lookup"))
   }
+  if(any(!by %in% colnames(data))){
+    by<-by[!by %in% colnames(data)]
+    stop(paste(paste(by,collapse=" & "),"not present in data"))
+  }
+
+
+  #Handle any fields in both data and lookup held in common not used in the joining
+  if(!is.null(by)){
+    droplist<-names(lookup)[names(lookup) %in% names(data)]
+    droplist<-droplist[!droplist %in% by]
+    if(length(droplist)>0){
+      if(overlap_var_replaced)
+        data<-data[,!names(data) %in% droplist]
+      else
+        lookup<-lookup[,!names(lookup) %in% droplist]
+    }
+  }
+
+  #Fixes for Excel's penchant to drop leading 0s.
+  if("Contracting.Agency.ID" %in% names(lookup) & "data" %in% names(lookup)){
+    lookup$Contracting.Agency.ID<-factor(str_pad(lookup$Contracting.Agency.ID,4,side="left",pad="0"))
+    data$Contracting.Agency.ID<-as.character(data$Contracting.Agency.ID)
+    data$Contracting.Agency.ID[is.na(data$Contracting.Agency.ID=="")]<-"0000"
+    data$Contracting.Agency.ID<-factor(str_pad(data$Contracting.Agency.ID,4,side="left",pad="0"))
+  }
+
+  #Make sure CSIScontractIDs are numeric and not a factor
+  if("CSIScontractID" %in% colnames(lookup)){
+    if(!is.numeric(lookup$CSIScontractID)){
+      lookup$CSIScontractID<-as.numeric(as.character(lookup$CSIScontractID))
+    }
+  }
+
+  #Conduct the join
+  if(is.null(by)){
+    data<- plyr::join(
+      data,
+      lookup,
+      match="first"
+    )
+  }
+  else{
+    data<- plyr::join(
+      data,
+      lookup,
+      match="first",
+      by=by
+    )
+  }
+  if(any(duplicated(lookup[,by]))){
+    print(unique(lookup[duplicated(lookup[,by]),by]))
+    stop(paste("Duplicate entries in lookup for by variables: ",by))
+  }
+  #If add_var is specified, dropped new fields not in add_var
+  if(!is.null(add_var)){
+    droplist<-names(lookup)[!names(lookup) %in% by
+                            &!names(lookup) %in% add_var]
+    data<-data[,!names(data) %in% droplist]
+  }
+  #If add_var is not specified, set it equal to all new vars
+  else{
+    add_var<-colnames(lookup)[!colnames(lookup) %in% by]
+  }
+
+  if(!is.null(by)&new_var_checked==TRUE){
+    if(!is.null(skip_check_var)){
+      add_var<-add_var[!add_var %in% skip_check_var]
+    }
+
+    na_check(data,
+             input_var=by,
+             output_var=add_var,
+             lookup_file = lookup_file)
+  }
+
+  data
+}
 
 
 #' Deflation using GitHub-based CSV file
@@ -568,7 +574,7 @@ deflate <- function(
   path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
   directory="economic/",
   deflator_dropped=TRUE
-  ){
+){
   #Tiblbes run into trouble with the [[]] new variable specifying.
   data<-as.data.frame(data)
 
@@ -577,7 +583,7 @@ deflate <- function(
 
   if(!money_var %in% colnames(data)){
     if((paste(money_var,"Then.Year",sep=".") %in% colnames(data)) &
-        (paste(money_var,deflator_var,sep=".") %in% colnames(data))){
+       (paste(money_var,deflator_var,sep=".") %in% colnames(data))){
       warning(paste(money_var," is not present in data, due to prior run of deflate with money_var=",money_var,".",sep=""))
       return(data)
     }
@@ -612,8 +618,8 @@ deflate <- function(
 
   #Standardize the newly created names
   data<-standardize_variable_names(data,
-                             var=c(paste(money_var,"Then.Year",sep="."),
-                               paste(money_var,deflator_var,sep=".")))
+                                   var=c(paste(money_var,"Then.Year",sep="."),
+                                         paste(money_var,deflator_var,sep=".")))
 
   return(data)
 }
@@ -651,11 +657,11 @@ get_column_key <- function(
 
   #Join up the files
   column_key<-read_and_join(column_key,
-                "Lookup_Column_Key.csv",
-                path=path,
-                directory="",
-                by="column",
-                new_var_checked=FALSE
+                            "Lookup_Column_Key.csv",
+                            path=path,
+                            directory="",
+                            by="column",
+                            new_var_checked=FALSE
   )
 
   #Set empty string coloration.keys equal to na

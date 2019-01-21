@@ -35,7 +35,7 @@ jitter_binary<-function(a, jitt = 0.05){
 #'
 #' @import ggplot2
 #' @export
-get_plot_theme<-function(){
+get_plot_theme<-function(erase_legend_title=TRUE){
   showtext_auto()
 
   t<-theme(
@@ -57,7 +57,6 @@ get_plot_theme<-function(){
     hjust = 0.5))
   t<-t+theme(axis.text.x = element_text(
     family = "Open Sans",
-    # vjust = 7#,This was what was causing the x-axis numbering to overlap with the plot.
     margin = margin(0,0,0,0)
     ))
   t<-t+theme(axis.text.y = element_text(
@@ -68,14 +67,16 @@ get_plot_theme<-function(){
       face = "bold",
       color = "#554449",
       family = "Open Sans",
-      margin = margin(15,0,0,60)))
+      # vjust = 7#,This was what was causing the x-axis numbering to overlap with the plot.
+      margin = margin(5,0,0,5)))
   t<-t+theme(axis.title.y = element_text(
     face = "bold",
     color = "#554449",
     family = "Open Sans",
     margin = margin(0,15,0,0)))
-  t<-t+ theme(legend.title = element_blank(),
-              legend.text = element_text(
+  if(erase_legend_title==TRUE)
+    t<-t+ theme(legend.title = element_blank())
+  t<-t+ theme(legend.text = element_text(
                 family = "Open Sans",
                 color ="#554449",
                 margin = margin(2,2,2,2)),
@@ -132,8 +133,29 @@ build_plot <- function(
   legend=TRUE, #Include a legend
   caption=TRUE, #Include a source caption
   labels_and_colors=NULL,
-  column_key=NULL
+  column_key=NULL,
+  format=FALSE
 ){
+
+  #To add, check for missing labels and colors
+  if(format==TRUE)
+    data <- format_data_for_plot(data=data,
+                                 share=share,
+                                 fy_var=x_var,
+                                 # start_fy=NULL,
+                                 # end_fy=NULL,
+                                 y_var=y_var,
+                                 color_var=color_var,
+                                 facet_var=facet_var,
+                                 labels_and_colors=labels_and_colors)
+
+
+  #Legacy bug fix. The sorting in some labels_and_colors is off  because display.order was a factor/character, not a number.
+  if(!is.null(labels_and_colors) & !is.numeric(labels_and_colors$Display.Order)){
+    labels_and_colors$Display.Order<-as.numeric(as.character(labels_and_colors$Display.Order))
+    labels_and_colors<-labels_and_colors[order(labels_and_colors$column,labels_and_colors$Display.Order),]
+  }
+
   data<-as.data.frame(data)
   mainplot <- ggplot(data = data)
   #Assume 1st row if no x_var provided.
@@ -299,6 +321,13 @@ if(is.null(x_var)) x_var<-names(data)[1]
     mainplot <- mainplot + scale_y_continuous(labels = scales::percent) +
       ylab(label = paste("Share of", y_var))
   } else {
+    # #If any entries are above 10 billion, change the scale to billions
+    # if(max(shown_data[,y_var])>=1e10)
+    #   mainplot<-mainplot+scale_y_continuous(label = unit_format(unit = "B", scale = 1e-9))
+    # #If any entries are above 10 million, change the scale to millions
+    # if(max(shown_data[,y_var])>=1e7)
+    #   mainplot<-mainplot+scale_y_continuous(label = unit_format(unit = "M", scale = 1e-6))
+
     mainplot <- mainplot + scale_y_continuous(
       labels = function(x){
         sapply(x, function(y){
@@ -380,6 +409,8 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
                              ,MovingAverage=1
                              ,MovingSides=1
                              ,DataLabels=NA
+                             ,caption=FALSE
+                             ,legend=FALSE
                              #                       ,VAR.override.coloration=NA
 ){
   #     debug(PrepareLabelsAndColors)
@@ -473,16 +504,28 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
   else{
     labels.secondary.DF<-subset(VAR.Coloration,column==VAR.facet.secondary)
 
-    VAR.long.DF<-aggregate(VAR.long.DF[,VAR.y.variable]
-                           , by=list(VAR.long.DF[,VAR.x.variable]
-                                     ,VAR.long.DF[,VAR.y.series]
-                                     ,VAR.long.DF[,VAR.facet.primary]
-                                     ,VAR.long.DF[,VAR.facet.secondary]
-                           )
-                           ,FUN = "sum"
-                           ,na.rm =TRUE
-    )
-    names(VAR.long.DF)<-c("x.variable","category","primary","secondary","y.variable")
+    VAR.long.DF<-VAR.long.DF %>% group_by_(VAR.x.variable,
+                                           VAR.y.series,
+                                           VAR.facet.primary,
+                                           VAR.facet.secondary) %>%
+      dplyr::summarise_(
+        y.variable = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(VAR.y.variable)))
+
+    #   aggregate(VAR.long.DF[,VAR.y.variable]
+    #                        , by=list(VAR.long.DF[,VAR.x.variable]
+    #                                  ,VAR.long.DF[,VAR.y.series]
+    #                                  ,VAR.long.DF[,VAR.facet.primary]
+    #                                  ,VAR.long.DF[,VAR.facet.secondary]
+    #                        )
+    #                        ,FUN = "sum"
+    #                        ,na.rm =TRUE
+    # )
+    colnames(VAR.long.DF)[colnames(VAR.long.DF)==VAR.x.variable]<-"x.variable"
+    colnames(VAR.long.DF)[colnames(VAR.long.DF)==VAR.y.series]<-"category"
+    colnames(VAR.long.DF)[colnames(VAR.long.DF)==VAR.facet.primary]<-"primary"
+    colnames(VAR.long.DF)[colnames(VAR.long.DF)==VAR.facet.secondary]<-"secondary"
+
+
 
     if(is.numeric(MovingAverage) & MovingAverage>1){
       VAR.long.DF$y.raw<-VAR.long.DF$y.variable
@@ -500,11 +543,12 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
                        mutate(
                        ytextposition=cumsum(y.variable)-0.5*y.variable)#.(Fiscal.Year)
 
-
+    if(nrow(labels.secondary.DF)>0){
     VAR.long.DF$secondary<-factor(VAR.long.DF$secondary
                                   ,levels=c(labels.secondary.DF$variable)
                                   ,labels=c(labels.secondary.DF$Label)
                                   ,ordered=TRUE)
+    }
     rm(labels.secondary.DF)
 
   }
@@ -512,7 +556,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
   VAR.long.DF$category<-factor(VAR.long.DF$category,
                                levels=labels.category.DF$variable)
 
-  if(!is.na(VAR.facet.primary)){
+  if(!is.na(VAR.facet.primary) & nrow(labels.primary.DF)>0){
     VAR.long.DF$primary<-factor(VAR.long.DF$primary,
                                 levels=c(labels.primary.DF$variable),
                                 labels=c(labels.primary.DF$Label),
@@ -529,7 +573,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
     xlab(VAR.X.label)+
     ylab(VAR.Y.label)+
     ggtitle(VAR.main.label, subtitle = NULL)+
-    get_plot_theme()
+    get_plot_theme(erase_legend_title = FALSE)
 
 
 
@@ -588,7 +632,6 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
                     #apply(y.variable,VariableNumericalFormat)
                     ,y=ytextposition
       )
-      ,size=geom.text.size
       ,hjust=0.5
       ,vjust=0.5
       #,color=color.list This doesn't work yet
@@ -611,7 +654,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
                                               #                                           , scales="fixed", space="free_y"
         )+scale_y_continuous(labels=comma)
       }
-      # +scale_y_continuous(expand=c(0,0.75)#)+scale_y_continuous(expand=c(0,0.75)
+      # +scale_y_continuous(expand=c(0,0.75)+
       #     )
 
 
@@ -623,7 +666,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
                                             , space="free_y"#But only because the space is free
       )+scale_y_continuous(expand=c(0,0.75)
                            ,labels=comma
-      )+theme(strip.text.y=element_text(size=axis.text.size,family="Open Sans",face="bold",angle=0)
+      )+theme(strip.text.y=element_text(family="Open Sans",face="bold",angle=0)
       )
 
     }
@@ -631,19 +674,27 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
 
   #
 
-  print.figure<-print.figure+
-    theme(axis.text.x=element_text(size=axis.text.size))+
-    theme(axis.text.y=element_text(size=axis.text.size))+
-    theme(strip.text.x=element_text(size=strip.text.size,face="bold"))+
-    theme(strip.text.y=element_text(size=strip.text.size))+
-    theme(axis.title.x=element_text(size=axis.text.size))+
-    theme(axis.title.y=element_text(size=axis.text.size, angle=90))+
-    theme(plot.title=element_text(size=title.text.size))+
-    theme(legend.position="none")+
-    theme(legend.title=element_text(size=legend.text.size,hjust=0))+
-    theme(legend.text=element_text(size=legend.text.size))
+  if(legend==FALSE)
+    print.figure<-print.figure+theme(legend.position="none")
+
+  print.figure<-print.figure
+    theme(strip.text.x=element_text(face="bold"),
+          axis.title.y=element_text(angle=90),
+          legend.title=element_text(hjust=0)
+          )
   #     theme(legend.key.width=unit(0.1,"npc"))
   #   print.figure<-facetAdjust(print.figure,"down")
+
+
+    #If any entries are above 10 billion, change the scale to billions
+    if(max(VAR.long.DF[,"y.variable"])>=1e10)
+      print.figure<-print.figure+scale_y_continuous(label = unit_format(unit = "B", scale = 1e-9))
+    #If any entries are above 10 million, change the scale to millions
+    else if(max(VAR.long.DF[,"y.variable"])>=1e7)
+      print.figure<-print.figure+scale_y_continuous(label = unit_format(unit = "M", scale = 1e-6))
+
+if (caption==TRUE)
+  print.figure<-print.figure+labs(caption = "Source: FPDS; CSIS analysis")
 
   print.figure
 
@@ -652,3 +703,14 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
 
 
 
+ggsave600dpi<-function(filename,gg,width,height,units="in",size=60){
+  ggsave(filename, gg+
+         theme(text=element_text(size=size,lineheight=0.13),
+               plot.caption = element_text(size=round(size * 5/6,0))
+               ),
+                 # font("xy.title", size = 45) +
+                 # font("xy.text", size = 45) +
+                 # font("legend.text", size = 45) +
+                 # theme(text = element_text(size = 45+
+                width=width, height= height, units=units,dpi=600)
+}
