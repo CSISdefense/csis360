@@ -262,7 +262,7 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
       shown_data[,colnames(shown_data)==facet_var]<-
         ordered(shown_data[,colnames(shown_data)==facet_var],
                 levels=subset(labels_and_colors,column==facet_var)$variable,
-                labels=c(subset(labels_and_colors,column==facet_var)$Label)
+                labels=subset(labels_and_colors,column==facet_var)$Label
         )
     }
     #If x-axis variable is a factor
