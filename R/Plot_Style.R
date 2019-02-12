@@ -36,7 +36,8 @@ jitter_binary<-function(a, jitt = 0.05){
 #' @import ggplot2
 #' @export
 get_plot_theme<-function(erase_legend_title=TRUE){
-  showtext_auto()
+  #Make sure Open Sans is available.
+  if(!"Open Sans" %in% font_families()) font_add("Open Sans","OpenSans-Regular.ttf")
 
   t<-theme(
     panel.background = element_rect(fill = "#F4F4F4"),
@@ -424,6 +425,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
   #Prepare labels for the category variable
   #   if(is.na(VAR.override.coloration)){
   labels.category.DF<-subset(VAR.Coloration,column==VAR.y.series)
+  if(nrow(labels.category.DF)==0) stop(paste(VAR.y.series,"is missing from VAR.coloration."))
 
 
 

@@ -319,3 +319,10 @@ get_legend<-function(a.gplot){
   legend <- tmp$grobs[[leg]]
   return(legend)}
 
+
+
+get_caption<-function(
+){
+  c<-labs(caption="Source: FPDS; CSIS analysis")
+  return(c)
+}
