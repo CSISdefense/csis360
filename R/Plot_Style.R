@@ -37,8 +37,7 @@ jitter_binary<-function(a, jitt = 0.05){
 #' @export
 get_plot_theme<-function(erase_legend_title=TRUE){
   #Make sure Open Sans is available.
-  if(!"Open Sans" %in% font_families()) font_add("Open Sans","OpenSans-Regular.ttf")
-
+  if(!"Open Sans" %in% font_families()) font_add_google("Open Sans")
   t<-theme(
     panel.background = element_rect(fill = "#F4F4F4"),
     strip.background = element_rect(fill ="#E0E0E0"),
