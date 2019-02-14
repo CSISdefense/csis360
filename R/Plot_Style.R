@@ -635,7 +635,8 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
                     ,y=ytextposition
       )
       ,hjust=0.5
-      ,vjust=0.5
+      ,vjust=0
+      ,size=14
       #,color=color.list This doesn't work yet
       )
   }
@@ -708,6 +709,7 @@ if (caption==TRUE)
 ggsave600dpi<-function(filename,gg,width,height,units="in",size=60){
   ggsave(filename, gg+
          theme(text=element_text(size=size,lineheight=0.13),
+               legend.spacing.x = unit(0.1, 'cm'),
                plot.caption = element_text(size=round(size * 5/6,0))
                ),
                  # font("xy.title", size = 45) +
