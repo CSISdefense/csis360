@@ -668,3 +668,12 @@ get_column_key <- function(
   column_key$coloration.key[column_key$coloration.key==""]<-NA
   return(column_key)
 }
+
+
+text_to_number<-function(x){
+  if ((is.factor(x))||(is.character(x))){
+    x<-gsub('\\$','',as.character( x))
+    x<-as.double(gsub('\\,','',as.character( x)))
+  }
+  x
+}

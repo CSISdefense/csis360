@@ -361,6 +361,11 @@ transform_contract<-function(
   contract
 ){
 
+  if("Action.Obligation" %in% colnames(contract))
+    contract$Action.Obligation %<>% as.numeric()
+  if("Number.Of.Actions" %in% colnames(contract))
+    contract$Number.Of.Actions %<>% as.numeric()
+
   create_naics2<-function(NAICS){
     NAICS2<-substring(NAICS,1,2)
     NAICS2[NAICS2 %in% c('31','32','33')]<-'31-33'
@@ -409,26 +414,29 @@ transform_contract<-function(
 
   }
 
+  #SumOfisChangeOrder
+  if("SumOfisChangeOrder" %in% colnames(contract))
+    contract$qNChg <- cut2(contract$SumOfisChangeOrder,c(1,2,3))
 
-  contract$qNChg <- cut2(contract$SumOfisChangeOrder,c(1,2,3))
+  #pChangeOrderUnmodifiedBaseAndAll
+  if("pChangeOrderUnmodifiedBaseAndAll" %in% colnames(contract)){
+    # contract$pChangeOrderObligated<-contract$ChangeOrderObligatedAmount/
+    #   contract$Action.Obligation
+    # contract$pChangeOrderObligated[is.na(contract$pChangeOrderObligated)&
+    #     contract$SumOfisChangeOrder==0]<-0
+    contract$pChangeOrderUnmodifiedBaseAndAll<-contract$ChangeOrderBaseAndAllOptionsValue/
+      contract$UnmodifiedContractBaseAndAllOptionsValue
+    contract$pChangeOrderUnmodifiedBaseAndAll[
+      is.na(contract$pChangeOrderUnmodifiedBaseAndAll) & contract$SumOfisChangeOrder==0]<-0
 
 
-  # contract$pChangeOrderObligated<-contract$ChangeOrderObligatedAmount/
-  #   contract$Action.Obligation
-  # contract$pChangeOrderObligated[is.na(contract$pChangeOrderObligated)&
-  #     contract$SumOfisChangeOrder==0]<-0
-  contract$pChangeOrderUnmodifiedBaseAndAll<-contract$ChangeOrderBaseAndAllOptionsValue/
-    contract$UnmodifiedContractBaseAndAllOptionsValue
-  contract$pChangeOrderUnmodifiedBaseAndAll[
-    is.na(contract$pChangeOrderUnmodifiedBaseAndAll) & contract$SumOfisChangeOrder==0]<-0
-
-
-  contract$qCRais <- cut2(
-    contract$pChangeOrderUnmodifiedBaseAndAll,c(
-      -0.001,
-      0.001,
-      0.15)
-  )
+    contract$qCRais <- cut2(
+      contract$pChangeOrderUnmodifiedBaseAndAll,c(
+        -0.001,
+        0.001,
+        0.15)
+    )
+  }
 
   #PSR_What
   if("PSR_What" %in% colnames(contract)){
@@ -1091,9 +1099,14 @@ transform_contract<-function(
     }
 
   }
-  if("$ProdServ" %in% colnames(contract)){
-    contract$ProductOrServiceCode<-as.character(contract$ProdServ)
+
+
+  if("ProdServ" %in% colnames(contract)){
     contract$ProdServ[contract$ProdServ==""]<-NA
+    contract$ProductOrServiceCode<-as.character(contract$ProdServ)
+  }
+
+  if("ProductOrServiceCode" %in% colnames(contract)){
     contract<-csis360::read_and_join( contract,
                                       "ProductOrServiceCodes.csv",
                                       path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
@@ -1116,20 +1129,24 @@ transform_contract<-function(
   }
 
 
-  contract$cl_Ceil<-arm::rescale(contract$l_Ceil)
-  contract$cl_Days<-arm::rescale(contract$l_Days)
+  if("l_Ceil" %in% colnames(contract))
+    contract$cl_Ceil<-arm::rescale(contract$l_Ceil)
+
+  if("cl_Days" %in% colnames(contract))
+    contract$cl_Days<-arm::rescale(contract$l_Days)
 
 
 
 
-
+  if("TermNum" %in% colnames(contract))
   contract$TermNum<-as.integer(as.character(factor(contract$Term,
                                                    levels=c("Terminated","Unterminated"),
                                                    labels=c(1,0))))
 
+  if("Action.Obligation" %in% colnames(contract)){
   contract$ObligationWT<-contract$Action.Obligation
   contract$ObligationWT[contract$ObligationWT<0]<-NA
-
+}
 
 
 
