@@ -295,7 +295,8 @@ rename_value <- function(
 }
 
 
-#' Extract a legend
+#' Extract a legend https://stackoverflow.com/questions/43366616/ggplot2-legend-only-in-a-plot
+#' Alternate unused approach From https://github.com/tidyverse/ggplot2/wiki/Share-a-legend-between-two-ggplot2-graphs
 #'
 #' @param a.gplot a ggplot
 #'
@@ -307,12 +308,6 @@ rename_value <- function(
 #'
 #' @import ggplot2
 #' @export
-
-#Extract a legend
-# https://stackoverflow.com/questions/43366616/ggplot2-legend-only-in-a-plot
-# Alternate unused approach From https://github.com/tidyverse/ggplot2/wiki/Share-a-legend-between-two-ggplot2-graphs
-
-
 get_legend<-function(a.gplot){
   tmp <- ggplot_gtable(ggplot_build(a.gplot))
   leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
@@ -321,6 +316,11 @@ get_legend<-function(a.gplot){
 
 
 
+#' Return default caption text.
+#'
+#' @return A label that can be added to a graph.
+#'
+#' @export
 get_caption<-function(
 ){
   c<-labs(caption="Source: FPDS; CSIS analysis")
