@@ -411,6 +411,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
                              ,DataLabels=NA
                              ,caption=FALSE
                              ,legend=FALSE
+                             ,geom.text.size=2.5
                              #                       ,VAR.override.coloration=NA
 ){
   #     debug(PrepareLabelsAndColors)
@@ -635,7 +636,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
       )
       ,hjust=0.5
       ,vjust=0
-      ,size=14
+      ,size=geom.text.size
       #,color=color.list This doesn't work yet
       )
   }
