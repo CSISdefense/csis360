@@ -704,7 +704,24 @@ if (caption==TRUE)
 }
 
 
-
+#' Extract a legend https://stackoverflow.com/questions/43366616/ggplot2-legend-only-in-a-plot
+#' Alternate unused approach From https://github.com/tidyverse/ggplot2/wiki/Share-a-legend-between-two-ggplot2-graphs
+#'
+#' @param filename Output file
+#' @param gg A ggplot
+#' @param width Output height as per ggsave
+#' @param height Output height as per ggsave
+#' @param units Output measurement unit as per ggsave
+#' @param size New text size
+#'
+#' @return Does not return, outptus to file
+#'
+#'
+#'
+#'
+#'
+#' @import ggplot2
+#' @export
 ggsave600dpi<-function(filename,gg,width,height,units="in",size=60){
   ggsave(filename, gg+
          theme(text=element_text(size=size,lineheight=0.13),
