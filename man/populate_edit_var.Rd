@@ -4,7 +4,8 @@
 \alias{populate_edit_var}
 \title{Populates the edit_var element on the edit page, based on the current data}
 \usage{
-populate_edit_var(current_data, input, session = getDefaultReactiveDomain())
+populate_edit_var(current_data, input,
+  session = getDefaultReactiveDomain())
 }
 \arguments{
 \item{current_data}{The current data frame for the app}

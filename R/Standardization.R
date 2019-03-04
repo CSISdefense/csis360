@@ -331,7 +331,6 @@ format_period_average <- function(
 #'
 #' @examples x<-c(0,2,3,-4); transform_contract(x)
 #'
-#' @import
 #' @export
 na_non_positive_log<-function(x){
   x[x<=0]<-NA

@@ -1,7 +1,18 @@
-#Cross-Footing
-#These are quality control functions for verify that numbers sum over multiple souces.
+# Cross-Footing
+# These are quality control functions for verify that numbers sum over multiple souces.
+#
+# You can learn more about package authoring with RStudio at:
+#
+#   http://r-pkgs.had.co.nz/
+#
+# Some useful keyboard shortcuts for package authoring:
+#
+#   Build and Reload Package:  'Ctrl + Shift + B'
+#   Check Package:       'Ctrl + Shift + E'
+#   Test Package:        'Ctrl + Shift + T'
+#
 
-#'Returns a dataframe with customer data for quality control check
+#' @title Returns a dataframe with customer data for quality control check
 #'
 #' @param Path file path name where Lookup files are stored
 #' @param prod_serv_blank character string; choose from "Products", "Services", or ""; defaults to "" for all
@@ -57,7 +68,7 @@ load.FPDS.gov.customers.df<-function(
 
 }
 
-#'
+#' @title Load product or service code downloads from FPDS.gov
 #'
 #' @param Path file path name where Lookup files are stored
 #' @param prod_serv_blank character string; choose from "Products", "Services", or ""; defaults to "" for all
@@ -88,7 +99,7 @@ FPDS.gov.buckets.df<-read.tables(buckets.files,
 
   FPDS.gov.buckets.df<-LimitData(Path, FPDS.gov.buckets.df
                                  ,customer,
-                                 ,prod_serv_blank)
+                                 prod_serv_blank)
   FPDS.gov.buckets.df
 }
 
@@ -116,9 +127,9 @@ read.tables <- function(file.names, file.type="csv",...) {
 }
 
 
+#' @title Limit the data to only comparison set e.g. only services or defense.
 #'
-#'
-#' @param Path
+#' @param Path File path
 #' @param FPDS.gov dataframe
 #' @param customer character string; choose from "Defense", "DHS", "State and IAP", or ""; defaults to "" for all
 #' @param big.ProdServ character string; choose from "Products", "Services", or ""; defaults to "" for all
@@ -215,17 +226,16 @@ FPDS.gov<-subset(FPDS.gov,select=-c(Filename))
 }
 
 
+#' @title Match up yeaers between two datasets to limit the scope.
 #'
-#'
-#' @param FPDS.gov
-#' @param main.DF
+#' @param FPDS.gov FPDS.gov data frame
+#' @param main.DF Comparison  data frame.
 #'
 #' @return
 #'
 #' @details Quality control function
 #'
 #' @export
-
 LimitScope <- function(FPDS.gov, main.DF) {
   FPDS.gov<-subset(FPDS.gov,Fiscal.Year>=min(subset(main.DF$Fiscal.Year
                                                             ,!is.na(main.DF$Fiscal.Year
@@ -238,19 +248,17 @@ LimitScope <- function(FPDS.gov, main.DF) {
 
 
 
+#' @title Import a comparison file from SQL server.
 #'
-#'
-#' @param Path
-#' @param prefix
-#' @param file.name
+#' @param Path File path
+#' @param prefix prefix to add to file name, e.g. defense
+#' @param file.name file name, sans any prefix.
 #'
 #' @return
 #'
 #' @details Quality control function
 #'
 #' @export
-
-
 import_SQLserver_file <- function(Path
                                   , prefix
                                   , file.name) {
@@ -296,10 +304,10 @@ import_SQLserver_file <- function(Path
   import.data.file
 }
 
+#' @title Apply know fixes to contract files.
 #'
-#'
-#' @param Path
-#' @param df
+#' @param Path File path
+#' @param df data frame
 #'
 #' @return
 #'
@@ -395,25 +403,4 @@ append_contract_fixes<- function(Path = "https://github.com/CSISdefense/R-script
   print(head(append.fixed.tasks))
 
   df
-}
-
-
-
-
-
-#'
-#'
-#' @param factor
-#'
-#' @return
-#'
-#' @details
-#'
-#' @export
-FactorToNumber<-function(factor){
-  if ((is.factor(factor))||(is.character(factor))){
-    factor<-gsub('\\$','',as.character( factor))
-    factor<-as.double(gsub('\\,','',as.character( factor)))
-  }
-  factor
 }

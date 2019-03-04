@@ -25,7 +25,7 @@
 #' as an extension instead of .txt or .csv. This checks if the base file is available and if
 #' not it handles opening the zip file instead.
 #'
-#' @examples swap_in_zip(filename="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv)
+#' examples swap_in_zip(filename="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv)
 #'
 swap_in_zip<-function(filename,path,directory=""){
   input<-paste(path,directory,filename,sep="")
