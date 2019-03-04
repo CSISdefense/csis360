@@ -426,7 +426,8 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
   #   if(is.na(VAR.override.coloration)){
   labels.category.DF<-subset(VAR.Coloration,column==VAR.y.series)
   if(nrow(labels.category.DF)==0) stop(paste(VAR.y.series,"is missing from VAR.coloration."))
-
+  VAR.long.DF[,VAR.y.series]<-factor(VAR.long.DF[,VAR.y.series],
+                               levels=labels.category.DF$variable)
 
 
   #   }
@@ -445,6 +446,13 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
   old.theme<-theme_set(theme_grey())
   if(!is.na(VAR.facet.primary)){
     labels.primary.DF<-subset(VAR.Coloration,column==VAR.facet.primary)
+    if(nrow(labels.primary.DF)>0){
+      VAR.long.DF[,VAR.facet.primary]<-factor(VAR.long.DF[,VAR.facet.primary],
+                                  levels=c(labels.primary.DF$variable),
+                                  labels=c(labels.primary.DF$Label),
+                                  ordered=TRUE)
+    }
+
   }
 
   if(is.na(VAR.facet.primary)){
@@ -470,7 +478,9 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
 
     VAR.long.DF<-VAR.long.DF %>% group_by(x.variable) %>%
       dplyr::mutate(
-                       ytextposition=cumsum(y.variable)-0.5*y.variable)#.(Fiscal.Year)
+                       ytextposition=sum(y.variable)-cumsum(y.variable)+0.33*y.variable,
+                       cs=cumsum(y.variable),
+                       rcs=sum(y.variable)-cumsum(y.variable))#.(Fiscal.Year)
 
 
   }
@@ -497,14 +507,24 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
       VAR.long.DF$y.variable<-VAR.long.DF$MovingAverage
     }
 
+    #For CumSum to work, make sure factor reordering happens first.
     VAR.long.DF<-VAR.long.DF %>%
                        group_by(x.variable,primary) %>%
                        dplyr::mutate(
-                       ytextposition=cumsum(y.variable)-0.5*y.variable)#.(Fiscal.Year)
+                       ytextposition=sum(y.variable)-cumsum(y.variable)+0.33*y.variable,#.(Fiscal.Year)
+                       # ytextposition=cumsum(y.variable)-0.5*y.variable,
+    cs=cumsum(y.variable),
+    rcs=sum(y.variable)-cumsum(y.variable))#.(Fiscal.Year)
 
   }
   else{
     labels.secondary.DF<-subset(VAR.Coloration,column==VAR.facet.secondary)
+    if(nrow(labels.secondary.DF)>0){
+      VAR.long.DF[,VAR.facet.secondary]<-factor(VAR.long.DF[,VAR.facet.secondary]
+                                    ,levels=c(labels.secondary.DF$variable)
+                                    ,labels=c(labels.secondary.DF$Label)
+                                    ,ordered=TRUE)
+
 
     VAR.long.DF<-VAR.long.DF %>% group_by_(VAR.x.variable,
                                            VAR.y.series,
@@ -540,30 +560,25 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
       VAR.long.DF$y.variable<-VAR.long.DF$MovingAverage
     }
 
+
+
+    #For CumSum to work, make sure factor reordering happens first.
     VAR.long.DF<-VAR.long.DF %>%
                        group_by(x.variable,primary,secondary) %>%
                        mutate(
-                       ytextposition=cumsum(y.variable)-0.5*y.variable)#.(Fiscal.Year)
+                         ytextposition=sum(y.variable)-cumsum(y.variable)+0.33*y.variable,#.(Fiscal.Year)
+    # ytextposition=cumsum(y.variable)-0.5*y.variable,
+    cs=cumsum(y.variable),
+    rcs=sum(y.variable)-cumsum(y.variable))#.(Fiscal.Year)
 
-    if(nrow(labels.secondary.DF)>0){
-    VAR.long.DF$secondary<-factor(VAR.long.DF$secondary
-                                  ,levels=c(labels.secondary.DF$variable)
-                                  ,labels=c(labels.secondary.DF$Label)
-                                  ,ordered=TRUE)
+
     }
     rm(labels.secondary.DF)
 
   }
 
-  VAR.long.DF$category<-factor(VAR.long.DF$category,
-                               levels=labels.category.DF$variable)
 
-  if(!is.na(VAR.facet.primary) & nrow(labels.primary.DF)>0){
-    VAR.long.DF$primary<-factor(VAR.long.DF$primary,
-                                levels=c(labels.primary.DF$variable),
-                                labels=c(labels.primary.DF$Label),
-                                ordered=TRUE)
-  }
+
 
   original<-ggplot(
     aes_string(x="x.variable"
