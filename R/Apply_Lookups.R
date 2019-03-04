@@ -80,8 +80,8 @@ get_delim<-function(filename){
 #' should probably add input protection when non factors are passed. I also haven't
 #' tested the handling if multiple columns are passed, I think it may not work.
 #'
-#' @examples VAR.long.DF<-replace_nas_with_unlabeled(data=data.DF
-#'   ,var="SubCustomer"),
+#' VAR.long.DF<-replace_nas_with_unlabeled(data=data.DF
+#'   ,var="SubCustomer")
 #'   replacement = "Uncategorized"
 #'   )
 #'
