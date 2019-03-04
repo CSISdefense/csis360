@@ -414,7 +414,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
 #' @param caption If TRUE, includes a source caption, default is false.
 #' @param legend If TRUE, includes a legend, default is false.
 #' @param geom.text.size Size multipllier for text on the graph.
-#'
+#'.
 #'
 #' @return A ggplot object following user-specified parameters.
 #'
@@ -507,7 +507,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
       VAR.long.DF$y.variable<-VAR.long.DF$MovingAverage
     }
 
-    VAR.long.DF<-VAR.long.DF %>% group_by(x.variable) %>%
+    VAR.long.DF<-VAR.long.DF %>% dplyr::group_by(x.variable) %>%
       dplyr::mutate(
                        ytextposition=sum(y.variable)-cumsum(y.variable)+0.33*y.variable,
                        cs=cumsum(y.variable),
@@ -540,7 +540,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
 
     #For CumSum to work, make sure factor reordering happens first.
     VAR.long.DF<-VAR.long.DF %>%
-                       group_by(x.variable,primary) %>%
+                       dplyr::group_by(x.variable,primary) %>%
                        dplyr::mutate(
                        ytextposition=sum(y.variable)-cumsum(y.variable)+0.33*y.variable,#.(Fiscal.Year)
                        # ytextposition=cumsum(y.variable)-0.5*y.variable,
@@ -595,7 +595,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
 
     #For CumSum to work, make sure factor reordering happens first.
     VAR.long.DF<-VAR.long.DF %>%
-                       group_by(x.variable,primary,secondary) %>%
+                       dplyr::group_by(x.variable,primary,secondary) %>%
                        mutate(
                          ytextposition=sum(y.variable)-cumsum(y.variable)+0.33*y.variable,#.(Fiscal.Year)
     # ytextposition=cumsum(y.variable)-0.5*y.variable,

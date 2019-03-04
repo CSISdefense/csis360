@@ -28,11 +28,9 @@ and with a color of our choosing. One critical step in this process is the addit
 of the replacement term to the levels of the var factor. Which means we
 should probably add input protection when non factors are passed. I also haven't
 tested the handling if multiple columns are passed, I think it may not work.
-}
-\examples{
+
 VAR.long.DF<-replace_nas_with_unlabeled(data=data.DF
-  ,var="SubCustomer"),
+  ,var="SubCustomer")
   replacement = "Uncategorized"
   )
-
 }
