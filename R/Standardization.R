@@ -121,19 +121,19 @@ group_data_for_plot <-function(
   if(aggregate=="sum"){
     if(length(breakout) == 0){
       data %<>%
-        group_by_(x_var) %>%
+        dplyr::group_by(!! as.name(x_var)) %>%
         summarize_(
           agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
     } else {
       data %<>%
-        group_by_(.dots = c(x_var, breakout)) %>%
+        dplyr::group_by_(.dots = c(x_var, breakout)) %>%
         summarize_(
           agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
     }
   } else if (aggregate=="mean"){
     if(length(breakout) == 0){
       data %<>%
-        group_by_(x_var) %>%
+        dplyr::group_by(as.name(!! as.name(x_var))) %>%
         summarize_(
           agg_val = lazyeval::interp(~mean(var, na.rm = TRUE), var = as.name(y_var)))
     } else {
