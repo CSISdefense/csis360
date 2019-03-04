@@ -82,7 +82,7 @@ get_plot_theme<-function(erase_legend_title=TRUE){
                 margin = margin(2,2,2,2)),
               legend.position = 'bottom',
               legend.background = element_rect(fill = "white"),
-              legend.margin=margin(0,0,0,0),
+              legend.margin=margin(0,0,0,0)
           # legend.margin = margin(t=-0.75, unit="cm")
   )+
     theme(plot.caption = element_text(size=8,
@@ -393,7 +393,38 @@ if(is.null(x_var)) x_var<-names(data)[1]
 }
 
 
-
+#' A legacy function for graphs that allows primary and s econdary facets and
+#'
+#' @param VAR.color.legend.label Label for the fill legend
+#' @param VAR.main.label Main title for the graph
+#' @param VAR.X.label X-axis label
+#' @param VAR.Y.label Y-axis label
+#' @param VAR.Coloration A csis360 lookup data.frame with factor information
+#' @param VAR.long.DF A data frame of formatted data for the ggplot
+#' @param ncol Number of columns for a facet_wrap, doesn't apply if there's a secondary facet
+#' @param VAR.x.variable The name of fiscal year variable, as string
+#' @param VAR.y.variable The name of variable to plot on y-axis
+#' @param VAR.y.series The name of the coloration variable, as string
+#' @param VAR.facet.primary The name of the primary facet variable, as string. Defaults to NA.
+#' @param VAR.facet.secondary The name of the secondary facet variable, as string. Defaults to NA.
+#' @param MovingAverage Hww many units to include in a moving average, defaults to 1, i.e. no average.
+#' @param MovingSides How to center the moving average.
+#' @param DataLabels Whether to draw data labels on the graph, default=NA or no.
+#' @param share If TRUE, calculates the share
+#' @param caption If TRUE, includes a source caption, default is false.
+#' @param legend If TRUE, includes a legend, default is false.
+#' @param geom.text.size Size multipllier for text on the graph.
+#'
+#'
+#' @return A ggplot object following user-specified parameters.
+#'
+#' @details This should really be integrated into build_plot
+#'
+#' @examples
+#'
+#' @import ggplot2
+#' @import dplyr
+#' @export
 LatticePlotWrapper_csis360<-function(VAR.color.legend.label
                              ,VAR.main.label
                              ,VAR.X.label
