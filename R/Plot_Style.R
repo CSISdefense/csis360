@@ -557,10 +557,10 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
                                     ,ordered=TRUE)
 
 
-    VAR.long.DF<-VAR.long.DF %>% group_by_(VAR.x.variable,
-                                           VAR.y.series,
-                                           VAR.facet.primary,
-                                           VAR.facet.secondary) %>%
+    VAR.long.DF<-VAR.long.DF %>% dplyr::group_by(!! as.name(VAR.x.variable),
+                                           !! as.name(VAR.y.series),
+                                           !! as.name(VAR.facet.primary),
+                                           !! as.name(VAR.facet.secondary)) %>%
       dplyr::summarise_(
         y.variable = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(VAR.y.variable)))
 
