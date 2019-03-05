@@ -29,3 +29,7 @@ Data/Contract\.SP_ContractSampleCriteriaDetailsCustomer\.txt
 Data/Contract\.SP_ContractUnmodifiedandOutcomeDetailsCustomer\.txt
 
 tests/testthat/defense_contract_CSIScontractID_detail\.Rdata
+
+R/\.Rapp\.history
+
+\.DS_Store
