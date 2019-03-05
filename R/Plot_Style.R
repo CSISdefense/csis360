@@ -424,6 +424,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
 #'
 #' @import ggplot2
 #' @import dplyr
+#' @import tidyverse
 #' @export
 LatticePlotWrapper_csis360<-function(VAR.color.legend.label
                              ,VAR.main.label
@@ -460,6 +461,8 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
   VAR.long.DF[,VAR.y.series]<-factor(VAR.long.DF[,VAR.y.series],
                                levels=labels.category.DF$variable)
 
+  #Input protection for when the y.series column is entirely na.
+  if(all(is.na(VAR.long.DF[,VAR.y.series]))) stop(paste(VAR.y.series,"is entirely NA."))
 
   #   }
   #   else{
@@ -517,15 +520,25 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
   }
   #Reduce the number of rows by aggregating to one row per unique entry in the VAR.facet.primary column.
   else if(is.na(VAR.facet.secondary)){
-    VAR.long.DF<-aggregate(VAR.long.DF[,VAR.y.variable]
-                           , by=list(VAR.long.DF[,VAR.x.variable]
-                                     ,VAR.long.DF[,VAR.y.series]
-                                     ,VAR.long.DF[,VAR.facet.primary]
-                           )
-                           ,FUN = "sum"
-                           ,na.rm =TRUE
-    )
-    names(VAR.long.DF)<-c("x.variable","category","primary","y.variable")
+    # VAR.long.DF<-aggregate(VAR.long.DF[,VAR.y.variable]
+    #                        , by=list(VAR.long.DF[,VAR.x.variable]
+    #                                  ,VAR.long.DF[,VAR.y.series]
+    #                                  ,VAR.long.DF[,VAR.facet.primary]
+    #                        )
+    #                        ,FUN = "sum"
+    #                        ,na.rm =TRUE
+    # )
+    VAR.long.DF<-VAR.long.DF %>% group_by(!! as.name(VAR.x.variable),
+                                          !! as.name(VAR.y.series),
+                                          !! as.name(VAR.facet.primary)) %>%
+      dplyr::summarise_(
+        y.variable = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(VAR.y.variable)))
+
+    colnames(VAR.long.DF)[colnames(VAR.long.DF)==VAR.x.variable]<-"x.variable"
+    colnames(VAR.long.DF)[colnames(VAR.long.DF)==VAR.y.series]<-"category"
+    colnames(VAR.long.DF)[colnames(VAR.long.DF)==VAR.facet.primary]<-"primary"
+    colnames(VAR.long.DF)[colnames(VAR.long.DF)==VAR.y.variable]<-"y.variable"
+    if(VAR.y.series==VAR.facet.primary){VAR.long.DF$primary<-VAR.long.DF$category}
 
     if(is.numeric(MovingAverage) & MovingAverage>1){
       VAR.long.DF$y.raw<-VAR.long.DF$y.variable
@@ -596,7 +609,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
     #For CumSum to work, make sure factor reordering happens first.
     VAR.long.DF<-VAR.long.DF %>%
                        dplyr::group_by(x.variable,primary,secondary) %>%
-                       mutate(
+                       dplyr::mutate(
                          ytextposition=sum(y.variable)-cumsum(y.variable)+0.33*y.variable,#.(Fiscal.Year)
     # ytextposition=cumsum(y.variable)-0.5*y.variable,
     cs=cumsum(y.variable),
