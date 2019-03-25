@@ -225,9 +225,13 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
       # "everything except fiscal year."
       # With two breakout, it's set to c(-1, -2):
       # "everything except fiscal year and the facet variable."
-      if(facet_var=="None" | facet_var == color_var)
+      facet_list <- c(facet_var,second_var)
+      facet_list <- facet_list[!facet_list %in% c("None",color_var)]
+
+
+      if(length(facet_list)==0)
         share_vars <- c(-1)
-      else if (any(!is.null(second_var),second_var == color_var))
+      else if (length(facet_list)==1)
         share_vars <- c(-1,-2)
       else
         share_vars <- c(-1,-2, -3)
