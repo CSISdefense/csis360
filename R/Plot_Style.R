@@ -104,6 +104,7 @@ get_plot_theme<-function(erase_legend_title=TRUE){
 #' @param y_var The name of variable to plot on y-axis
 #' @param color_var The name of the coloration variable, as string
 #' @param facet_var="None" The name of facet variable, as string
+#' @param second_var=NULL The name of the secondary facet variable, as string
 #' @param legend If TRUE, includes a legend
 #' @param caption If TRUE, includes a source caption
 #' @param labels_and_colors A csis360 lookup data.frame with factor information
@@ -130,13 +131,14 @@ build_plot <- function(
   y_var, #Name of variable to plot on y-axis
   color_var="None",       # name of coloration variable, as string
   facet_var="None",        # name of facet variable, as string
+  second_var=NULL,        # name of facet variable, as string
   legend=TRUE, #Include a legend
   caption=TRUE, #Include a source caption
   labels_and_colors=NULL,
   column_key=NULL,
   format=FALSE
 ){
-
+  if(facet_var==second_var) second_var<-NULL
   #To add, check for missing labels and colors
   if(format==TRUE)
     data <- format_data_for_plot(data=data,
@@ -147,6 +149,7 @@ build_plot <- function(
                                  y_var=y_var,
                                  color_var=color_var,
                                  facet_var=facet_var,
+                                 second_var=second_var,
                                  labels_and_colors=labels_and_colors)
 
 

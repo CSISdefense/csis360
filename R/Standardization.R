@@ -110,8 +110,11 @@ group_data_for_plot <-function(
   if(length(breakout) >= 1){
     if(grepl(" ", breakout[1])) breakout[1] <- paste0("`", breakout[1], "`")
   }
-  if(length(breakout) == 2){
+  if(length(breakout) >= 2){
     if(grepl(" ", breakout[2])) breakout[2] <- paste0("`", breakout[2], "`")
+  }
+  if(length(breakout) == 3){
+    if(grepl(" ", breakout[3])) breakout[3] <- paste0("`", breakout[3], "`")
   }
 
   data<-data %>% filter(!is.na(!! as.name(y_var)))
@@ -161,6 +164,7 @@ group_data_for_plot <-function(
 #' @param   end_fy  End fiscal Year
 #' @param   color_var Coloration variable, as string
 #' @param   facet_var Facet variable, as string
+#' @param   second_var Facet variable, as string
 #' @param   labels_and_colors A csis360 lookup data.frame with factor information
 #' @param   group If TRUE aggregate
 #' @param   drop_missing_labels If TRUE, drop levels to avoid residual levels from labels_and_colors.
@@ -169,13 +173,19 @@ group_data_for_plot <-function(
 #'
 #' @export
 format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = NA, end_fy = NA,
-                                 color_var="None", facet_var="None", labels_and_colors=NULL, group=TRUE,
+                                 color_var="None",
+                                 facet_var="None",
+                                 second_var=NULL,
+                                 labels_and_colors=NULL,
+                                 group=TRUE,
                                  drop_missing_labels=TRUE){
 
   shown_data <- data
+  if(facet_var==second_var) second_var<-NULL
 
-  breakout <- c(color_var, facet_var)
+  breakout <- c(color_var, facet_var, second_var)
   breakout <- breakout[breakout != "None"]
+  breakout <- breakout[!is.null(breakout)]
 
   if(group){
     shown_data<-group_data_for_plot(
