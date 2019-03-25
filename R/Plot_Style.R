@@ -206,6 +206,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
 
 
   else if(chart_geom=="Scatter Plot"){
+    if(!is.null(second_var)) stop("Have not yet implemented second_var for scatter plot")
     if(color_var == "None"){
       mainplot<-mainplot+geom_point(
         aes_string(x_var,
@@ -227,6 +228,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
     }
   }
   else if (chart_geom=="Histogram"){
+    if(!is.null(second_var)) stop("Have not yet implemented second_var for histogram")
     #If no color, color by what you use to facet
     if(color_var=="None" & facet_var!="None") color_var<-facet_var
     if(color_var == "None"){
@@ -253,7 +255,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
   }
   else if (chart_geom=="Box and Whiskers"){
     #If no color, color by what you use to facet
-
+    if(!is.null(second_var)) stop("Have not yet implemented second_var for box and whiskers")
     # browser()
     if(color_var == "None" | facet_var==color_var){
       data$Overall<-"Overall"
@@ -284,11 +286,17 @@ if(is.null(x_var)) x_var<-names(data)[1]
   # add faceting if requested, and x-axis labeling
   if(facet_var != "None"){
     if(chart_geom!="Histogram"){
-    mainplot <- mainplot +
-      facet_wrap(as.formula(paste0("~ `",facet_var, "`"))) +
-      theme(strip.background = element_rect(fill = "white"))
-    # theme(strip.background = element_rect(colour = "#554449", fill = "white", size=0.5),
-    #       panel.border = element_rect(colour = "#554449", fill=NA, size=0.5))
+      if(is.null(second_var))
+        mainplot <- mainplot +
+          facet_wrap(as.formula(paste0("~ `",facet_var, "`"))) +
+          theme(strip.background = element_rect(fill = "white"))
+      else{
+        mainplot <- mainplot +
+          facet_grid(as.formula(paste0("`",facet_var, "` ~ `", second_var, "`"))) +
+          theme(strip.background = element_rect(fill = "white"))
+      }
+      # theme(strip.background = element_rect(colour = "#554449", fill = "white", size=0.5),
+      #       panel.border = element_rect(colour = "#554449", fill=NA, size=0.5))
     }
     else{
       mainplot <- mainplot +

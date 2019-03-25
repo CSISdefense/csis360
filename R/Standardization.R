@@ -181,7 +181,7 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
                                  drop_missing_labels=TRUE){
 
   shown_data <- data
-  if(facet_var==second_var) second_var<-NULL
+  if(facet_var==second_var | second_var=="None") second_var<-NULL
 
   breakout <- c(color_var, facet_var, second_var)
   breakout <- breakout[breakout != "None"]
@@ -227,8 +227,10 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
       # "everything except fiscal year and the facet variable."
       if(facet_var=="None" | facet_var == color_var)
         share_vars <- c(-1)
-      else
+      else if (is.null(second_var) | second_var == color_var)
         share_vars <- c(-1,-2)
+      else
+        share_vars <- c(-1,-2, -3)
 
       # spread the shares breakout variable across multiple columns
       shown_data<-shown_data %>%
@@ -282,6 +284,13 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
         ordered(shown_data[,colnames(shown_data)==facet_var],
                 levels=subset(labels_and_colors,column==facet_var)$variable,
                 labels=subset(labels_and_colors,column==facet_var)$Label
+        )
+    }
+    if(!is.null(second_var) & color_var != second_var){
+      shown_data[,colnames(shown_data)==second_var]<-
+        ordered(shown_data[,colnames(shown_data)==second_var],
+                levels=subset(labels_and_colors,column==second_var)$variable,
+                labels=subset(labels_and_colors,column==second_var)$Label
         )
     }
     #If x-axis variable is a factor
