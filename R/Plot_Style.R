@@ -138,7 +138,7 @@ build_plot <- function(
   column_key=NULL,
   format=FALSE
 ){
-  if(facet_var==second_var) second_var<-NULL
+  if(all(!is.null(second_var),facet_var==second_var | second_var=="None")) second_var<-NULL
   #To add, check for missing labels and colors
   if(format==TRUE)
     data <- format_data_for_plot(data=data,
