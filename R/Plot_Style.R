@@ -458,6 +458,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
   #   if(is.na(VAR.override.coloration)){
   labels.category.DF<-subset(VAR.Coloration,column==VAR.y.series)
   if(nrow(labels.category.DF)==0) stop(paste(VAR.y.series,"is missing from VAR.coloration."))
+  VAR.long.DF<-as.data.frame(VAR.long.DF)
   VAR.long.DF[,VAR.y.series]<-factor(VAR.long.DF[,VAR.y.series],
                                levels=labels.category.DF$variable)
 
@@ -565,10 +566,10 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
     labels.secondary.DF<-subset(VAR.Coloration,column==VAR.facet.secondary)
     if(nrow(labels.secondary.DF)>0){
       VAR.long.DF[,VAR.facet.secondary]<-factor(VAR.long.DF[,VAR.facet.secondary]
-                                    ,levels=c(labels.secondary.DF$variable)
-                                    ,labels=c(labels.secondary.DF$Label)
-                                    ,ordered=TRUE)
-
+                                                ,levels=c(labels.secondary.DF$variable)
+                                                ,labels=c(labels.secondary.DF$Label)
+                                                ,ordered=TRUE)
+    }
 
     VAR.long.DF<-VAR.long.DF %>% dplyr::group_by(!! as.name(VAR.x.variable),
                                            !! as.name(VAR.y.series),
@@ -616,7 +617,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
     rcs=sum(y.variable)-cumsum(y.variable))#.(Fiscal.Year)
 
 
-    }
+
     rm(labels.secondary.DF)
 
   }
@@ -746,7 +747,6 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
           )
   #     theme(legend.key.width=unit(0.1,"npc"))
   #   print.figure<-facetAdjust(print.figure,"down")
-
 
     #If any entries are above 10 billion, change the scale to billions
     if(max(VAR.long.DF[,"y.variable"])>=1e10)

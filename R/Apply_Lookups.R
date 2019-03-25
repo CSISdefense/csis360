@@ -234,6 +234,8 @@ read_and_join<-function(
   if(is.data.frame(lookup_file))
     stop("lookup_file parameter is a data frame, it should be a filename, e.g. 'lookup_customer.csv'.")
 
+  if(is.null(nrow(data))) stop("Data parameter passed to read_and_join has no rows.")
+
   #Replace NAs in input column if requested
   if(!is.null(replace_na_var)){
     data<-replace_nas_with_unlabeled(data,
@@ -390,7 +392,8 @@ read_and_join_experiment<-function(
   new_var_checked=TRUE,
   skip_check_var=NULL,
   zip_file=NULL,
-  col_types=NULL
+  col_types=NULL,
+  case_sensitive=TRUE
 ){
 
 
@@ -493,26 +496,58 @@ read_and_join_experiment<-function(
     }
   }
 
+  lookup<-as.data.frame(lookup)
+  if(any(duplicated(lookup[,by]))){
+    print(unique(lookup[duplicated(lookup[,by]),by]))
+    stop(paste("Duplicate entries in lookup for by variables: ",by))
+  }
+
   #Conduct the join
   if(is.null(by)){
-    data<- plyr::join(
+    if(case_sensitive==FALSE) stop("Haven't implemented case insensitive yet w/o by parameter")
+
+    data<- dplyr::left_join(
       data,
       lookup,
       match="first"
     )
   }
   else{
-    data<- plyr::join(
+    if(case_sensitive==FALSE){
+      #Create a temporary holder for original values of each of the by ariables
+      #And then switch them to lower case before the  join is run.
+      for(i in 1:length(by)){
+        original_temp_name<-paste(by[i],"original",sep="_")
+        if(original_temp_name %in% colnames(data)) stop(paste(original_temp_name,"already exists as a column in data, nowhere to store the original values."))
+        data[,original_temp_name]<-data[,by[i]]
+        data[,by[i]]<-tolower(data[,by[i]])
+        # lookup[,original_temp_name]<-lookup[,by[i]]
+        lookup[,by[i]]<-tolower(lookup[,by[i]])
+      }
+    }
+
+
+    data<- dplyr::left_join(
       data,
       lookup,
       match="first",
       by=by
     )
+
+    if(case_sensitive==FALSE){
+      #Switch back the by variables to their pre-tolower value
+      #Lookup isn't kept, commented code was just switching it back for error checking purposes.
+      #But creating a lookup column also imports it into data, a needless compllication.
+      for(i in 1:length(by)){
+        original_temp_name<-paste(by[i],"original",sep="_")
+        data[,by[i]]<-data[,original_temp_name]
+        data <- data[,!(colnames(data) %in% original_temp_name)]
+        # lookup[,by[i]]<-lookup[,original_temp_name]
+        # lookup <- lookup[,!(colnames(lookup) %in% original_temp_name)]
+      }
+    }
   }
-  if(any(duplicated(lookup[,by]))){
-    print(unique(lookup[duplicated(lookup[,by]),by]))
-    stop(paste("Duplicate entries in lookup for by variables: ",by))
-  }
+
   #If add_var is specified, dropped new fields not in add_var
   if(!is.null(add_var)){
     droplist<-names(lookup)[!names(lookup) %in% by

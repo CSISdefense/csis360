@@ -153,7 +153,7 @@ FPDS.gov<-subset(FPDS.gov,select=-c(Filename))
 
   #Classify Customers
   if("AgencyID" %in% colnames(FPDS.gov)){
-    FPDS.gov<-csis360::read_and_join(FPDS.gov,
+    FPDS.gov<-read_and_join(FPDS.gov,
                                     "Agency_AgencyID.csv",
                                      by="AgencyID",
                                      replace_na_var="AgencyID",
@@ -164,7 +164,7 @@ FPDS.gov<-subset(FPDS.gov,select=-c(Filename))
   }
   else if("Contracting.Agency.ID" %in% colnames(FPDS.gov)){
     FPDS.gov$AgencyID<-FPDS.gov$Contracting.Agency.ID
-    FPDS.gov<-csis360::read_and_join(FPDS.gov,
+    FPDS.gov<-read_and_join(FPDS.gov,
                                          "Agency_AgencyID.csv",
                                          by="AgencyID",
                                          replace_na_var="AgencyID",
@@ -175,7 +175,7 @@ FPDS.gov<-subset(FPDS.gov,select=-c(Filename))
   }
   else if("Contracting.Department.ID" %in% colnames(FPDS.gov)){
     FPDS.gov$AgencyID<-FPDS.gov$Contracting.Department.ID
-    FPDS.gov<-csis360::read_and_join(FPDS.gov,
+    FPDS.gov<-read_and_join(FPDS.gov,
                                          "Agency_AgencyID.csv",
                                          by="AgencyID",
                                          replace_na_var="AgencyID",
@@ -187,7 +187,7 @@ FPDS.gov<-subset(FPDS.gov,select=-c(Filename))
 
   #Classify Product or Service Codes
   if("ProductOrServiceCode" %in% colnames(FPDS.gov)){
-    FPDS.gov<-csis360::read_and_join(FPDS.gov,
+    FPDS.gov<-read_and_join(FPDS.gov,
                                          "ProductOrServiceCodes.csv",
                                          by="ProductOrServiceCode",
                                          replace_na_var="ProductOrServiceCode",
@@ -198,7 +198,7 @@ FPDS.gov<-subset(FPDS.gov,select=-c(Filename))
 
 }
   full_data<-replace_nas_with_unlabeled(FPDS.gov,"SubCustomer","Uncategorized")
-  full_data<-csis360::read_and_join(FPDS.gov,
+  full_data<-read_and_join(FPDS.gov,
                                     "Lookup_SubCustomer.csv",
                                     by=c("Customer","SubCustomer"),
                                     add_var="SubCustomer.platform",

@@ -114,6 +114,8 @@ group_data_for_plot <-function(
     if(grepl(" ", breakout[2])) breakout[2] <- paste0("`", breakout[2], "`")
   }
 
+  data<-data %>% filter(!is.na(!! as.name(y_var)))
+
   # aggregate to the level of [fiscal year x breakout]
   # the evaluation for dplyr::summarize_ was a pain in the ass to figure out;
   # see stack overflow at https://tinyurl.com/z82ywf3
@@ -186,9 +188,16 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
 
   if(!is.na(start_fy) & !is.na(end_fy)){
     # filter by year - see https://tinyurl.com/lm2u8xs
-    shown_data <-shown_data  %>%
-      filter_(paste0(fy_var, ">=", as.character(start_fy), "&", fy_var,
-                     "<=", as.character(end_fy)))
+    if(is.numeric(shown_data[,fy_var])){
+      shown_data <-shown_data  %>%
+        filter_(paste0(fy_var, ">=", as.character(start_fy), "&", fy_var,
+                       "<=", as.character(end_fy)))
+    } else{
+      shown_data <-shown_data  %>%
+        filter_(paste0("between(year(",fy_var, "),", as.character(start_fy),
+                       ",", as.character(end_fy),")"))
+    }
+
   }
 
 
@@ -228,7 +237,7 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
       # divide each column by the total column, to get each column as shares
       shown_data[share_vars] <-
         sapply(shown_data[share_vars], function(x){x / shown_data$total})
-      shown_data <- shown_data %>% select(-total)
+      shown_data <- shown_data %>% dplyr::select(-total)
 
       # gather the data back to long form
       shown_data <- gather_(
@@ -1055,7 +1064,7 @@ transform_contract<-function(
   #Office
   if("Office" %in% colnames(contract)){
     contract$ContractingOfficeCode<-as.character(contract$Office)
-    contract<-csis360::read_and_join( contract,
+    contract<-read_and_join( contract,
                                       "Office.ContractingOfficeCode.txt",
                                       path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
                                       directory="office\\",
@@ -1106,7 +1115,7 @@ transform_contract<-function(
   }
 
   if("ProductOrServiceCode" %in% colnames(contract)){
-    contract<-csis360::read_and_join( contract,
+    contract<-read_and_join( contract,
                                       "ProductOrServiceCodes.csv",
                                       path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
                                       directory="",
