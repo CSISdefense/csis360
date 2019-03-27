@@ -122,6 +122,7 @@ get_plot_theme<-function(erase_legend_title=TRUE){
 #'
 #' @import ggplot2
 #' @import stringr
+#' @import scales
 #' @export
 build_plot <- function(
   data,
@@ -326,6 +327,23 @@ if(is.null(x_var)) x_var<-names(data)[1]
     #     )
     # }
   }
+  # add x-axis labeling
+  if(class(data[,x_var])=="Date"){
+    mainplot<-mainplot+scale_x_date(
+      breaks=scales::date_breaks("2 years"),
+      #                 c(seq(
+      #                     as.numeric(format(min(VAR.long.DF$x.variable),"%Y")),
+      #                     as.numeric(format(max(VAR.long.DF$x.variable),"%Y")),
+      #                     by=tick.marks)),
+      labels=scales::date_format("'%y")
+      #                 paste("'",format(as.Date(as.character(
+      #                     c(seq(
+      #                         as.numeric(format(min(VAR.long.DF$x.variable),"%Y")),
+      #                         as.numeric(format(max(VAR.long.DF$x.variable),"%Y")),
+      #                         by=tick.marks))
+      #                 ),"%Y"),"%y"),sep="")
+    )
+  }
 
   # add y-axis labeling
   if(share == TRUE){
@@ -436,6 +454,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
 #' @import ggplot2
 #' @import dplyr
 #' @import tidyverse
+#' @import scales
 #' @export
 LatticePlotWrapper_csis360<-function(VAR.color.legend.label
                              ,VAR.main.label
@@ -658,12 +677,12 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
 
   if(class(VAR.long.DF$x.variable)=="Date"){
     print.figure<-print.figure+scale_x_date(
-      breaks=date_breaks("2 years"),
+      breaks=scales::date_breaks("2 years"),
       #                 c(seq(
       #                     as.numeric(format(min(VAR.long.DF$x.variable),"%Y")),
       #                     as.numeric(format(max(VAR.long.DF$x.variable),"%Y")),
       #                     by=tick.marks)),
-      labels=date_format("'%y")
+      labels=scales::date_format("'%y")
       #                 paste("'",format(as.Date(as.character(
       #                     c(seq(
       #                         as.numeric(format(min(VAR.long.DF$x.variable),"%Y")),
