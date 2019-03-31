@@ -387,13 +387,15 @@ na_non_positive_log<-function(x){
 #'
 #' @import dplyr
 #' @import lubridate
+#' @import tidyverse
+#' @import Hmisc
 #' @export
 transform_contract<-function(
   contract
 ){
 
   if("Action.Obligation" %in% colnames(contract))
-    contract$Action.Obligation %<>% as.numeric()
+    contract$Action.Obligation <-  as.numeric(contract$Action.Obligation)
   if("Number.Of.Actions" %in% colnames(contract))
     contract$Number.Of.Actions %<>% as.numeric()
 
@@ -447,7 +449,7 @@ transform_contract<-function(
 
   #SumOfisChangeOrder
   if("SumOfisChangeOrder" %in% colnames(contract))
-    contract$qNChg <- cut2(contract$SumOfisChangeOrder,c(1,2,3))
+    contract$qNChg <- Hmisc::cut2(contract$SumOfisChangeOrder,c(1,2,3))
 
   #pChangeOrderUnmodifiedBaseAndAll
   if("pChangeOrderUnmodifiedBaseAndAll" %in% colnames(contract)){
@@ -461,7 +463,7 @@ transform_contract<-function(
       is.na(contract$pChangeOrderUnmodifiedBaseAndAll) & contract$SumOfisChangeOrder==0]<-0
 
 
-    contract$qCRais <- cut2(
+    contract$qCRais <- Hmisc::cut2(
       contract$pChangeOrderUnmodifiedBaseAndAll,c(
         -0.001,
         0.001,
@@ -503,7 +505,7 @@ transform_contract<-function(
     contract$pChangeOrderUnmodifiedBaseAndAll<-as.numeric(as.character(contract$pChangeOrderUnmodifiedBaseAndAll))
     contract$pChange3Sig<-round(
       contract$pChangeOrderUnmodifiedBaseAndAll,3)
-    contract$CRai <- cut2(
+    contract$CRai <- Hmisc::cut2(
       contract$pChangeOrderUnmodifiedBaseAndAll,c(
         -0.001,
         0.001,
@@ -535,8 +537,8 @@ transform_contract<-function(
 
     lowroundedcutoffs<-c(15000,100000,1000000,30000000)
     highroundedcutoffs<-c(15000,100000,1000000,10000000,75000000)
-    contract$qLowCeiling <- cut2(contract$UnmodifiedContractBaseAndAllOptionsValue,cuts=lowroundedcutoffs)
-    contract$qHighCeiling <- cut2(contract$UnmodifiedContractBaseAndAllOptionsValue,cuts=highroundedcutoffs)
+    contract$qLowCeiling <- Hmisc::cut2(contract$UnmodifiedContractBaseAndAllOptionsValue,cuts=lowroundedcutoffs)
+    contract$qHighCeiling <- Hmisc::cut2(contract$UnmodifiedContractBaseAndAllOptionsValue,cuts=highroundedcutoffs)
     rm(lowroundedcutoffs,highroundedcutoffs)
 
 
@@ -682,7 +684,7 @@ transform_contract<-function(
     #Break the count of days into four categories.
     if (!"qDuration" %in% colnames(contract)){
 
-      contract$qDuration<-cut2(contract$UnmodifiedDays,cuts=c(61,214,366,732))
+      contract$qDuration<-Hmisc::cut2(contract$UnmodifiedDays,cuts=c(61,214,366,732))
     }
 
     if (levels(contract$qDuration)[[2]]=="[   61,  214)"){
@@ -706,7 +708,7 @@ transform_contract<-function(
 
 
     contract$Dur.Simple<-contract$qDuration
-    contract$Dur.Simple<- list(
+    levels(contract$Dur.Simple)<- list(
       "<~1 year"=c("[0 months,~2 months)","[~2 months,~7 months)","[~7 months-~1 year]"),
       "(~1 year,~2 years]"="(~1 year,~2 years]",
       "(~2 years+]"="(~2 years+]")
@@ -789,7 +791,7 @@ transform_contract<-function(
 
 
 
-    contract$q_Offr<-cut2(contract$UnmodifiedNumberOfOffersReceived,c(2,3,5))
+    contract$q_Offr<-Hmisc::cut2(contract$UnmodifiedNumberOfOffersReceived,c(2,3,5))
     levels(contract$q_Offr) <-
       list("1"=c("1","  1"),
            "2"=c("2","  2"),
@@ -799,9 +801,9 @@ transform_contract<-function(
     #Set number of offers =1 when there is a NA and no competition
     #This seems to be redundant, but no harm in it.
     contract$q_Offr[is.na(contract$q_Offr)&
-                 !is.na(contract$b_Comp)&
-                 contract$b_Comp==0
-               ]<-"1"
+                      !is.na(contract$b_Comp)&
+                      contract$b_Comp==0
+                    ]<-"1"
     contract$nq_Offr<-contract$q_Offr
     levels(contract$nq_Offr) <-
       list("1"=c("1"),
@@ -852,9 +854,9 @@ transform_contract<-function(
            "5+ offers"="5+ offers")
     contract$NoCompOffr<-as.character(contract$NoCompOffr)
     contract$NoCompOffr[is.na(contract$NoComp) |
-                            contract$NoComp!="Any Comp."]<-
+                          contract$NoComp!="Any Comp."]<-
       as.character(contract$NoComp[is.na(contract$NoComp) |
-                                       contract$NoComp!="Any Comp."])
+                                     contract$NoComp!="Any Comp."])
     contract$NoCompOffr<-factor(contract$NoCompOffr,c(
       c("Other No",
         "Urgency",
@@ -960,9 +962,15 @@ transform_contract<-function(
   }
 
   #NAICS
+  #Note that this must be placed a new in each repository.
+  #In theory we could store a version in csis360, something to consider for the future.
   if("NAICS" %in% colnames(contract) & "StartCY" %in% colnames(contract) ){
-    if(file.exists("output//naics_join.Rdata")){
-      load("output//naics_join.Rdata")
+    naics.file<-NA
+    #Vendor repository location
+    if(file.exists("output//naics_join.Rdata")) naics.file<-"output//naics_join.Rdata"
+    if(file.exists("../data/semi_clean/naics_join.Rdata")) naics.file<-"../data/semi_clean/naics_join.Rdata"
+    if(!is.na(naics.file)){
+      load(naics.file)
 
       # contract<-left_join(contract,NAICS_join, by=c("StartFY"="StartFY",
       #                                               "NAICS"="NAICS_Code"))
@@ -975,7 +983,7 @@ transform_contract<-function(
 
       #This critical NAICS6 split in 2 from 2012 to 2017 and would prevent analysis of 7% of obligations if not reunited.
       contract$NAICS[substr(contract$NAICS,1,5)==54171 &
-                                        !is.na(contract$NAICS)]<-54171
+                       !is.na(contract$NAICS)]<-54171
 
       contract<-left_join(contract,NAICS6_join, by=c("StartCY"="CalendarYear",
                                                      "NAICS"="NAICS6"))
@@ -1088,12 +1096,12 @@ transform_contract<-function(
   if("Office" %in% colnames(contract)){
     contract$ContractingOfficeCode<-as.character(contract$Office)
     contract<-read_and_join( contract,
-                                      "Office.ContractingOfficeCode.txt",
-                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
-                                      directory="office\\",
-                                      by="ContractingOfficeCode",
-                                      add_var=c("PlaceIntlPercent","CrisisPercent"),
-                                      new_var_checked=FALSE)
+                             "Office.ContractingOfficeCode.txt",
+                             path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                             directory="office\\",
+                             by="ContractingOfficeCode",
+                             add_var=c("PlaceIntlPercent","CrisisPercent"),
+                             new_var_checked=FALSE)
 
 
     colnames(contract)[colnames(contract)=="PlaceIntlPercent"]<-"OffIntl"
@@ -1139,18 +1147,18 @@ transform_contract<-function(
 
   if("ProductOrServiceCode" %in% colnames(contract)){
     contract<-read_and_join( contract,
-                                      "ProductOrServiceCodes.csv",
-                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
-                                      directory="",
-                                      by="ProductOrServiceCode",
-                                      add_var=c("Simple",
-                                                "ProductServiceOrRnDarea",
-                                                "ProductOrServiceArea",
-                                                "HostNation3Category",
-                                                "CrisisProductOrServiceArea",
-                                                "ProductOrServiceCodeText"
-                                      ),
-                                      new_var_checked=FALSE)
+                             "ProductOrServiceCodes.csv",
+                             path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                             directory="",
+                             by="ProductOrServiceCode",
+                             add_var=c("Simple",
+                                       "ProductServiceOrRnDarea",
+                                       "ProductOrServiceArea",
+                                       "HostNation3Category",
+                                       "CrisisProductOrServiceArea",
+                                       "ProductOrServiceCodeText"
+                             ),
+                             new_var_checked=FALSE)
 
     contract$ProductServiceOrRnDarea<-factor(contract$ProductServiceOrRnDarea)
     contract$ProductOrServiceArea<-factor(contract$ProductOrServiceArea)
@@ -1170,14 +1178,14 @@ transform_contract<-function(
 
 
   if("TermNum" %in% colnames(contract))
-  contract$TermNum<-as.integer(as.character(factor(contract$Term,
-                                                   levels=c("Terminated","Unterminated"),
-                                                   labels=c(1,0))))
+    contract$TermNum<-as.integer(as.character(factor(contract$Term,
+                                                     levels=c("Terminated","Unterminated"),
+                                                     labels=c(1,0))))
 
   if("Action.Obligation" %in% colnames(contract)){
-  contract$ObligationWT<-contract$Action.Obligation
-  contract$ObligationWT[contract$ObligationWT<0]<-NA
-}
+    contract$ObligationWT<-contract$Action.Obligation
+    contract$ObligationWT[contract$ObligationWT<0]<-NA
+  }
 
 
 
