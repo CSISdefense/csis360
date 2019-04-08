@@ -265,6 +265,13 @@ read_and_join<-function(
   lookup<-remove_bom(lookup)
 
 
+  #Raise an erriro if newly added variables are  absent from the lookup
+  if(any(!add_var %in% colnames(lookup))){
+    print(colnames(lookup))
+    add_var<-add_var[!add_var %in% colnames(lookup)]
+    stop(paste(paste(add_var,collapse=" & "), "not present in lookup"))
+  }
+
   #Raise an error if by is missing from either file
   if(any(!by %in% colnames(lookup))){
     by<-by[!by %in% colnames(lookup)]

@@ -1168,6 +1168,163 @@ transform_contract<-function(
   }
 
 
+  # colnames(contract)[colnames(contract)=="Office"]<-"ContractingOfficeCode"
+  # colnames(contract)[colnames(contract)=="StartFY"]<-"fiscal_year"
+
+  summary(factor(contract$PricingFee))
+  contract$PricingUCA<-as.character(contract$PricingFee)
+  contract$PricingUCA[is.na(contract$UCA)]<-NA
+  summary(factor(contract$PricingUCA))
+  contract$PricingUCA[contract$UCA=="UCA"]<-"UCA"
+  contract$PricingUCA<-factor(contract$PricingUCA)
+  summary(contract$PricingUCA)
+  contract$Comp1or5<-contract$CompOffr
+  levels(contract$Comp1or5)<-
+    list("No Competition"="No Competition",
+         "1 offer"="1 offer",
+         "2-4 offers"=c("2 offers","3-4 offers"),
+         "5+ offers"="5+ offers")
+  summary(contract$Comp1or5)
+
+
+  contract<-read_and_join_experiment( contract,
+                                      "Office.sp_OfficeHistoryCapacityLagged.txt",
+                                      path="",
+                                      directory="..\\data\\semi_clean\\",
+                                      by=c("ContractingOfficeCode","fiscal_year"),
+                                      add_var=c("office_obligatedamount_1year",
+                                                "office_numberofactions_1year",
+                                                "office_PBSCobligated_1year",
+                                                "office_obligatedamount_7year"),
+                                      new_var_checked=FALSE)
+  summary(contract$office_numberofactions_1year)
+  summary(contract$office_obligatedamount_7year)
+  summary(contract$office_obligatedamount_1year)
+  summary(contract$office_PBSCobligated_1year)
+
+
+  contract$office_numberofactions_1year[is.na(contract$office_numberofactions_1year)]<-0
+  contract$office_obligatedamount_7year[is.na(contract$office_obligatedamount_7year) |
+                                          contract$office_obligatedamount_7year<0]<-0
+  contract$office_obligatedamount_1year[is.na(contract$office_obligatedamount_1year) |
+                                          contract$office_obligatedamount_1year<0]<-0
+  contract$office_PBSCobligated_1year[is.na(contract$office_PBSCobligated_1year)|
+                                        contract$office_PBSCobligated_1year<0]<-0
+  contract$pPBSC<-contract$office_PBSCobligated_1year/contract$office_obligatedamount_1year
+  contract$pPBSC[contract$office_obligatedamount_1year==0]<-0
+  contract$pPBSC[contract$pPBSC>1]<-1
+  summary(contract$pPBSC)
+
+  contract$office_numberofactions_1year[is.na(contract$ContractingOfficeCode)]<-NA
+  contract$office_obligatedamount_7year[is.na(contract$ContractingOfficeCode)]<-NA
+  contract$office_obligatedamount_1year[is.na(contract$ContractingOfficeCode)]<-NA
+  contract$office_PBSCobligated_1year[is.na(contract$ContractingOfficeCode)]<-NA
+  contract$pPBSC[is.na(contract$ContractingOfficeCode)]<-NA
+
+
+  contract<-read_and_join_experiment( contract,
+                                      "Office.sp_ProdServOfficeHistoryLagged.txt",
+                                      path="",
+                                      directory="..\\data\\semi_clean\\",
+                                      by=c("ContractingOfficeCode","fiscal_year","ProductOrServiceCode"),
+                                      add_var=c("office_psc_obligatedamount_7year"),
+                                      new_var_checked=FALSE)
+  summary(contract$office_psc_obligatedamount_7year)
+  contract$office_psc_obligatedamount_7year[is.na(contract$office_psc_obligatedamount_7year)|
+                                              contract$office_psc_obligatedamount_7year<0]<-0
+
+
+  contract$pOffPSC<-contract$office_psc_obligatedamount_7year/contract$office_obligatedamount_7year
+  contract$pOffPSC[contract$office_obligatedamount_7year==0]<-0
+  contract$pOffPSC[contract$pOffPSC>1]<-1
+  summary(contract$pOffPSC)
+  contract$office_psc_obligatedamount_7year[is.na(contract$ContractingOfficeCode) |
+                                              is.na(contract$ProductOrServiceCode)]<-NA
+  contract$pOffPSC[is.na(contract$ContractingOfficeCode) |
+                     is.na(contract$ProductOrServiceCode)]<-NA
+
+  # undebug(read_and_join_experiment)
+
+
+
+  contract<-read_and_join_experiment_experiment( contract,
+                                                 "Contract.sp_ContractEntityID.txt",
+                                                 path="",
+                                                 directory="..\\data\\semi_clean\\",
+                                                 by=c("CSIScontractID"),
+                                                 add_var=c("EntityID","UnmodifiedEntityID"),
+                                                 new_var_checked=FALSE)
+  contract$EntityID[is.na(contract$EntityID)]<-
+    contract$UnmodifiedEntityID[is.na(contract$EntityID)]
+
+
+  contract<-read_and_join_experiment( contract,
+                                      "Office.sp_EntityIDofficeHistoryLagged.txt",
+                                      path="",
+                                      directory="..\\data\\semi_clean\\",
+                                      by=c("EntityID","ContractingOfficeCode","fiscal_year"),
+                                      add_var=c("office_entity_paircount_7year","office_entity_numberofactions_1year",
+                                                "office_entity_obligatedamount_7year"),
+                                      new_var_checked=FALSE)
+
+  summary(contract$EntityID)
+  summary(contract$office_entity_numberofactions_1year)
+  summary(contract$office_entity_paircount_7year)
+  summary(contract$office_entity_obligatedamount_7year)
+
+  contract$office_entity_numberofactions_1year[is.na(contract$office_entity_numberofactions_1year)&
+                                                 !is.na(contract$EntityID)&!is.na(contract$ContractingOfficeCode)]<-0
+  contract$office_entity_paircount_7year[is.na(contract$office_entity_paircount_7year)&
+                                           !is.na(contract$EntityID)&!is.na(contract$ContractingOfficeCode)]<-0
+
+  contract$office_entity_obligatedamount_7year[(is.na(contract$office_entity_obligatedamount_7year)|
+                                                  contract$office_entity_obligatedamount_7year<0)&
+                                                 !is.na(contract$EntityID)&!is.na(contract$ContractingOfficeCode)]<-0
+  contract$pMarket<-contract$office_entity_obligatedamount_7year/contract$office_obligatedamount_7year
+  contract$pMarket[contract$office_obligatedamount_7year==0 &
+                     !is.na(contract$EntityID)&!is.na(contract$ContractingOfficeCode)]<-0
+  contract$pMarket[contract$pMarket>1]<-1
+  summary(contract$pMarket)
+
+
+
+  contract<-read_and_join_experiment( contract,
+                                      "Contract.sp_ContractExercisedOptions.txt",
+                                      path="",
+                                      directory="..\\data\\semi_clean\\",
+                                      by=c("CSIScontractID"),
+                                      add_var=c("AnyUnmodifiedUnexercisedOptions"
+                                                ,"AnyUnmodifiedUnexercisedOptionsWhy"
+                                                ,"UnmodifiedBaseandExercisedOptionsValue"
+                                                ,"ExercisedOptions"),
+                                      new_var_checked=FALSE)
+
+  # summary(contract$ExercisedOptions)
+  # summary(contract$AnyUnmodifiedUnexercisedOptions)
+  # summary(factor(contract$AnyUnmodifiedUnexercisedOptionsWhy))
+  # summary(contract$UnmodifiedBaseandExercisedOptionsValue)
+
+
+  # summary(contract$Crisis)
+  contract$OCO_GF<-contract$Crisis
+  levels(contract$OCO_GF)<-
+    list("GF"=c("Other","ARRA","Dis"),
+         "OCOC"="OCO")
+  # summary(contract$OCO_GF)
+
+
+  contract<-read_and_join_experiment( contract,
+                                      "ProductOrServiceCode.ProdServHistoryCFTEcoalesce.txt",
+                                      path="",
+                                      directory="..\\data\\semi_clean\\",
+                                      by=c("fiscal_year","OCO_GF","ProductOrServiceCode"),
+                                      add_var=c("CFTE_Rate_1year"),
+                                      new_var_checked=FALSE)
+
+  # summary(contract$CFTE_Rate_1year)
+
+
+
   if("l_Ceil" %in% colnames(contract))
     contract$cl_Ceil<-arm::rescale(contract$l_Ceil)
 
