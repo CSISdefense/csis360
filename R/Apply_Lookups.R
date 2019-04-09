@@ -113,6 +113,7 @@ replace_nas_with_unlabeled<- function(data,
 #' @param input_var The var(s) that had been used to join
 #' @param output_var The var(s) that result from the join
 #' @param lookup_file The file used in the join
+#' @param missing_file=NULL Filename to output any unmatched variables for easy of processing
 #'
 #' @return None. Instead the function raises an error if there are NAs
 #'
@@ -131,6 +132,7 @@ na_check<-function(data
                    , input_var
                    , output_var
                    , lookup_file
+                   , missing_file=NULL
 ){
 
 
@@ -146,6 +148,8 @@ na_check<-function(data
   na_check.df<-na_check.df[!complete.cases(na_check.df),]
 
   if(nrow(na_check.df)>0){
+    if(!is.null(missing_file))
+      write.csv(file=missing_file,unique(na_check.df))
     print(unique(na_check.df))
     stop(paste(nrow(na_check.df)
                ,"rows of NAs generated in "
@@ -199,6 +203,7 @@ remove_bom<-function(data
 #' @param add_var=NULL, What new columns should be checked for NA values?
 #' @param new_var_checked=FALSE Should only checked new columns be kept?
 #' @param skip_check_var=NULL List of vars that should not be checked for NA values
+#' @param missing_file=NULL Filename to output any unmatched variables for easy of processing
 #'
 #' @return The data frame plus new columns from the lookup file. If new_var_checked is
 #' true and only new columns listed in add_var will be kept. Note to self, should
@@ -228,7 +233,8 @@ read_and_join<-function(
   overlap_var_replaced=TRUE,
   add_var=NULL,
   new_var_checked=TRUE,
-  skip_check_var=NULL){
+  skip_check_var=NULL,
+  missing_file=NULL){
 
 
   if(is.data.frame(lookup_file))
@@ -348,7 +354,8 @@ read_and_join<-function(
     na_check(data,
              input_var=by,
              output_var=add_var,
-             lookup_file = lookup_file)
+             lookup_file = lookup_file,
+             missing_file= missing_file)
   }
 
   data
@@ -369,6 +376,7 @@ read_and_join<-function(
 #' @param new_var_checked=FALSE Should only checked new columns be kept?
 #' @param skip_check_var=NULL List of vars that should not be checked for NA values
 #' @param zip_file=NULL
+#' @param missing_file=NULL Filename to output any unmatched variables for easy of processing
 #'
 #' @return The data frame plus new columns from the lookup file. If new_var_checked is
 #' true and only new columns listed in add_var will be kept. Note to self, should
@@ -400,7 +408,8 @@ read_and_join_experiment<-function(
   skip_check_var=NULL,
   zip_file=NULL,
   col_types=NULL,
-  case_sensitive=TRUE
+  case_sensitive=TRUE,
+  missing_file=NULL
 ){
 
 
@@ -574,7 +583,8 @@ read_and_join_experiment<-function(
     na_check(data,
              input_var=by,
              output_var=add_var,
-             lookup_file = lookup_file)
+             lookup_file = lookup_file,
+             missing_file = missing_file)
   }
 
   data
