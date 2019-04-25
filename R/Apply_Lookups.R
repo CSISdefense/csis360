@@ -513,6 +513,10 @@ read_and_join_experiment<-function(
   }
 
   lookup<-as.data.frame(lookup)
+  if(any(is.na(lookup[,by]))){
+    warning("NAs found in by variable. Filtering them out.")
+    lookup<-lookup[!is.na(lookup[,by]),]
+  }
   if(any(duplicated(lookup[,by]))){
     print(unique(lookup[duplicated(lookup[,by]),by]))
     stop(paste("Duplicate entries in lookup for by variables: ",by))
