@@ -1347,6 +1347,26 @@ transform_contract<-function(
 
 
 
+  colnames(def_serv)[colnames(def_serv)=="ContractingOfficeCode"]<-"Office"
+  colnames(def_serv)[colnames(def_serv)=="fiscal_year"]<-"StartFY"
+  colnames(def_serv)[colnames(def_serv)=="StartFY"]<-"fiscal_year"
+
+  def_serv$cl_CFTE<-arm::rescale(def_serv$l_CFTE)
+  def_serv$c_pPBSC<-arm::rescale(def_serv$pPBSC)
+  def_serv$c_pOffPSC<-arm::rescale(def_serv$pOffPSC)
+
+
+  def_serv$c_pMarket<-arm::rescale(def_serv$pMarket)
+  def_serv$l_OffCA<-log(def_serv$office_numberofactions_1year+1)
+  def_serv$cl_OffCA<-arm::rescale(def_serv$l_OffCA)
+  def_serv$l_OffVol<-log(def_serv$office_obligatedamount_7year+1)
+  def_serv$cl_OffVol<-arm::rescale(def_serv$l_OffVol)
+  def_serv$cl_pairCA<-arm::rescale(def_serv$l_CA)
+  def_serv$c_pairHist<-arm::rescale(def_serv$office_entity_paircount_7year)
+
+  summary(def_serv$l_OffVol)
+  summary(def_serv$cl_OffVol)
+
 
   #Removing l_s just to reduce size. They can be derived easily.
   contract<-contract[!colnames(contract) %in% colnames(contract)[grep("^l_",colnames(contract))]]
