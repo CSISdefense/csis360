@@ -15,8 +15,8 @@
 #' When passed a file that doesn't exist, check for the zip version
 #'
 #' @param filename The name of the data file
-#' @param path="" The location of the data file#'
-#' @param directory="Data\\" The directory within the path that holds the lookup
+#' @param path The location of the data file. Default ""
+#' @param directory The directory within the path that holds the lookup, default "Data\\
 #'
 #' @return The filename name, if the file exists. Otherwise the zip file that contains the file.
 #'
@@ -113,7 +113,7 @@ replace_nas_with_unlabeled<- function(data,
 #' @param input_var The var(s) that had been used to join
 #' @param output_var The var(s) that result from the join
 #' @param lookup_file The file used in the join
-#' @param missing_file=NULL Filename to output any unmatched variables for easy of processing
+#' @param missing_file Filename to output any unmatched variables for easy of processing
 #'
 #' @return None. Instead the function raises an error if there are NAs
 #'
@@ -197,13 +197,13 @@ remove_bom<-function(data
 #' @param path="https://github.com/CSISdefense/R-scripts-and-data/tree/master/",
 #' The location of the lookup file
 #' @param directory="Lookups\\" The directory within the path that holds the lookup
-#' @param by=NULL The columns used to join, if not provided, matching columns will be used
-#' @param replace_na_var=NULL Before the join, these columns will have NAs values replaced
-#' @param overlap_var_replaced=TRUE Should the function replace for common columns not used to join?
-#' @param add_var=NULL, What new columns should be checked for NA values?
-#' @param new_var_checked=FALSE Should only checked new columns be kept?
-#' @param skip_check_var=NULL List of vars that should not be checked for NA values
-#' @param missing_file=NULL Filename to output any unmatched variables for easy of processing
+#' @param by The columns used to join, if not provided, matching columns will be used
+#' @param replace_na_var Before the join, these columns will have NAs values replaced
+#' @param overlap_var_replaced Should the function replace for common columns not used to join?
+#' @param add_var, What new columns should be checked for NA values?
+#' @param new_var_checked Should only checked new columns be kept?
+#' @param skip_check_var List of vars that should not be checked for NA values
+#' @param missing_file Filename to output any unmatched variables for easy of processing
 #'
 #' @return The data frame plus new columns from the lookup file. If new_var_checked is
 #' true and only new columns listed in add_var will be kept. Note to self, should
@@ -369,14 +369,14 @@ read_and_join<-function(
 #' @param lookup_file The name of the lookup file
 #' @param path The location of the lookup file
 #' @param directory The directory within the path that holds the lookup
-#' @param by=NULL The columns used to join, if not provided, matching columns will be used
-#' @param replace_na_var=NULL Before the join, these columns will have NAs values replaced
-#' @param overlap_var_replaced=TRUE Should the function replace for common columns not used to join?
-#' @param add_var=NULL, What new columns should be checked for NA values?
-#' @param new_var_checked=FALSE Should only checked new columns be kept?
-#' @param skip_check_var=NULL List of vars that should not be checked for NA values
-#' @param zip_file=NULL
-#' @param missing_file=NULL Filename to output any unmatched variables for easy of processing
+#' @param by The columns used to join, if not provided, matching columns will be used
+#' @param replace_na_var Before the join, these columns will have NAs values replaced
+#' @param overlap_var_replaced Should the function replace for common columns not used to join?
+#' @param add_var What new columns should be checked for NA values?
+#' @param new_var_checked Should only checked new columns be kept?
+#' @param skip_check_var List of vars that should not be checked for NA values
+#' @param zip_file The source zip file.
+#' @param missing_file Filename to output any unmatched variables for easy of processing
 #'
 #' @return The data frame plus new columns from the lookup file. If new_var_checked is
 #' true and only new columns listed in add_var will be kept. Note to self, should

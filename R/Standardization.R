@@ -1247,7 +1247,7 @@ transform_contract<-function(
 
 
 
-  contract<-read_and_join_experiment_experiment( contract,
+  contract<-read_and_join_experiment( contract,
                                                  "Contract.sp_ContractEntityID.txt",
                                                  path="",
                                                  directory="..\\data\\semi_clean\\",

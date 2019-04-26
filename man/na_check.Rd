@@ -4,7 +4,7 @@
 \alias{na_check}
 \title{An internal function to check for NAs in columns after a join}
 \usage{
-na_check(data, input_var, output_var, lookup_file)
+na_check(data, input_var, output_var, lookup_file, missing_file = NULL)
 }
 \arguments{
 \item{data}{A data frame}
@@ -14,6 +14,8 @@ na_check(data, input_var, output_var, lookup_file)
 \item{output_var}{The var(s) that result from the join}
 
 \item{lookup_file}{The file used in the join}
+
+\item{missing_file}{Filename to output any unmatched variables for easy of processing}
 }
 \value{
 None. Instead the function raises an error if there are NAs

@@ -44,7 +44,8 @@ LatticePlotWrapper_csis360(VAR.color.legend.label, VAR.main.label,
 
 \item{legend}{If TRUE, includes a legend, default is false.}
 
-\item{geom.text.size}{Size multipllier for text on the graph.}
+\item{geom.text.size}{Size multipllier for text on the graph.
+.}
 
 \item{ncol}{Number of columns for a facet_wrap, doesn't apply if there's a secondary facet}
 

@@ -26,6 +26,6 @@ from lookup table that preassign labels, order, and color
 to the expected values of a column.
 }
 \examples{
-plot<-get_preasssigned_scales(plot,labels_and_colors,"pricing.mechanism.sum")
+plot<-add_preassigned_scales(plot,labels_and_colors,"pricing.mechanism.sum")
 
 }

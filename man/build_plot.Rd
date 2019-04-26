@@ -6,8 +6,8 @@
 \usage{
 build_plot(data, chart_geom = "Line Chart", share = FALSE,
   x_var = NULL, y_var, color_var = "None", facet_var = "None",
-  legend = TRUE, caption = TRUE, labels_and_colors = NULL,
-  column_key = NULL, format = FALSE)
+  second_var = NULL, legend = TRUE, caption = TRUE,
+  labels_and_colors = NULL, column_key = NULL, format = FALSE)
 }
 \arguments{
 \item{data}{A tibble of formatted data for the ggplot}
@@ -22,6 +22,10 @@ build_plot(data, chart_geom = "Line Chart", share = FALSE,
 
 \item{color_var}{The name of the coloration variable, as string}
 
+\item{facet_var}{The name of facet variable, as string}
+
+\item{second_var}{The name of the secondary facet variable, as string}
+
 \item{legend}{If TRUE, includes a legend}
 
 \item{caption}{If TRUE, includes a source caption}
@@ -29,8 +33,6 @@ build_plot(data, chart_geom = "Line Chart", share = FALSE,
 \item{labels_and_colors}{A csis360 lookup data.frame with factor information}
 
 \item{column_key}{A csis360 lookup data.frame with column information}
-
-\item{facet_var="None"}{The name of facet variable, as string}
 }
 \value{
 A ggplot object including user-specified geom layer

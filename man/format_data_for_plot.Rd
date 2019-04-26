@@ -6,7 +6,8 @@
 \usage{
 format_data_for_plot(data, fy_var, y_var, share = FALSE, start_fy = NA,
   end_fy = NA, color_var = "None", facet_var = "None",
-  labels_and_colors = NULL, group = TRUE, drop_missing_labels = TRUE)
+  second_var = NULL, labels_and_colors = NULL, group = TRUE,
+  drop_missing_labels = TRUE)
 }
 \arguments{
 \item{data}{A data frame to format for the plot, as a tibble}
@@ -24,6 +25,8 @@ format_data_for_plot(data, fy_var, y_var, share = FALSE, start_fy = NA,
 \item{color_var}{Coloration variable, as string}
 
 \item{facet_var}{Facet variable, as string}
+
+\item{second_var}{Facet variable, as string}
 
 \item{labels_and_colors}{A csis360 lookup data.frame with factor information}
 

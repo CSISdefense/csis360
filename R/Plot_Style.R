@@ -103,8 +103,8 @@ get_plot_theme<-function(erase_legend_title=TRUE){
 #' @param x_var The name of fiscal year variable, as string
 #' @param y_var The name of variable to plot on y-axis
 #' @param color_var The name of the coloration variable, as string
-#' @param facet_var="None" The name of facet variable, as string
-#' @param second_var=NULL The name of the secondary facet variable, as string
+#' @param facet_var The name of facet variable, as string
+#' @param second_var The name of the secondary facet variable, as string
 #' @param legend If TRUE, includes a legend
 #' @param caption If TRUE, includes a source caption
 #' @param labels_and_colors A csis360 lookup data.frame with factor information

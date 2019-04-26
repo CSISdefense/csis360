@@ -9,7 +9,7 @@ read_and_join_experiment(data, lookup_file,
   directory = "Lookups\\\\", by = NULL, replace_na_var = NULL,
   overlap_var_replaced = TRUE, add_var = NULL,
   new_var_checked = TRUE, skip_check_var = NULL, zip_file = NULL,
-  col_types = NULL)
+  col_types = NULL, case_sensitive = TRUE, missing_file = NULL)
 }
 \arguments{
 \item{data}{The data frame to be joined}
@@ -20,19 +20,21 @@ read_and_join_experiment(data, lookup_file,
 
 \item{directory}{The directory within the path that holds the lookup}
 
-\item{by=NULL}{The columns used to join, if not provided, matching columns will be used}
+\item{by}{The columns used to join, if not provided, matching columns will be used}
 
-\item{replace_na_var=NULL}{Before the join, these columns will have NAs values replaced}
+\item{replace_na_var}{Before the join, these columns will have NAs values replaced}
 
-\item{overlap_var_replaced=TRUE}{Should the function replace for common columns not used to join?}
+\item{overlap_var_replaced}{Should the function replace for common columns not used to join?}
 
-\item{add_var=NULL, }{What new columns should be checked for NA values?}
+\item{add_var}{What new columns should be checked for NA values?}
 
-\item{new_var_checked=FALSE}{Should only checked new columns be kept?}
+\item{new_var_checked}{Should only checked new columns be kept?}
 
-\item{skip_check_var=NULL}{List of vars that should not be checked for NA values}
+\item{skip_check_var}{List of vars that should not be checked for NA values}
 
-\item{zip_file=NULL}{}
+\item{zip_file}{The source zip file.}
+
+\item{missing_file}{Filename to output any unmatched variables for easy of processing}
 }
 \value{
 The data frame plus new columns from the lookup file. If new_var_checked is

@@ -8,28 +8,30 @@ read_and_join(data, lookup_file,
   path = "https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
   directory = "Lookups/", by = NULL, replace_na_var = NULL,
   overlap_var_replaced = TRUE, add_var = NULL,
-  new_var_checked = TRUE, skip_check_var = NULL)
+  new_var_checked = TRUE, skip_check_var = NULL, missing_file = NULL)
 }
 \arguments{
 \item{data}{The data frame to be joined}
 
 \item{lookup_file}{The name of the lookup file}
 
+\item{by}{The columns used to join, if not provided, matching columns will be used}
+
+\item{replace_na_var}{Before the join, these columns will have NAs values replaced}
+
+\item{overlap_var_replaced}{Should the function replace for common columns not used to join?}
+
+\item{add_var, }{What new columns should be checked for NA values?}
+
+\item{new_var_checked}{Should only checked new columns be kept?}
+
+\item{skip_check_var}{List of vars that should not be checked for NA values}
+
+\item{missing_file}{Filename to output any unmatched variables for easy of processing}
+
 \item{path="https://github.com/CSISdefense/R-scripts-and-data/tree/master/", }{The location of the lookup file}
 
 \item{directory="Lookups\\"}{The directory within the path that holds the lookup}
-
-\item{by=NULL}{The columns used to join, if not provided, matching columns will be used}
-
-\item{replace_na_var=NULL}{Before the join, these columns will have NAs values replaced}
-
-\item{overlap_var_replaced=TRUE}{Should the function replace for common columns not used to join?}
-
-\item{add_var=NULL, }{What new columns should be checked for NA values?}
-
-\item{new_var_checked=FALSE}{Should only checked new columns be kept?}
-
-\item{skip_check_var=NULL}{List of vars that should not be checked for NA values}
 }
 \value{
 The data frame plus new columns from the lookup file. If new_var_checked is

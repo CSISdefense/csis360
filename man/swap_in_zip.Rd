@@ -9,9 +9,9 @@ swap_in_zip(filename, path, directory = "")
 \arguments{
 \item{filename}{The name of the data file}
 
-\item{path=""}{The location of the data file#'}
+\item{path}{The location of the data file. Default ""}
 
-\item{directory="Data\\"}{The directory within the path that holds the lookup}
+\item{directory}{The directory within the path that holds the lookup, default "Data\\}
 }
 \value{
 The filename name, if the file exists. Otherwise the zip file that contains the file.
