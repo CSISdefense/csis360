@@ -1247,7 +1247,7 @@ transform_contract<-function(
 
 
 
-  contract<-read_and_join_experiment( contract,
+  contract<-read_and_join_experiment_experiment( contract,
                                                  "Contract.sp_ContractEntityID.txt",
                                                  path="",
                                                  directory="..\\data\\semi_clean\\",
@@ -1309,7 +1309,7 @@ transform_contract<-function(
   contract$OCO_GF<-contract$Crisis
   levels(contract$OCO_GF)<-
     list("GF"=c("Other","ARRA","Dis"),
-         "OCOC"="OCO")
+         "OCO"="OCO")
   # summary(contract$OCO_GF)
 
 
