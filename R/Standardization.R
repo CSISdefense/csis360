@@ -1244,33 +1244,33 @@ transform_contract<-function(
 
 
     if("EntityID" %in% colnames(contract)){
-    contract<-read_and_join_experiment( contract,
-                                        "Office.sp_EntityIDofficeHistoryLagged.txt",
-                                        path="",
-                                        directory="..\\data\\semi_clean\\",
-                                        by=c("EntityID","ContractingOfficeCode","fiscal_year"),
-                                        add_var=c("office_entity_paircount_7year","office_entity_numberofactions_1year",
-                                                  "office_entity_obligatedamount_7year"),
-                                        new_var_checked=FALSE)
+      contract<-read_and_join_experiment( contract,
+                                          "Office.sp_EntityIDofficeHistoryLagged.txt",
+                                          path="",
+                                          directory="..\\data\\semi_clean\\",
+                                          by=c("EntityID","ContractingOfficeCode","fiscal_year"),
+                                          add_var=c("office_entity_paircount_7year","office_entity_numberofactions_1year",
+                                                    "office_entity_obligatedamount_7year"),
+                                          new_var_checked=FALSE)
 
-    summary(contract$EntityID)
-    summary(contract$office_entity_numberofactions_1year)
-    summary(contract$office_entity_paircount_7year)
-    summary(contract$office_entity_obligatedamount_7year)
+      summary(contract$EntityID)
+      summary(contract$office_entity_numberofactions_1year)
+      summary(contract$office_entity_paircount_7year)
+      summary(contract$office_entity_obligatedamount_7year)
 
-    contract$office_entity_numberofactions_1year[is.na(contract$office_entity_numberofactions_1year)&
-                                                   !is.na(contract$EntityID)&!is.na(contract$ContractingOfficeCode)]<-0
-    contract$office_entity_paircount_7year[is.na(contract$office_entity_paircount_7year)&
-                                             !is.na(contract$EntityID)&!is.na(contract$ContractingOfficeCode)]<-0
+      contract$office_entity_numberofactions_1year[is.na(contract$office_entity_numberofactions_1year)&
+                                                     !is.na(contract$EntityID)&!is.na(contract$ContractingOfficeCode)]<-0
+      contract$office_entity_paircount_7year[is.na(contract$office_entity_paircount_7year)&
+                                               !is.na(contract$EntityID)&!is.na(contract$ContractingOfficeCode)]<-0
 
-    contract$office_entity_obligatedamount_7year[(is.na(contract$office_entity_obligatedamount_7year)|
-                                                    contract$office_entity_obligatedamount_7year<0)&
-                                                   !is.na(contract$EntityID)&!is.na(contract$ContractingOfficeCode)]<-0
-    contract$pMarket<-contract$office_entity_obligatedamount_7year/contract$office_obligatedamount_7year
-    contract$pMarket[contract$office_obligatedamount_7year==0 &
-                       !is.na(contract$EntityID)&!is.na(contract$ContractingOfficeCode)]<-0
-    contract$pMarket[contract$pMarket>1]<-1
-    summary(contract$pMarket)
+      contract$office_entity_obligatedamount_7year[(is.na(contract$office_entity_obligatedamount_7year)|
+                                                      contract$office_entity_obligatedamount_7year<0)&
+                                                     !is.na(contract$EntityID)&!is.na(contract$ContractingOfficeCode)]<-0
+      contract$pMarket<-contract$office_entity_obligatedamount_7year/contract$office_obligatedamount_7year
+      contract$pMarket[contract$office_obligatedamount_7year==0 &
+                         !is.na(contract$EntityID)&!is.na(contract$ContractingOfficeCode)]<-0
+      contract$pMarket[contract$pMarket>1]<-1
+      summary(contract$pMarket)
 
     }
     colnames(contract)[colnames(contract)=="ContractingOfficeCode"]<-"Office"

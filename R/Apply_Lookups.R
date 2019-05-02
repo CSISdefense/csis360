@@ -242,6 +242,11 @@ read_and_join<-function(
 
   if(is.null(nrow(data))) stop("Data parameter passed to read_and_join has no rows.")
 
+  if(any(!by %in% colnames(data))){
+    by<-by[!by %in% colnames(data)]
+    stop(paste(paste(by,collapse=" & "),"not present in data"))
+  }
+
   #Replace NAs in input column if requested
   if(!is.null(replace_na_var)){
     data<-replace_nas_with_unlabeled(data,
@@ -271,7 +276,7 @@ read_and_join<-function(
   lookup<-remove_bom(lookup)
 
 
-  #Raise an erriro if newly added variables are  absent from the lookup
+  #Raise an error if newly added variables are  absent from the lookup
   if(any(!add_var %in% colnames(lookup))){
     print(colnames(lookup))
     add_var<-add_var[!add_var %in% colnames(lookup)]
@@ -283,14 +288,12 @@ read_and_join<-function(
     by<-by[!by %in% colnames(lookup)]
     stop(paste(paste(by,collapse=" & "), "not present in lookup"))
   }
-  if(any(!by %in% colnames(data))){
-    by<-by[!by %in% colnames(data)]
-    stop(paste(paste(by,collapse=" & "),"not present in data"))
-  }
+
   if(any(duplicated(lookup[,by]))){
     print(unique(lookup[duplicated(lookup[,by]),by]))
     stop(paste("Duplicate entries in lookup for by variables: ",by))
   }
+
   #Handle any fields in both data and lookup held in common not used in the joining
   if(!is.null(by)){
     droplist<-names(lookup)[names(lookup) %in% names(data)]
@@ -513,11 +516,12 @@ read_and_join_experiment<-function(
   }
 
   lookup<-as.data.frame(lookup)
-  if(any(is.na(lookup[,by]))){
+  if(any(!complete.cases(lookup[,by]))){
     warning("NAs found in by variable. Filtering them out.")
-    lookup<-lookup[!is.na(lookup[,by]),]
+    lookup<-lookup[complete.cases(lookup[,by]),]
   }
-  if(any(duplicated(lookup[,by]))){
+
+  if(anyDuplicated(lookup[,by])){
     print(unique(lookup[duplicated(lookup[,by]),by]))
     stop(paste("Duplicate entries in lookup for by variables: ",by))
   }
