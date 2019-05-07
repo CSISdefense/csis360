@@ -402,7 +402,7 @@ read_and_join_experiment<-function(
   data,
   lookup_file,
   path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
-  directory="Lookups\\",
+  directory="Lookups/",
   by=NULL,
   replace_na_var=NULL,
   overlap_var_replaced=TRUE,

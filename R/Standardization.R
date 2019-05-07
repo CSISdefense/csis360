@@ -1182,7 +1182,7 @@ transform_contract<-function(
 
     colnames(contract)[colnames(contract)=="StartFY"]<-"fiscal_year"
     contract<-read_and_join_experiment( contract,
-                                        "Office.sp_OfficeHistoryCapacityLagged.txt",
+                                        "Office.sp_OfficeHistoryCapacityLaggedConst.txt",
                                         path="",
                                         directory="..\\data\\semi_clean\\",
                                         by=c("ContractingOfficeCode","fiscal_year"),
@@ -1223,12 +1223,13 @@ transform_contract<-function(
     if("ProductOrServiceCode" %in% colnames(contract)){
 
       contract<-read_and_join_experiment( contract,
-                                          "Office.sp_ProdServOfficeHistoryLagged.txt",
+                                          "Office.sp_ProdServOfficeHistoryLaggedConst.txt",
                                           path="",
                                           directory="..\\data\\semi_clean\\",
                                           by=c("ContractingOfficeCode","fiscal_year","ProductOrServiceCode"),
                                           add_var=c("office_psc_obligatedamount_7year"),
-                                          new_var_checked=FALSE)
+                                          new_var_checked=FALSE,
+                                          col_types="ccddddc")
 
 
 
@@ -1255,7 +1256,7 @@ transform_contract<-function(
 
     if("EntityID" %in% colnames(contract)){
       contract<-read_and_join_experiment( contract,
-                                          "Office.sp_EntityIDofficeHistoryLagged.txt",
+                                          "Office.sp_EntityIDofficeHistoryLaggedConst.txt",
                                           path="",
                                           directory="..\\data\\semi_clean\\",
                                           by=c("EntityID","ContractingOfficeCode","fiscal_year"),
@@ -1323,7 +1324,7 @@ transform_contract<-function(
 
   colnames(contract)[colnames(contract)=="StartFY"]<-"fiscal_year"
   contract<-read_and_join( contract,
-                           "ProductOrServiceCode.ProdServHistoryCFTEcoalesce.txt",
+                           "ProductOrServiceCode.ProdServHistoryCFTEcoalesceLaggedConst.txt",
                            path="",
                            directory="..\\data\\semi_clean\\",
                            by=c("fiscal_year","OCO_GF","ProductOrServiceCode"),
