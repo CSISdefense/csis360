@@ -533,12 +533,12 @@ transform_contract<-function(
 
   if ("UnmodifiedContractBaseAndAllOptionsValue" %in% colnames(contract) ){
     #Deflate the dolla figures
-    def_serv<-deflate(def_serv,
+    contract<-deflate(contract,
                       money_var = "Action.Obligation",
                       # deflator_var="OMB.2019",
                       fy_var="StartFY",
     )
-    def_serv<-deflate(def_serv,
+    contract<-deflate(contract,
                       money_var = "UnmodifiedContractBaseAndAllOptionsValue",
                       # deflator_var="OMB.2019",
                       fy_var="StartFY",
@@ -548,8 +548,8 @@ transform_contract<-function(
 
     lowroundedcutoffs<-c(15000,100000,1000000,30000000)
     highroundedcutoffs<-c(15000,100000,1000000,10000000,75000000)
-    contract$qLowCeiling <- Hmisc::cut2(contract$UnmodifiedContractBaseAndAllOptionsValue,cuts=lowroundedcutoffs)
-    contract$qHighCeiling <- Hmisc::cut2(contract$UnmodifiedContractBaseAndAllOptionsValue,cuts=highroundedcutoffs)
+    contract$qLowCeiling <- Hmisc::cut2(contract$UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18,cuts=lowroundedcutoffs)
+    contract$qHighCeiling <- Hmisc::cut2(contract$UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18,cuts=highroundedcutoffs)
     rm(lowroundedcutoffs,highroundedcutoffs)
 
 
@@ -600,7 +600,7 @@ transform_contract<-function(
     }
 
     contract<-contract %>% group_by(qHighCeiling) %>%
-      mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue))
+      mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18))
 
     if (identical(levels(contract$qHighCeiling),c("[0,15k)",
                                                   "[15k,100k)",
