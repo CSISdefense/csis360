@@ -532,8 +532,19 @@ transform_contract<-function(
 
 
   if ("UnmodifiedContractBaseAndAllOptionsValue" %in% colnames(contract) ){
+    #Deflate the dolla figures
+    def_serv<-deflate(def_serv,
+                      money_var = "Action.Obligation",
+                      # deflator_var="OMB.2019",
+                      fy_var="StartFY",
+    )
+    def_serv<-deflate(def_serv,
+                      money_var = "UnmodifiedContractBaseAndAllOptionsValue",
+                      # deflator_var="OMB.2019",
+                      fy_var="StartFY",
+    )
     #l_Ceil
-    contract$l_Ceil<-na_non_positive_log(contract$UnmodifiedContractBaseAndAllOptionsValue)
+    contract$l_Ceil<-na_non_positive_log(contract$UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18)
 
     lowroundedcutoffs<-c(15000,100000,1000000,30000000)
     highroundedcutoffs<-c(15000,100000,1000000,10000000,75000000)
@@ -1332,6 +1343,8 @@ transform_contract<-function(
                            new_var_checked=FALSE)
   colnames(contract)[colnames(contract)=="fiscal_year"]<-"StartFY"
   # summary(contract$CFTE_Rate_1year)
+
+
 
 
 

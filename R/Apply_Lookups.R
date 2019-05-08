@@ -628,9 +628,9 @@ read_and_join_experiment<-function(
 deflate <- function(
   data,
   money_var = "Amount",
-  fy_var = "Fiscal.Year",
+  fy_var = "Fiscal_Year",
   deflator_file = "Lookup_Deflators.csv",
-  deflator_var="Deflator.2017",
+  deflator_var="OMB20_GDP18",
   path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
   directory="economic/",
   deflator_dropped=TRUE
@@ -659,7 +659,7 @@ deflate <- function(
   deflators_retrieved <- readr::read_csv(paste0(path, directory,deflator_file))
 
   #Rename the Fiscal.Year variable to be match the name used in data
-  colnames(deflators_retrieved)[colnames(deflators_retrieved)=="Fiscal.Year"]<-fy_var
+  colnames(deflators_retrieved)[colnames(deflators_retrieved)=="Fiscal_Year"]<-fy_var
 
   #Drop unneded deflator columns and then join the deflators to the data
   deflators_retrieved<-subset(deflators_retrieved,select=c(fy_var,deflator_var))
