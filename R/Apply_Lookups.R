@@ -296,6 +296,13 @@ read_and_join<-function(
 
   #Handle any fields in both data and lookup held in common not used in the joining
   if(!is.null(by)){
+    #If add_var is specified, dropped new fields not in add_var
+    if(!is.null(add_var)){
+      droplist<-names(lookup)[!names(lookup) %in% by
+                              &!names(lookup) %in% add_var]
+      data<-data[,!names(data) %in% droplist]
+    }
+
     droplist<-names(lookup)[names(lookup) %in% names(data)]
     droplist<-droplist[!droplist %in% by]
     if(length(droplist)>0){
@@ -338,27 +345,25 @@ read_and_join<-function(
     )
   }
 
-  #If add_var is specified, dropped new fields not in add_var
-  if(!is.null(add_var)){
-    droplist<-names(lookup)[!names(lookup) %in% by
-                            &!names(lookup) %in% add_var]
-    data<-data[,!names(data) %in% droplist]
-  }
-  #If add_var is not specified, set it equal to all new vars
-  else{
-    add_var<-colnames(lookup)[!colnames(lookup) %in% by]
-  }
+
+
 
   if(!is.null(by)&new_var_checked==TRUE){
+    #If add_var is not specified, set it equal to all new vars
+    if(is.null(add_var))
+       add_var<-colnames(lookup)[!colnames(lookup) %in% by]
+
     if(!is.null(skip_check_var)){
       add_var<-add_var[!add_var %in% skip_check_var]
     }
-
-    na_check(data,
-             input_var=by,
-             output_var=add_var,
-             lookup_file = lookup_file,
-             missing_file= missing_file)
+    #First verify  there are any variables to check
+    if(length(add_var)>0){
+      na_check(data,
+               input_var=by,
+               output_var=add_var,
+               lookup_file = lookup_file,
+               missing_file= missing_file)
+    }
   }
 
   data
@@ -490,6 +495,13 @@ read_and_join_experiment<-function(
 
   #Handle any fields in both data and lookup held in common not used in the joining
   if(!is.null(by)){
+    #If add_var is specified, dropped new fields not in add_var
+    if(!is.null(add_var)){
+      droplist<-names(lookup)[!names(lookup) %in% by
+                              &!names(lookup) %in% add_var]
+      lookup<-lookup[,!names(lookup) %in% droplist]
+    }
+
     droplist<-names(lookup)[names(lookup) %in% names(data)]
     droplist<-droplist[!droplist %in% by]
     if(length(droplist)>0){
@@ -572,28 +584,24 @@ read_and_join_experiment<-function(
     }
   }
 
-  #If add_var is specified, dropped new fields not in add_var
-  if(!is.null(add_var)){
-    droplist<-names(lookup)[!names(lookup) %in% by
-                            &!names(lookup) %in% add_var]
-    data<-data[,!names(data) %in% droplist]
-  }
-  #If add_var is not specified, set it equal to all new vars
-  else{
-    add_var<-colnames(lookup)[!colnames(lookup) %in% by]
-  }
 
   if(!is.null(by)&new_var_checked==TRUE){
+    #If add_var is not specified, set it equal to all new vars
+    if(is.null(add_var))
+      add_var<-colnames(lookup)[!colnames(lookup) %in% by]
+
     if(!is.null(skip_check_var)){
       add_var<-add_var[!add_var %in% skip_check_var]
     }
-
-    na_check(data,
-             input_var=by,
-             output_var=add_var,
-             lookup_file = lookup_file,
-             missing_file = missing_file)
-  }
+    #First verify  there are any variables to check
+    if(length(add_var)>0){
+      na_check(data,
+               input_var=by,
+               output_var=add_var,
+               lookup_file = lookup_file,
+               missing_file= missing_file)
+    }
+    }
 
   data
 }

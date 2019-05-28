@@ -536,31 +536,29 @@ transform_contract<-function(
     contract<-deflate(contract,
                       money_var = "Action.Obligation",
                       # deflator_var="OMB.2019",
-                      fy_var="StartFY",
+                      fy_var="StartFY"
     )
     contract<-deflate(contract,
                       money_var = "UnmodifiedContractBaseAndAllOptionsValue",
                       # deflator_var="OMB.2019",
-                      fy_var="StartFY",
+                      fy_var="StartFY"
     )
     #l_Ceil
     contract$l_Ceil<-na_non_positive_log(contract$UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18)
 
-    lowroundedcutoffs<-c(15000,100000,1000000,30000000)
+    # lowroundedcutoffs<-c(15000,100000,1000000,30000000)
     highroundedcutoffs<-c(15000,100000,1000000,10000000,75000000)
-    contract$qLowCeiling <- Hmisc::cut2(contract$UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18,cuts=lowroundedcutoffs)
+    # contract$qLowCeiling <- Hmisc::cut2(contract$UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18,cuts=lowroundedcutoffs)
     contract$qHighCeiling <- Hmisc::cut2(contract$UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18,cuts=highroundedcutoffs)
-    rm(lowroundedcutoffs,highroundedcutoffs)
+    rm(highroundedcutoffs)#lowroundedcutoffs,
 
 
 
-
-    if (all(levels(contract$qHighCeiling)==c("[0.00e+00,1.50e+04)",
-                                             "[1.50e+04,1.00e+05)",
-                                             "[1.00e+05,1.00e+06)",
-                                             "[1.00e+06,1.00e+07)",
-                                             "[1.00e+07,7.50e+07)",
-                                             "[7.50e+07,3.36e+12]"))){
+    if (all(levels(contract$qHighCeiling)[1:5]==c("[0.00e+00,1.50e+04)",
+                                              "[1.50e+04,1.00e+05)",
+                                              "[1.00e+05,1.00e+06)",
+                                              "[1.00e+06,1.00e+07)",
+                                              "[1.00e+07,7.50e+07)"))){
       contract$qHighCeiling<-factor(contract$qHighCeiling,
 
                                     levels=c("[0.00e+00,1.50e+04)",
@@ -568,7 +566,7 @@ transform_contract<-function(
                                              "[1.00e+05,1.00e+06)",
                                              "[1.00e+06,1.00e+07)",
                                              "[1.00e+07,7.50e+07)",
-                                             "[7.50e+07,3.36e+12]"),
+                                             levels(contract$qHighCeiling)[6]),
                                     labels=c("[0,15k)",
                                              "[15k,100k)",
                                              "[100k,1m)",
@@ -578,26 +576,25 @@ transform_contract<-function(
                                     ordered=TRUE
       )
     }
-    if (all(levels(contract$qLowCeiling)==c("[0.00e+00,1.50e+04)",
-                                            "[1.50e+04,1.00e+05)",
-                                            "[1.00e+05,1.00e+06)",
-                                            "[1.00e+06,3.00e+07)",
-                                            "[3.00e+07,3.36e+12]"))){
-      contract$qLowCeiling<-factor(contract$qLowCeiling,
-
-                                   levels=c("[0.00e+00,1.50e+04)",
-                                            "[1.50e+04,1.00e+05)",
-                                            "[1.00e+05,1.00e+06)",
-                                            "[1.00e+06,3.00e+07)",
-                                            "[3.00e+07,3.36e+12]"),
-                                   labels=c("[0,15k)",
-                                            "[15k,100k)",
-                                            "[100k,1m)",
-                                            "[1m,30m)",
-                                            "[30m+]"),
-                                   ordered=TRUE
-      )
-    }
+    # if (all(levels(contract$qLowCeiling)[1:4]==c("[0.00e+00,1.50e+04)",
+    #                                         "[1.50e+04,1.00e+05)",
+    #                                         "[1.00e+05,1.00e+06)",
+    #                                         "[1.00e+06,3.00e+07)"))){
+    #   contract$qLowCeiling<-factor(contract$qLowCeiling,
+    #
+    #                                levels=c("[0.00e+00,1.50e+04)",
+    #                                         "[1.50e+04,1.00e+05)",
+    #                                         "[1.00e+05,1.00e+06)",
+    #                                         "[1.00e+06,3.00e+07)",
+    #                                         levels(contract$qLowCeiling)[5]),
+    #                                labels=c("[0,15k)",
+    #                                         "[15k,100k)",
+    #                                         "[100k,1m)",
+    #                                         "[1m,30m)",
+    #                                         "[30m+]"),
+    #                                ordered=TRUE
+    #   )
+    # }
 
     contract<-contract %>% group_by(qHighCeiling) %>%
       mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18))
@@ -705,7 +702,7 @@ transform_contract<-function(
                                           "[   61,  214)",
                                           "[  214,  366)",
                                           "[  366,  732)",
-                                          "[  732,33192]"),
+                                          levels(contract$qDuration)[5]),
                                  labels=c("[0 months,~2 months)",
                                           "[~2 months,~7 months)",
                                           "[~7 months-~1 year]",
