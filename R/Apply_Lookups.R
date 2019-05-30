@@ -441,7 +441,7 @@ read_and_join_experiment<-function(
     stop("lookup_file parameter is a data frame, it should be a filename, e.g. 'lookup_customer.csv'.")
 
 
-  if(!is.null(zip_file)){#No zip file
+  if(!is.null(zip_file)){
     #Case sensitivity fix for zip filename
     # dir_list<-list.files(paste(path,directory,sep=""))
     # zip_file<-case_match(zip_file,dir_list)
@@ -465,7 +465,7 @@ read_and_join_experiment<-function(
     input<-paste(path,directory,zip_file,sep="")#unz(description=paste(path,directory,zip_file,sep=""),filename=lookup_file)
 
   }
-  else{
+  else{#No zip file
     input<-swap_in_zip(lookup_file,path,directory)
   }
   lookup<-readr::read_delim(
