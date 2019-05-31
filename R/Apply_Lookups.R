@@ -351,7 +351,7 @@ read_and_join<-function(
   if(!is.null(by)&new_var_checked==TRUE){
     #If add_var is not specified, set it equal to all new vars
     if(is.null(add_var))
-       add_var<-colnames(lookup)[!colnames(lookup) %in% by]
+      add_var<-colnames(lookup)[!colnames(lookup) %in% by]
 
     if(!is.null(skip_check_var)){
       add_var<-add_var[!add_var %in% skip_check_var]
@@ -417,7 +417,8 @@ read_and_join_experiment<-function(
   zip_file=NULL,
   col_types=NULL,
   case_sensitive=TRUE,
-  missing_file=NULL
+  missing_file=NULL,
+  create_lookup_rdata=FALSE
 ){
 
 
@@ -440,8 +441,17 @@ read_and_join_experiment<-function(
   if(is.data.frame(lookup_file))
     stop("lookup_file parameter is a data frame, it should be a filename, e.g. 'lookup_customer.csv'.")
 
+  #If the  file specified is an RDA
+  if(tolower(substring(lookup_file,nchar(lookup_file)-3))==".rda"){
+    if (!file.exists(paste(path,directory,lookup_file,sep="")))
+      stop(paste(path,directory,rdata_file," does not exist",sep=""))
+    load(paste(path,directory,rdata_file,sep=""))
+  }
+  #If there exists an rda variant of the file passed.
+  else if (file.exists(paste(path,directory,substring(lookup_file,1,nchar(lookup_file)-3),"rda", sep="")))
+           load(paste(path,directory,substring(lookup_file,1,nchar(lookup_file)-3),"rda", sep=""))
 
-  if(!is.null(zip_file)){
+  else{ if(!is.null(zip_file)){
     #Case sensitivity fix for zip filename
     # dir_list<-list.files(paste(path,directory,sep=""))
     # zip_file<-case_match(zip_file,dir_list)
@@ -465,18 +475,23 @@ read_and_join_experiment<-function(
     input<-paste(path,directory,zip_file,sep="")#unz(description=paste(path,directory,zip_file,sep=""),filename=lookup_file)
 
   }
-  else{#No zip file
-    input<-swap_in_zip(lookup_file,path,directory)
-  }
-  lookup<-readr::read_delim(
-    input,
-    col_names=TRUE,
-    delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
-    na=c("NA","NULL"),
-    trim_ws=TRUE,
-    col_types=col_types
-  )
+    else{#No zip file
+      input<-swap_in_zip(lookup_file,path,directory)
+    }
+    lookup<-readr::read_delim(
+      input,
+      col_names=TRUE,
+      delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
+      na=c("NA","NULL"),
+      trim_ws=TRUE,
+      col_types=col_types
+    )
 
+    if (create_lookup_rdata==TRUE)
+      save(lookup,file=paste(path,directory,
+        substring(lookup_file,1,nchar(lookup_file)-3),"rda",sep="")
+      )
+  }
   #Remove byte order marks present in UTF encoded files
   data<-remove_bom(data)
   lookup<-remove_bom(lookup)
@@ -603,7 +618,7 @@ read_and_join_experiment<-function(
                lookup_file = lookup_file,
                missing_file= missing_file)
     }
-    }
+  }
 
   data
 }
