@@ -495,6 +495,10 @@ read_and_join_experiment<-function(
 
   #Handle any fields in both data and lookup held in common not used in the joining
   if(!is.null(by)){
+
+    droplist<-names(lookup)[names(lookup) %in% names(data)]
+    droplist<-droplist[!droplist %in% by]
+
     #If add_var is specified, dropped new fields not in add_var
     if(!is.null(add_var)){
       droplist<-names(lookup)[!names(lookup) %in% by
@@ -502,8 +506,6 @@ read_and_join_experiment<-function(
       lookup<-lookup[,!names(lookup) %in% droplist]
     }
 
-    droplist<-names(lookup)[names(lookup) %in% names(data)]
-    droplist<-droplist[!droplist %in% by]
     if(length(droplist)>0){
       if(overlap_var_replaced)
         data<-data[,!names(data) %in% droplist]

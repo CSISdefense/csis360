@@ -394,8 +394,8 @@ transform_contract<-function(
   contract
 ){
 
-  if("Action.Obligation" %in% colnames(contract))
-    contract$Action.Obligation <-  as.numeric(contract$Action.Obligation)
+  if("Action_Obligation" %in% colnames(contract))
+    contract$Action_Obligation <-  as.numeric(contract$Action_Obligation)
   if("Number.Of.Actions" %in% colnames(contract))
     contract$Number.Of.Actions %<>% as.numeric()
 
@@ -454,7 +454,7 @@ transform_contract<-function(
   #pChangeOrderUnmodifiedBaseAndAll
   if("pChangeOrderUnmodifiedBaseAndAll" %in% colnames(contract)){
     # contract$pChangeOrderObligated<-contract$ChangeOrderObligatedAmount/
-    #   contract$Action.Obligation
+    #   contract$Action_Obligation
     # contract$pChangeOrderObligated[is.na(contract$pChangeOrderObligated)&
     #     contract$SumOfisChangeOrder==0]<-0
     contract$pChangeOrderUnmodifiedBaseAndAll<-contract$ChangeOrderBaseAndAllOptionsValue/
@@ -534,7 +534,7 @@ transform_contract<-function(
   if ("UnmodifiedContractBaseAndAllOptionsValue" %in% colnames(contract) ){
     #Deflate the dolla figures
     contract<-deflate(contract,
-                      money_var = "Action.Obligation",
+                      money_var = "Action_Obligation",
                       # deflator_var="OMB.2019",
                       fy_var="StartFY"
     )
@@ -1359,8 +1359,8 @@ transform_contract<-function(
                                                      levels=c("Terminated","Unterminated"),
                                                      labels=c(1,0))))
 
-  if("Action.Obligation" %in% colnames(contract)){
-    contract$ObligationWT<-contract$Action.Obligation
+  if("Action_Obligation" %in% colnames(contract)){
+    contract$ObligationWT<-contract$Action_Obligation
     contract$ObligationWT[contract$ObligationWT<0]<-NA
   }
 
