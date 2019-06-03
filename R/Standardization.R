@@ -394,6 +394,7 @@ transform_contract<-function(
   contract
 ){
 
+  contract<-standardize_variable_names(contract)
   if("Action_Obligation" %in% colnames(contract))
     contract$Action_Obligation <-  as.numeric(contract$Action_Obligation)
   if("Number.Of.Actions" %in% colnames(contract))
@@ -553,29 +554,31 @@ transform_contract<-function(
     rm(highroundedcutoffs)#lowroundedcutoffs,
 
 
+    if (all(levels(contract$Ceil)[1:5]==c("[0.00e+00,1.50e+04)",
+                                     "[1.50e+04,1.00e+05)",
+                                     "[1.00e+05,1.00e+06)",
+                                     "[1.00e+06,1.00e+07)",
+                                     "[1.00e+07,7.50e+07)"))|
+        all(levels(contract$Ceil)[1:5]==c("[0.0e+00,1.5e+04)",
+                                     "[1.5e+04,1.0e+05)",
+                                     "[1.0e+05,1.0e+06)",
+                                     "[1.0e+06,1.0e+07)",
+                                     "[1.0e+07,7.5e+07)"))
+    ){
+      contract$Ceil<-factor(contract$Ceil,
 
-    if (all(levels(contract$qHighCeiling)[1:5]==c("[0.00e+00,1.50e+04)",
-                                              "[1.50e+04,1.00e+05)",
-                                              "[1.00e+05,1.00e+06)",
-                                              "[1.00e+06,1.00e+07)",
-                                              "[1.00e+07,7.50e+07)"))){
-      contract$qHighCeiling<-factor(contract$qHighCeiling,
-
-                                    levels=c("[0.00e+00,1.50e+04)",
-                                             "[1.50e+04,1.00e+05)",
-                                             "[1.00e+05,1.00e+06)",
-                                             "[1.00e+06,1.00e+07)",
-                                             "[1.00e+07,7.50e+07)",
-                                             levels(contract$qHighCeiling)[6]),
-                                    labels=c("[0,15k)",
-                                             "[15k,100k)",
-                                             "[100k,1m)",
-                                             "[1m,10m)",
-                                             "[10m,75m)",
-                                             "[75m+]"),
-                                    ordered=TRUE
+                       levels=levels(contract$Ceil),
+                       labels=c("[0,15k)",
+                                "[15k,100k)",
+                                "[100k,1m)",
+                                "[1m,10m)",
+                                "[10m,75m)",
+                                "[75m+]"),
+                       ordered=TRUE
       )
     }
+
+
     # if (all(levels(contract$qLowCeiling)[1:4]==c("[0.00e+00,1.50e+04)",
     #                                         "[1.50e+04,1.00e+05)",
     #                                         "[1.00e+05,1.00e+06)",
@@ -1198,8 +1201,9 @@ transform_contract<-function(
                                                   "office_numberofactions_1year",
                                                   "office_PBSCobligated_1year",
                                                   "office_obligatedamount_7year"),
-                                        new_var_checked=FALSE)
-
+                                        new_var_checked=FALSE,
+                                        create_lookup_rdata=TRUE
+)
 
 
     contract$office_numberofactions_1year[is.na(contract$office_numberofactions_1year)]<-0
@@ -1237,7 +1241,8 @@ transform_contract<-function(
                                           by=c("ContractingOfficeCode","fiscal_year","ProductOrServiceCode"),
                                           add_var=c("office_psc_obligatedamount_7year"),
                                           new_var_checked=FALSE,
-                                          col_types="ccddddc")
+                                          col_types="ccddddc",
+                                          create_lookup_rdata=TRUE)
 
 
 
@@ -1270,7 +1275,8 @@ transform_contract<-function(
                                           by=c("EntityID","ContractingOfficeCode","fiscal_year"),
                                           add_var=c("office_entity_paircount_7year","office_entity_numberofactions_1year",
                                                     "office_entity_obligatedamount_7year"),
-                                          new_var_checked=FALSE)
+                                          new_var_checked=FALSE,
+                                          create_lookup_rdata=TRUE)
 
       # summary(contract$EntityID)
       # summary(contract$office_entity_numberofactions_1year)
@@ -1315,7 +1321,8 @@ transform_contract<-function(
                                                 ,"AnyUnmodifiedUnexercisedOptionsWhy"
                                                 ,"UnmodifiedBaseandExercisedOptionsValue"
                                                 ,"ExercisedOptions"),
-                                      new_var_checked=FALSE)
+                                      new_var_checked=FALSE,
+                                      create_lookup_rdata=TRUE)
 
   # summary(contract$ExercisedOptions)
   # summary(contract$AnyUnmodifiedUnexercisedOptions)
