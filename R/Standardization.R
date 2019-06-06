@@ -394,8 +394,9 @@ transform_contract<-function(
   contract
 ){
 
-  if("Action.Obligation" %in% colnames(contract))
-    contract$Action.Obligation <-  as.numeric(contract$Action.Obligation)
+  contract<-standardize_variable_names(contract)
+  if("Action_Obligation" %in% colnames(contract))
+    contract$Action_Obligation <-  as.numeric(contract$Action_Obligation)
   if("Number.Of.Actions" %in% colnames(contract))
     contract$Number.Of.Actions %<>% as.numeric()
 
@@ -454,7 +455,7 @@ transform_contract<-function(
   #pChangeOrderUnmodifiedBaseAndAll
   if("pChangeOrderUnmodifiedBaseAndAll" %in% colnames(contract)){
     # contract$pChangeOrderObligated<-contract$ChangeOrderObligatedAmount/
-    #   contract$Action.Obligation
+    #   contract$Action_Obligation
     # contract$pChangeOrderObligated[is.na(contract$pChangeOrderObligated)&
     #     contract$SumOfisChangeOrder==0]<-0
     contract$pChangeOrderUnmodifiedBaseAndAll<-contract$ChangeOrderBaseAndAllOptionsValue/
@@ -481,8 +482,8 @@ transform_contract<-function(
 
   #b_Term
   if("Term" %in% colnames(contract)){
-    contract$b_Term<-ifelse(contract$Term=="Terminated",1,NA)
-    contract$b_Term[contract$Term=="Unterminated"]<-0
+    contract$b_Term<-ifelse(contract$Term %in% c("Terminated",1),1,NA)
+    contract$b_Term[contract$Term %in% c("Unterminated",0)]<-0
     #Create a jittered version of Term for display purposes
     #Unlike geom_jitter, this caps values at 0 and 1
     contract$j_Term<-jitter_binary(contract$b_Term)
@@ -532,64 +533,74 @@ transform_contract<-function(
 
 
   if ("UnmodifiedContractBaseAndAllOptionsValue" %in% colnames(contract) ){
+    #Deflate the dolla figures
+    contract<-deflate(contract,
+                      money_var = "Action_Obligation",
+                      # deflator_var="OMB.2019",
+                      fy_var="StartFY"
+    )
+    contract<-deflate(contract,
+                      money_var = "UnmodifiedContractBaseAndAllOptionsValue",
+                      # deflator_var="OMB.2019",
+                      fy_var="StartFY"
+    )
     #l_Ceil
-    contract$l_Ceil<-na_non_positive_log(contract$UnmodifiedContractBaseAndAllOptionsValue)
+    contract$l_Ceil<-na_non_positive_log(contract$UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18)
 
-    lowroundedcutoffs<-c(15000,100000,1000000,30000000)
+    # lowroundedcutoffs<-c(15000,100000,1000000,30000000)
     highroundedcutoffs<-c(15000,100000,1000000,10000000,75000000)
-    contract$qLowCeiling <- Hmisc::cut2(contract$UnmodifiedContractBaseAndAllOptionsValue,cuts=lowroundedcutoffs)
-    contract$qHighCeiling <- Hmisc::cut2(contract$UnmodifiedContractBaseAndAllOptionsValue,cuts=highroundedcutoffs)
-    rm(lowroundedcutoffs,highroundedcutoffs)
+    # contract$qLowCeiling <- Hmisc::cut2(contract$UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18,cuts=lowroundedcutoffs)
+    contract$qHighCeiling <- Hmisc::cut2(contract$UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18,cuts=highroundedcutoffs)
+    rm(highroundedcutoffs)#lowroundedcutoffs,
 
 
+    if (all(levels(contract$Ceil)[1:5]==c("[0.00e+00,1.50e+04)",
+                                          "[1.50e+04,1.00e+05)",
+                                          "[1.00e+05,1.00e+06)",
+                                          "[1.00e+06,1.00e+07)",
+                                          "[1.00e+07,7.50e+07)"))|
+        all(levels(contract$Ceil)[1:5]==c("[0.0e+00,1.5e+04)",
+                                          "[1.5e+04,1.0e+05)",
+                                          "[1.0e+05,1.0e+06)",
+                                          "[1.0e+06,1.0e+07)",
+                                          "[1.0e+07,7.5e+07)"))
+    ){
+      contract$Ceil<-factor(contract$Ceil,
 
-
-    if (all(levels(contract$qHighCeiling)==c("[0.00e+00,1.50e+04)",
-                                             "[1.50e+04,1.00e+05)",
-                                             "[1.00e+05,1.00e+06)",
-                                             "[1.00e+06,1.00e+07)",
-                                             "[1.00e+07,7.50e+07)",
-                                             "[7.50e+07,3.36e+12]"))){
-      contract$qHighCeiling<-factor(contract$qHighCeiling,
-
-                                    levels=c("[0.00e+00,1.50e+04)",
-                                             "[1.50e+04,1.00e+05)",
-                                             "[1.00e+05,1.00e+06)",
-                                             "[1.00e+06,1.00e+07)",
-                                             "[1.00e+07,7.50e+07)",
-                                             "[7.50e+07,3.36e+12]"),
-                                    labels=c("[0,15k)",
-                                             "[15k,100k)",
-                                             "[100k,1m)",
-                                             "[1m,10m)",
-                                             "[10m,75m)",
-                                             "[75m+]"),
-                                    ordered=TRUE
+                            levels=levels(contract$Ceil),
+                            labels=c("[0,15k)",
+                                     "[15k,100k)",
+                                     "[100k,1m)",
+                                     "[1m,10m)",
+                                     "[10m,75m)",
+                                     "[75m+]"),
+                            ordered=TRUE
       )
     }
-    if (all(levels(contract$qLowCeiling)==c("[0.00e+00,1.50e+04)",
-                                            "[1.50e+04,1.00e+05)",
-                                            "[1.00e+05,1.00e+06)",
-                                            "[1.00e+06,3.00e+07)",
-                                            "[3.00e+07,3.36e+12]"))){
-      contract$qLowCeiling<-factor(contract$qLowCeiling,
 
-                                   levels=c("[0.00e+00,1.50e+04)",
-                                            "[1.50e+04,1.00e+05)",
-                                            "[1.00e+05,1.00e+06)",
-                                            "[1.00e+06,3.00e+07)",
-                                            "[3.00e+07,3.36e+12]"),
-                                   labels=c("[0,15k)",
-                                            "[15k,100k)",
-                                            "[100k,1m)",
-                                            "[1m,30m)",
-                                            "[30m+]"),
-                                   ordered=TRUE
-      )
-    }
+
+    # if (all(levels(contract$qLowCeiling)[1:4]==c("[0.00e+00,1.50e+04)",
+    #                                         "[1.50e+04,1.00e+05)",
+    #                                         "[1.00e+05,1.00e+06)",
+    #                                         "[1.00e+06,3.00e+07)"))){
+    #   contract$qLowCeiling<-factor(contract$qLowCeiling,
+    #
+    #                                levels=c("[0.00e+00,1.50e+04)",
+    #                                         "[1.50e+04,1.00e+05)",
+    #                                         "[1.00e+05,1.00e+06)",
+    #                                         "[1.00e+06,3.00e+07)",
+    #                                         levels(contract$qLowCeiling)[5]),
+    #                                labels=c("[0,15k)",
+    #                                         "[15k,100k)",
+    #                                         "[100k,1m)",
+    #                                         "[1m,30m)",
+    #                                         "[30m+]"),
+    #                                ordered=TRUE
+    #   )
+    # }
 
     contract<-contract %>% group_by(qHighCeiling) %>%
-      mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue))
+      mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18))
 
     if (identical(levels(contract$qHighCeiling),c("[0,15k)",
                                                   "[15k,100k)",
@@ -673,7 +684,9 @@ transform_contract<-function(
 
     contract$UnmodifiedDays[contract$UnmodifiedDays<0]<-NA
     contract$capped_UnmodifiedDays <- ifelse(contract$UnmodifiedDays > 3650, 3650, contract$UnmodifiedDays)
+
     contract$l_Days<-na_non_positive_log(contract$UnmodifiedDays)
+    contract$cl_Days<-arm::rescale(contract$l_Days)
 
     contract$capped_l_Days<-na_non_positive_log(contract$capped_UnmodifiedDays)
     contract$capped_cl_Days<-arm::rescale(contract$capped_l_Days)
@@ -694,7 +707,7 @@ transform_contract<-function(
                                           "[   61,  214)",
                                           "[  214,  366)",
                                           "[  366,  732)",
-                                          "[  732,33192]"),
+                                          levels(contract$qDuration)[5]),
                                  labels=c("[0 months,~2 months)",
                                           "[~2 months,~7 months)",
                                           "[~7 months-~1 year]",
@@ -984,7 +997,7 @@ transform_contract<-function(
   if("NAICS" %in% colnames(contract) & "StartCY" %in% colnames(contract) ){
     naics.file<-NA
     #Vendor repository location
-    if(file.exists("output//naics_join.Rdata")) naics.file<-"output//naics_join.Rdata"
+    if(file.exists("../output/naics_join.Rdata")) naics.file<-"../output/naics_join.Rdata"
     if(file.exists("../data/semi_clean/naics_join.Rdata")) naics.file<-"../data/semi_clean/naics_join.Rdata"
     if(!is.na(naics.file)){
       load(naics.file)
@@ -1181,54 +1194,61 @@ transform_contract<-function(
     }
 
     colnames(contract)[colnames(contract)=="StartFY"]<-"fiscal_year"
-    contract<-read_and_join_experiment( contract,
-                                        "Office.sp_OfficeHistoryCapacityLagged.txt",
-                                        path="",
-                                        directory="..\\data\\semi_clean\\",
-                                        by=c("ContractingOfficeCode","fiscal_year"),
-                                        add_var=c("office_obligatedamount_1year",
-                                                  "office_numberofactions_1year",
-                                                  "office_PBSCobligated_1year",
-                                                  "office_obligatedamount_7year"),
-                                        new_var_checked=FALSE)
+    if(file.exists("..\\data\\semi_clean\\Office.sp_OfficeHistoryCapacityLaggedConst.txt")){
+      contract<-read_and_join_experiment( contract,
+                                          "Office.sp_OfficeHistoryCapacityLaggedConst.txt",
+                                          path="",
+                                          directory="..\\data\\semi_clean\\",
+                                          by=c("ContractingOfficeCode","fiscal_year"),
+                                          add_var=c("office_obligatedamount_1year",
+                                                    "office_numberofactions_1year",
+                                                    "office_PBSCobligated_1year",
+                                                    "office_obligatedamount_7year"),
+                                          new_var_checked=FALSE,
+                                          create_lookup_rdata=TRUE
+      )
 
 
+      contract$office_numberofactions_1year[is.na(contract$office_numberofactions_1year)]<-0
+      contract$office_obligatedamount_7year[is.na(contract$office_obligatedamount_7year) |
+                                              contract$office_obligatedamount_7year<0]<-0
+      contract$office_obligatedamount_1year[is.na(contract$office_obligatedamount_1year) |
+                                              contract$office_obligatedamount_1year<0]<-0
+      contract$office_PBSCobligated_1year[is.na(contract$office_PBSCobligated_1year)|
+                                            contract$office_PBSCobligated_1year<0]<-0
+      contract$pPBSC<-contract$office_PBSCobligated_1year/contract$office_obligatedamount_1year
+      contract$pPBSC[contract$office_obligatedamount_1year==0]<-0
+      contract$pPBSC[contract$pPBSC>1]<-1
 
-    contract$office_numberofactions_1year[is.na(contract$office_numberofactions_1year)]<-0
-    contract$office_obligatedamount_7year[is.na(contract$office_obligatedamount_7year) |
-                                            contract$office_obligatedamount_7year<0]<-0
-    contract$office_obligatedamount_1year[is.na(contract$office_obligatedamount_1year) |
-                                            contract$office_obligatedamount_1year<0]<-0
-    contract$office_PBSCobligated_1year[is.na(contract$office_PBSCobligated_1year)|
-                                          contract$office_PBSCobligated_1year<0]<-0
-    contract$pPBSC<-contract$office_PBSCobligated_1year/contract$office_obligatedamount_1year
-    contract$pPBSC[contract$office_obligatedamount_1year==0]<-0
-    contract$pPBSC[contract$pPBSC>1]<-1
+      contract$office_numberofactions_1year[is.na(contract$ContractingOfficeCode)]<-NA
+      contract$office_obligatedamount_7year[is.na(contract$ContractingOfficeCode)]<-NA
+      contract$office_obligatedamount_1year[is.na(contract$ContractingOfficeCode)]<-NA
+      contract$office_PBSCobligated_1year[is.na(contract$ContractingOfficeCode)]<-NA
+      contract$pPBSC[is.na(contract$ContractingOfficeCode)]<-NA
 
-    contract$office_numberofactions_1year[is.na(contract$ContractingOfficeCode)]<-NA
-    contract$office_obligatedamount_7year[is.na(contract$ContractingOfficeCode)]<-NA
-    contract$office_obligatedamount_1year[is.na(contract$ContractingOfficeCode)]<-NA
-    contract$office_PBSCobligated_1year[is.na(contract$ContractingOfficeCode)]<-NA
-    contract$pPBSC[is.na(contract$ContractingOfficeCode)]<-NA
+      contract$l_OffCA<-log(contract$office_numberofactions_1year+1)
+      contract$cl_OffCA<-arm::rescale(contract$l_OffCA)
+      contract$l_OffVol<-log(contract$office_obligatedamount_7year+1)
+      contract$cl_OffVol<-arm::rescale(contract$l_OffVol)
 
-    contract$l_OffCA<-log(contract$office_numberofactions_1year+1)
-    contract$cl_OffCA<-arm::rescale(contract$l_OffCA)
-    contract$l_OffVol<-log(contract$office_obligatedamount_7year+1)
-    contract$cl_OffVol<-arm::rescale(contract$l_OffVol)
+      # summary(contract$l_OffVol)
+      # summary(contract$cl_OffVol)
+      #
+      contract$c_pPBSC<-arm::rescale(contract$pPBSC)
+    }
 
-    # summary(contract$l_OffVol)
-    # summary(contract$cl_OffVol)
-    #
-
-    if("ProductOrServiceCode" %in% colnames(contract)){
+    if("ProductOrServiceCode" %in% colnames(contract) &
+       file.exists("..\\data\\semi_clean\\Office.sp_ProdServOfficeHistoryLaggedConst.txt")){
 
       contract<-read_and_join_experiment( contract,
-                                          "Office.sp_ProdServOfficeHistoryLagged.txt",
+                                          "Office.sp_ProdServOfficeHistoryLaggedConst.txt",
                                           path="",
                                           directory="..\\data\\semi_clean\\",
                                           by=c("ContractingOfficeCode","fiscal_year","ProductOrServiceCode"),
                                           add_var=c("office_psc_obligatedamount_7year"),
-                                          new_var_checked=FALSE)
+                                          new_var_checked=FALSE,
+                                          col_types="ccddddc",
+                                          create_lookup_rdata=TRUE)
 
 
 
@@ -1246,6 +1266,7 @@ transform_contract<-function(
       contract$pOffPSC[is.na(contract$ContractingOfficeCode) |
                          is.na(contract$ProductOrServiceCode)]<-NA
 
+      contract$c_pOffPSC<-arm::rescale(contract$pOffPSC)
     }
 
     # summary(contract$l_OffVol)
@@ -1255,13 +1276,14 @@ transform_contract<-function(
 
     if("EntityID" %in% colnames(contract)){
       contract<-read_and_join_experiment( contract,
-                                          "Office.sp_EntityIDofficeHistoryLagged.txt",
+                                          "Office.sp_EntityIDofficeHistoryLaggedConst.txt",
                                           path="",
                                           directory="..\\data\\semi_clean\\",
                                           by=c("EntityID","ContractingOfficeCode","fiscal_year"),
                                           add_var=c("office_entity_paircount_7year","office_entity_numberofactions_1year",
                                                     "office_entity_obligatedamount_7year"),
-                                          new_var_checked=FALSE)
+                                          new_var_checked=FALSE,
+                                          create_lookup_rdata=TRUE)
 
       # summary(contract$EntityID)
       # summary(contract$office_entity_numberofactions_1year)
@@ -1294,43 +1316,47 @@ transform_contract<-function(
     colnames(contract)[colnames(contract)=="ContractingOfficeCode"]<-"Office"
     colnames(contract)[colnames(contract)=="fiscal_year"]<-"StartFY"
   }
+  if(file.exists("..\\data\\semi_clean\\Contract.sp_ContractExercisedOptions.txt")){
+    contract<-read_and_join_experiment( contract,
+                                        "Contract.sp_ContractExercisedOptions.txt",
+                                        path="",
+                                        directory="..\\data\\semi_clean\\",
+                                        by=c("CSIScontractID"),
+                                        add_var=c("AnyUnmodifiedUnexercisedOptions"
+                                                  ,"AnyUnmodifiedUnexercisedOptionsWhy"
+                                                  ,"UnmodifiedBaseandExercisedOptionsValue"
+                                                  ,"ExercisedOptions"),
+                                        new_var_checked=FALSE,
+                                        create_lookup_rdata=TRUE)
 
+    # summary(contract$ExercisedOptions)
+    # summary(contract$AnyUnmodifiedUnexercisedOptions)
+    # summary(factor(contract$AnyUnmodifiedUnexercisedOptionsWhy))
+    # summary(contract$UnmodifiedBaseandExercisedOptionsValue)
+  }
 
+  if("Crisis" %in% colnames(contract) &
+     file.exists("..\\data\\semi_clean\\ProductOrServiceCode.ProdServHistoryCFTEcoalesceLaggedConst.txt")){
+    # summary(contract$Crisis)
+    contract$OCO_GF<-contract$Crisis
+    levels(contract$OCO_GF)<-
+      list("GF"=c("Other","ARRA","Dis"),
+           "OCO"="OCO")
+    # summary(contract$OCO_GF)
+    colnames(contract)[colnames(contract)=="StartFY"]<-"fiscal_year"
+    contract<-read_and_join( contract,
+                             "ProductOrServiceCode.ProdServHistoryCFTEcoalesceLaggedConst.txt",
+                             path="",
+                             directory="..\\data\\semi_clean\\",
+                             by=c("fiscal_year","OCO_GF","ProductOrServiceCode"),
+                             add_var=c("CFTE_Rate_1year"),
+                             new_var_checked=FALSE)
+    colnames(contract)[colnames(contract)=="fiscal_year"]<-"StartFY"
+    # summary(contract$CFTE_Rate_1year)
+    contract$l_CFTE<-log(contract$CFTE_Rate_1year)
+    contract$cl_CFTE<-arm::rescale(contract$l_CFTE)
+  }
 
-  contract<-read_and_join_experiment( contract,
-                                      "Contract.sp_ContractExercisedOptions.txt",
-                                      path="",
-                                      directory="..\\data\\semi_clean\\",
-                                      by=c("CSIScontractID"),
-                                      add_var=c("AnyUnmodifiedUnexercisedOptions"
-                                                ,"AnyUnmodifiedUnexercisedOptionsWhy"
-                                                ,"UnmodifiedBaseandExercisedOptionsValue"
-                                                ,"ExercisedOptions"),
-                                      new_var_checked=FALSE)
-
-  # summary(contract$ExercisedOptions)
-  # summary(contract$AnyUnmodifiedUnexercisedOptions)
-  # summary(factor(contract$AnyUnmodifiedUnexercisedOptionsWhy))
-  # summary(contract$UnmodifiedBaseandExercisedOptionsValue)
-
-
-  # summary(contract$Crisis)
-  contract$OCO_GF<-contract$Crisis
-  levels(contract$OCO_GF)<-
-    list("GF"=c("Other","ARRA","Dis"),
-         "OCO"="OCO")
-  # summary(contract$OCO_GF)
-
-  colnames(contract)[colnames(contract)=="StartFY"]<-"fiscal_year"
-  contract<-read_and_join( contract,
-                           "ProductOrServiceCode.ProdServHistoryCFTEcoalesce.txt",
-                           path="",
-                           directory="..\\data\\semi_clean\\",
-                           by=c("fiscal_year","OCO_GF","ProductOrServiceCode"),
-                           add_var=c("CFTE_Rate_1year"),
-                           new_var_checked=FALSE)
-  colnames(contract)[colnames(contract)=="fiscal_year"]<-"StartFY"
-  # summary(contract$CFTE_Rate_1year)
 
 
 
@@ -1348,8 +1374,8 @@ transform_contract<-function(
                                                      levels=c("Terminated","Unterminated"),
                                                      labels=c(1,0))))
 
-  if("Action.Obligation" %in% colnames(contract)){
-    contract$ObligationWT<-contract$Action.Obligation
+  if("Action_Obligation" %in% colnames(contract)){
+    contract$ObligationWT<-contract$Action_Obligation
     contract$ObligationWT[contract$ObligationWT<0]<-NA
   }
 
@@ -1358,10 +1384,8 @@ transform_contract<-function(
 
 
 
-  contract$l_CFTE<-log(contract$CFTE_Rate_1year)
-  contract$cl_CFTE<-arm::rescale(contract$l_CFTE)
-  contract$c_pPBSC<-arm::rescale(contract$pPBSC)
-  contract$c_pOffPSC<-arm::rescale(contract$pOffPSC)
+
+
 
 
 

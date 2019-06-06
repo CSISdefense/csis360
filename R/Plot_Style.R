@@ -34,10 +34,11 @@ jitter_binary<-function(a, jitt = 0.05){
 #'   FullData)
 #'
 #' @import ggplot2
+#' @import sysfonts
 #' @export
 get_plot_theme<-function(erase_legend_title=TRUE){
   #Make sure Open Sans is available.
-  if(!"Open Sans" %in% font_families()) font_add_google("Open Sans")
+  if(!"Open Sans" %in% sysfonts::font_families()) sysfonts::font_add_google("Open Sans")
   t<-theme(
     panel.background = element_rect(fill = "#F4F4F4"),
     strip.background = element_rect(fill ="#E0E0E0"),
@@ -123,6 +124,7 @@ get_plot_theme<-function(erase_legend_title=TRUE){
 #' @import ggplot2
 #' @import stringr
 #' @import scales
+#' @import sysfonts
 #' @export
 build_plot <- function(
   data,
