@@ -741,12 +741,13 @@ get_column_key <- function(
   colnames(column_key)[1]<-"column"
 
   #Join up the files
-  column_key<-read_and_join(column_key,
+  column_key<-read_and_join_experiment(column_key,
                             "Lookup_Column_Key.csv",
                             path=path,
                             directory="",
                             by="column",
-                            new_var_checked=FALSE
+                            new_var_checked=FALSE,
+                            case_sensitive = FALSE
   )
 
   #Set empty string coloration.keys equal to na
