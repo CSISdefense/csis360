@@ -452,25 +452,6 @@ transform_contract<-function(
   if("SumOfisChangeOrder" %in% colnames(contract))
     contract$qNChg <- Hmisc::cut2(contract$SumOfisChangeOrder,c(1,2,3))
 
-  #pChangeOrderUnmodifiedBaseAndAll
-  if("pChangeOrderUnmodifiedBaseAndAll" %in% colnames(contract)){
-    # contract$pChangeOrderObligated<-contract$ChangeOrderObligatedAmount/
-    #   contract$Action_Obligation
-    # contract$pChangeOrderObligated[is.na(contract$pChangeOrderObligated)&
-    #     contract$SumOfisChangeOrder==0]<-0
-    contract$pChangeOrderUnmodifiedBaseAndAll<-contract$ChangeOrderBaseAndAllOptionsValue/
-      contract$UnmodifiedContractBaseAndAllOptionsValue
-    contract$pChangeOrderUnmodifiedBaseAndAll[
-      is.na(contract$pChangeOrderUnmodifiedBaseAndAll) & contract$SumOfisChangeOrder==0]<-0
-
-
-    contract$qCRais <- Hmisc::cut2(
-      contract$pChangeOrderUnmodifiedBaseAndAll,c(
-        -0.001,
-        0.001,
-        0.15)
-    )
-  }
 
   #PSR_What
   if("PSR_What" %in% colnames(contract)){
@@ -489,36 +470,44 @@ transform_contract<-function(
     contract$j_Term<-jitter_binary(contract$b_Term)
   }
 
-  #n_CBre
+  #Ceiling Breach
+  #b_CBre
+  if("CBre" %in% colnames(contract)){
+    contract$b_CBre<-ifelse(contract$CBre=="Ceiling Breach",1,NA)
+    contract$b_CBre[contract$CBre=="None"]<-0
+    #Create a jittered version of CBre for display purposes
+    #Unlike geom_jitter, this caps values at 0 and 1
+    contract$j_CBre<-jitter_binary(contract$b_CBre)
+  }
+
+  #ChangeOrderBaseAndAllOptionsValue
   if ("ChangeOrderBaseAndAllOptionsValue" %in% colnames(contract) ){
-    #b_CBre
-    if("CBre" %in% colnames(contract)){
-      contract$b_CBre<-ifelse(contract$CBre=="Ceiling Breach",1,NA)
-      contract$b_CBre[contract$CBre=="None"]<-0
-      #Create a jittered version of CBre for display purposes
-      #Unlike geom_jitter, this caps values at 0 and 1
-      contract$j_CBre<-jitter_binary(contract$b_CBre)
-    }
-    contract$pChangeOrderUnmodifiedBaseAndAll<-contract$ChangeOrderBaseAndAllOptionsValue/
+    contract$pChangeOrderBaseAndAllOptionsValue<-contract$ChangeOrderBaseAndAllOptionsValue/
       contract$UnmodifiedContractBaseAndAllOptionsValue
-    contract$pChangeOrderUnmodifiedBaseAndAll[
-      is.na(contract$pChangeOrderUnmodifiedBaseAndAll) & contract$SumOfisChangeOrder==0]<-0
-    contract$pChangeOrderUnmodifiedBaseAndAll<-as.numeric(as.character(contract$pChangeOrderUnmodifiedBaseAndAll))
+    contract$pChangeOrderBaseAndAllOptionsValue[
+      is.na(contract$pChangeOrderBaseAndAllOptionsValue) & contract$SumOfisChangeOrder==0]<-0
+    contract$pChangeOrderBaseAndAllOptionsValue<-as.numeric(as.character(contract$pChangeOrderBaseAndAllOptionsValue))
     contract$pChange3Sig<-round(
-      contract$pChangeOrderUnmodifiedBaseAndAll,3)
-    contract$CRai <- Hmisc::cut2(
-      contract$pChangeOrderUnmodifiedBaseAndAll,c(
+      contract$pChangeOrderBaseAndAllOptionsValue,3)
+    contract$qCrai <- Hmisc::cut2(
+      contract$pChangeOrderBaseAndAllOptionsValue,c(
         -0.001,
         0.001,
         0.15)
     )
-    #Should include this in the original data frame but for now can drive it.
-    contract$n_CBre<-contract$ChangeOrderBaseAndAllOptionsValue
+  }
+
+
+  #ChangeOrderCeilingGrowth
+  if("ChangeOrderCeilingGrowth" %in% colnames(contract)){
+    contract$n_CBre<-(contract$ChangeOrderCeilingGrowth/
+                        contract$UnmodifiedContractBaseAndAllOptionsValue)+1
+    contract$n_CBre[
+      is.na(contract$n_CBre) & contract$b_CBre==0]<-1
 
     #l_CBre
-    contract$l_CBre<-NA
-    contract$l_CBre[contract$b_CBre==1 & !is.na(contract$b_CBre)]<-
-      na_non_positive_log(contract$n_CBre[contract$b_CBre==1 & !is.na(contract$b_CBre)])
+    contract$l_CBre<-na_non_positive_log(contract$n_CBre)
+
   }
   if ("NewWorkUnmodifiedBaseAndAll" %in% colnames(contract) ){
     contract$pNewWorkUnmodifiedBaseAndAll<-contract$NewWorkUnmodifiedBaseAndAll/
@@ -903,12 +892,15 @@ transform_contract<-function(
     #b_Intl
     contract$Intl <- factor(contract$Intl,
                             c("Just U.S.", "Any International"))   #Manually remove "NA" from levels of variable Intl
+    levels(smp$Intl)<- list("Just U.S."=c("Just U.S."),
+                            "Any Intl."=c("Any Intl.","Any International"))
+
 
     contract$b_Intl<-contract$Intl
     contract$b_Intl[contract$b_Intl=="Unlabeled"]<-NA
     levels(contract$b_Intl) <-
       list("0"=c("Just U.S."),
-           "1"=c("Any International"))
+           "1"=c("Any Intl.","Any International"))
     contract$b_Intl<-as.integer(as.character(contract$b_Intl))
   }
 
@@ -936,6 +928,7 @@ transform_contract<-function(
   if("Veh" %in% colnames(contract)){
     levels(contract$Veh)[levels(contract$Veh)=="SINGLE AWARD IDC"]<-"S-IDC"
     levels(contract$Veh)[levels(contract$Veh)=="MULTIPLE AWARD IDC"]<-"M-IDC"
+    levels(contract$Veh)[levels(contract$Veh)=="def_detail/Pur"]<-"Def/Pur"
     contract$Veh<-factor(contract$Veh,c("Def/Pur",
                                         "S-IDC",
                                         "M-IDC",
@@ -1379,6 +1372,10 @@ transform_contract<-function(
     contract$ObligationWT[contract$ObligationWT<0]<-NA
   }
 
+  if("Action_Obligation.Then.Year" %in% colnames(contract)){
+    contract$ObligationWT_Then_Year<-contract$Action_Obligation.Then.Year
+    contract$ObligationWT_Then_Year[contract$ObligationWT_Then_Year<0]<-NA
+  }
 
 
 
@@ -1398,4 +1395,62 @@ transform_contract<-function(
   contract
 }
 
+#' Update a sample using a larger data frame.
+#'
+#' @param smp A data frame of contracts ready for statistical analysis, which must contain CSIScontractID.
+#' @param full A data frame of contracts with no key missing data and which must contain CSIScontractID.
+#' @col Speific columns to add, if blank, add all in full missing from sample
+#' @drop_and_replace If true, drop rows from sample missing from full. Then replace them with new rows from full.
+#'
+#' @return The updated sample
+#'
+#' @details This is a function that updates samples using an updated
+#' version of the population, e.g. new columns, and adds them to
+#' existing samples. This might be used if a new column has been added
+#' from SQL or if NA values are found in a oolumn being used in.
+#' This isn't appropriate if the larger being drawn from has changed
+#' in make up, for example adding a new years data.
+#'
+#' @examples update_sample_col_CSIScontractID(smp,def[complete,],drop_and_replace=TRUE)
+#'
+#' @export
+update_sample_col_CSIScontractID<-function(smp,
+                                           full,
+                                           col=NULL,
+                                           drop_and_replace=FALSE){
+  #If column(s) are specified
+  if(!is.null(col)){
+    toadd<-full[,colnames(full) %in% c("CSIScontractID",col)]
+    smp<-smp[,!colnames(smp) %in% col]
+  }
+  #If no column(s) specified, add all missing columns.
+  else{
+    full<-full %>% group_by()
+    toadd<-full[,!colnames(full) %in% colnames(smp) | colnames(full)=="CSIScontractID"]
+  }
 
+  if(drop_and_replace==FALSE){
+    if(ncol(toadd)==1) stop("No columns to add")
+    smp<-left_join(smp,toadd)
+  }
+  else{
+    original_l<-nrow(smp)
+    smp<-inner_join(smp,toadd, by="CSIScontractID")
+    rm(toadd)
+    missing_l<-original_l-nrow(smp)
+    if(missing_l>0){
+      full<-full[,colnames(full) %in% colnames(smp)]
+      if(ncol(full)<ncol(smp)){
+        print(paste(colnames(smp)[!colnames(smp) %in% colnames(full)]))
+        stop("Full is missing columns present in sample")
+      }
+      full<-full[!full$CSIScontractID %in% smp$CSIScontractID,]
+      smp<-dplyr::bind_rows(smp,full[sample(nrow(full),missing_l),])
+      if(nrow(smp)!=original_l) stop("Mismatched rowcount. Too few in full? This shouldn't happen.")
+      #
+      warning(paste(missing_l, "rows removed and replaced due to absence from full"))
+    }
+  }
+
+  smp
+}
