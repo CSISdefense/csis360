@@ -385,6 +385,7 @@ read_and_join<-function(
 #' @param skip_check_var List of vars that should not be checked for NA values
 #' @param zip_file The source zip file.
 #' @param missing_file Filename to output any unmatched variables for easy of processing
+#' @param create_lookup_rdata Whether to create a rdata file using the lookup for ease of future inputing
 #'
 #' @return The data frame plus new columns from the lookup file. If new_var_checked is
 #' true and only new columns listed in add_var will be kept. Note to self, should

@@ -500,13 +500,13 @@ transform_contract<-function(
 
   #ChangeOrderCeilingGrowth
   if("ChangeOrderCeilingGrowth" %in% colnames(contract)){
-    contract$n_CBre<-(contract$ChangeOrderCeilingGrowth/
+    contract$p_CBre<-(contract$ChangeOrderCeilingGrowth/
                         contract$UnmodifiedContractBaseAndAllOptionsValue)+1
-    contract$n_CBre[
-      is.na(contract$n_CBre) & contract$b_CBre==0]<-1
+    contract$p_CBre[
+      is.na(contract$p_CBre) & contract$b_CBre==0]<-1
 
     #l_CBre
-    contract$l_CBre<-na_non_positive_log(contract$n_CBre)
+    contract$l_CBre<-na_non_positive_log(contract$p_CBre)
 
   }
   if ("NewWorkUnmodifiedBaseAndAll" %in% colnames(contract) ){
@@ -892,7 +892,7 @@ transform_contract<-function(
     #b_Intl
     contract$Intl <- factor(contract$Intl,
                             c("Just U.S.", "Any International"))   #Manually remove "NA" from levels of variable Intl
-    levels(smp$Intl)<- list("Just U.S."=c("Just U.S."),
+    levels(contract$Intl)<- list("Just U.S."=c("Just U.S."),
                             "Any Intl."=c("Any Intl.","Any International"))
 
 
@@ -984,6 +984,7 @@ transform_contract<-function(
     contract$StartCY<-lubridate::year(contract$MinOfSignedDate)
   }
 
+
   #NAICS
   #Note that this must be placed a new in each repository.
   #In theory we could store a version in csis360, something to consider for the future.
@@ -992,6 +993,7 @@ transform_contract<-function(
     #Vendor repository location
     if(file.exists("../output/naics_join.Rdata")) naics.file<-"../output/naics_join.Rdata"
     if(file.exists("../data/semi_clean/naics_join.Rdata")) naics.file<-"../data/semi_clean/naics_join.Rdata"
+    if(file.exists("../data/clean/naics_join.Rdata")) naics.file<-"../data/clean/naics_join.Rdata"
     if(!is.na(naics.file)){
       load(naics.file)
 
