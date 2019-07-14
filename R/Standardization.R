@@ -990,7 +990,7 @@ transform_contract<-function(
   #In theory we could store a version in csis360, something to consider for the future.
   local_semi_clean_path<-"..\\data\\semi_clean\\"
   if(!dir.exists(local_semi_clean_path)& dir.exists("data\\semi_clean\\"))
-    local_semi_clean<-"data\\semi_clean\\"
+    local_semi_clean_path<-"data\\semi_clean\\"
   else(stop("Don't know where local_semi_clean directory is"))
 
   if("NAICS" %in% colnames(contract) & "StartCY" %in% colnames(contract) ){
