@@ -992,8 +992,11 @@ transform_contract<-function(
     naics.file<-NA
     #Vendor repository location
     if(file.exists("../output/naics_join.Rdata")) naics.file<-"../output/naics_join.Rdata"
-    if(file.exists("../data/semi_clean/naics_join.Rdata")) naics.file<-"../data/semi_clean/naics_join.Rdata"
-    if(file.exists("../data/clean/naics_join.Rdata")) naics.file<-"../data/clean/naics_join.Rdata"
+    else if(file.exists("output/naics_join.Rdata")) naics.file<-"output/naics_join.Rdata"
+    else if(file.exists(paste(local_semi_clean_path,"naics_join.Rdata",sep="")))
+       naics.file<-paste(local_semi_clean_path,"naics_join.Rdata",sep="")
+    else if(file.exists("../data/clean/naics_join.Rdata")) naics.file<-"../data/clean/naics_join.Rdata"
+    else if(file.exists("data/clean/naics_join.Rdata")) naics.file<-"data/clean/naics_join.Rdata"
     if(!is.na(naics.file)){
       load(naics.file)
 
@@ -1189,11 +1192,11 @@ transform_contract<-function(
     }
 
     colnames(contract)[colnames(contract)=="StartFY"]<-"fiscal_year"
-    if(file.exists("..\\data\\semi_clean\\Office.sp_OfficeHistoryCapacityLaggedConst.txt")){
+    if(file.exists(paste(local_semi_clean_path,"Office.sp_OfficeHistoryCapacityLaggedConst.txt",sep=""))){
       contract<-read_and_join_experiment( contract,
                                           "Office.sp_OfficeHistoryCapacityLaggedConst.txt",
                                           path="",
-                                          directory="..\\data\\semi_clean\\",
+                                          directory=local_semi_clean_path,
                                           by=c("ContractingOfficeCode","fiscal_year"),
                                           add_var=c("office_obligatedamount_1year",
                                                     "office_numberofactions_1year",
@@ -1233,12 +1236,12 @@ transform_contract<-function(
     }
 
     if("ProductOrServiceCode" %in% colnames(contract) &
-       file.exists("..\\data\\semi_clean\\Office.sp_ProdServOfficeHistoryLaggedConst.txt")){
+       file.exists(paste(local_semi_clean_path,"Office.sp_ProdServOfficeHistoryLaggedConst.txt",sep=""))){
 
       contract<-read_and_join_experiment( contract,
                                           "Office.sp_ProdServOfficeHistoryLaggedConst.txt",
                                           path="",
-                                          directory="..\\data\\semi_clean\\",
+                                          directory=local_semi_clean_path,
                                           by=c("ContractingOfficeCode","fiscal_year","ProductOrServiceCode"),
                                           add_var=c("office_psc_obligatedamount_7year"),
                                           new_var_checked=FALSE,
@@ -1267,13 +1270,15 @@ transform_contract<-function(
     # summary(contract$l_OffVol)
     # summary(contract$cl_OffVol)
     #
-
-
+    local_semi_clean_path<-"..\\data\\semi_clean\\"
+    if(!dir.exists(local_semi_clean_path)& dir.exists("data\\semi_clean\\"))
+      local_semi_clean<-"data\\semi_clean\\"
+    else(stop("Don't know where local semi_clean directory is"))
     if("EntityID" %in% colnames(contract)){
       contract<-read_and_join_experiment( contract,
                                           "Office.sp_EntityIDofficeHistoryLaggedConst.txt",
                                           path="",
-                                          directory="..\\data\\semi_clean\\",
+                                          directory=local_semi_clean_path,
                                           by=c("EntityID","ContractingOfficeCode","fiscal_year"),
                                           add_var=c("office_entity_paircount_7year","office_entity_numberofactions_1year",
                                                     "office_entity_obligatedamount_7year"),
@@ -1311,11 +1316,11 @@ transform_contract<-function(
     colnames(contract)[colnames(contract)=="ContractingOfficeCode"]<-"Office"
     colnames(contract)[colnames(contract)=="fiscal_year"]<-"StartFY"
   }
-  if(file.exists("..\\data\\semi_clean\\Contract.sp_ContractExercisedOptions.txt")){
+  if(file.exists(paste(local_semi_clean_path,"Contract.sp_ContractExercisedOptions.txt",sep=""))){
     contract<-read_and_join_experiment( contract,
                                         "Contract.sp_ContractExercisedOptions.txt",
                                         path="",
-                                        directory="..\\data\\semi_clean\\",
+                                        directory=local_semi_clean_path,
                                         by=c("CSIScontractID"),
                                         add_var=c("AnyUnmodifiedUnexercisedOptions"
                                                   ,"AnyUnmodifiedUnexercisedOptionsWhy"
@@ -1331,7 +1336,7 @@ transform_contract<-function(
   }
 
   if("Crisis" %in% colnames(contract) &
-     file.exists("..\\data\\semi_clean\\ProductOrServiceCode.ProdServHistoryCFTEcoalesceLaggedConst.txt")){
+     file.exists(paste(local_semi_clean_path,"ProductOrServiceCode.ProdServHistoryCFTEcoalesceLaggedConst.txt",sep=""))){
     # summary(contract$Crisis)
     contract$OCO_GF<-contract$Crisis
     levels(contract$OCO_GF)<-
@@ -1342,7 +1347,7 @@ transform_contract<-function(
     contract<-read_and_join( contract,
                              "ProductOrServiceCode.ProdServHistoryCFTEcoalesceLaggedConst.txt",
                              path="",
-                             directory="..\\data\\semi_clean\\",
+                             directory=local_semi_clean_path,
                              by=c("fiscal_year","OCO_GF","ProductOrServiceCode"),
                              add_var=c("CFTE_Rate_1year"),
                              new_var_checked=FALSE)
