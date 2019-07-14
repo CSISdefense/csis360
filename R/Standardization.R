@@ -988,6 +988,11 @@ transform_contract<-function(
   #NAICS
   #Note that this must be placed a new in each repository.
   #In theory we could store a version in csis360, something to consider for the future.
+  local_semi_clean_path<-"..\\data\\semi_clean\\"
+  if(!dir.exists(local_semi_clean_path)& dir.exists("data\\semi_clean\\"))
+    local_semi_clean<-"data\\semi_clean\\"
+
+
   if("NAICS" %in% colnames(contract) & "StartCY" %in% colnames(contract) ){
     naics.file<-NA
     #Vendor repository location
@@ -1270,9 +1275,6 @@ transform_contract<-function(
     # summary(contract$l_OffVol)
     # summary(contract$cl_OffVol)
     #
-    local_semi_clean_path<-"..\\data\\semi_clean\\"
-    if(!dir.exists(local_semi_clean_path)& dir.exists("data\\semi_clean\\"))
-      local_semi_clean<-"data\\semi_clean\\"
     else(stop("Don't know where local semi_clean directory is"))
     if("EntityID" %in% colnames(contract)){
       contract<-read_and_join_experiment( contract,
