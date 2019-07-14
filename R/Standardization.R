@@ -991,7 +991,7 @@ transform_contract<-function(
   local_semi_clean_path<-"..\\data\\semi_clean\\"
   if(!dir.exists(local_semi_clean_path)& dir.exists("data\\semi_clean\\"))
     local_semi_clean<-"data\\semi_clean\\"
-
+  else(stop("Don't know where local_semi_clean directory is"))
 
   if("NAICS" %in% colnames(contract) & "StartCY" %in% colnames(contract) ){
     naics.file<-NA
@@ -1275,7 +1275,7 @@ transform_contract<-function(
     # summary(contract$l_OffVol)
     # summary(contract$cl_OffVol)
     #
-    else(stop("Don't know where local semi_clean directory is"))
+
     if("EntityID" %in% colnames(contract)){
       contract<-read_and_join_experiment( contract,
                                           "Office.sp_EntityIDofficeHistoryLaggedConst.txt",
