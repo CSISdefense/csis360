@@ -776,7 +776,9 @@ transform_contract<-function(
     contract$PricingUCA[is.na(contract$UCA)]<-NA
     # summary(factor(contract$PricingUCA))
     contract$PricingUCA[contract$UCA=="UCA"]<-"UCA"
-    contract$PricingUCA<-factor(contract$PricingUCA)
+    contract$PricingUCA<-factor(contract$PricingUCA,c("FFP","Other FP","Incentive",
+                                                      "Combination or Other",
+                                                      "Other CB","T&M/LH/FPLOE","UCA"))
     summary(contract$PricingUCA)
 
 
