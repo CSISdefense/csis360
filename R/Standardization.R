@@ -505,8 +505,10 @@ transform_contract<-function(
     contract$p_CBre[
       is.na(contract$p_CBre) & contract$b_CBre==0]<-1
 
-    #l_CBre
-    contract$l_CBre<-na_non_positive_log(contract$p_CBre)
+    #lp_CBre
+    contract$lp_CBre<-na_non_positive_log(contract$p_CBre)
+    #ln_CBre
+    contract$ln_CBre<-na_non_positive_log(contract$ChangeOrderCeilingGrowth)
 
   }
   if ("NewWorkUnmodifiedBaseAndAll" %in% colnames(contract) ){
@@ -534,7 +536,9 @@ transform_contract<-function(
                       fy_var="StartFY"
     )
     #l_Ceil
-    contract$l_Ceil<-na_non_positive_log(contract$UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18)
+
+    if(!"l_Ceil" %in% colnames(contract))
+      contract$l_Ceil<-na_non_positive_log(contract$UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18)
 
     # lowroundedcutoffs<-c(15000,100000,1000000,30000000)
     highroundedcutoffs<-c(15000,100000,1000000,10000000,75000000)
@@ -543,20 +547,20 @@ transform_contract<-function(
     rm(highroundedcutoffs)#lowroundedcutoffs,
 
 
-    if (all(levels(contract$Ceil)[1:5]==c("[0.00e+00,1.50e+04)",
+    if (all(levels(contract$qHighCeiling)[1:5]==c("[0.00e+00,1.50e+04)",
                                           "[1.50e+04,1.00e+05)",
                                           "[1.00e+05,1.00e+06)",
                                           "[1.00e+06,1.00e+07)",
                                           "[1.00e+07,7.50e+07)"))|
-        all(levels(contract$Ceil)[1:5]==c("[0.0e+00,1.5e+04)",
+        all(levels(contract$qHighCeiling)[1:5]==c("[0.0e+00,1.5e+04)",
                                           "[1.5e+04,1.0e+05)",
                                           "[1.0e+05,1.0e+06)",
                                           "[1.0e+06,1.0e+07)",
                                           "[1.0e+07,7.5e+07)"))
     ){
-      contract$Ceil<-factor(contract$Ceil,
+      contract$qHighCeiling<-factor(contract$qHighCeiling,
 
-                            levels=levels(contract$Ceil),
+                            levels=levels(contract$qHighCeiling),
                             labels=c("[0,15k)",
                                      "[15k,100k)",
                                      "[100k,1m)",
@@ -606,7 +610,7 @@ transform_contract<-function(
                                           "10m+"=c("[75m+]",
                                                    "[10m,75m)"))
 
-      contract$Ceil.Big<-contract$Ceil
+      contract$Ceil.Big<-contract$qHighCeiling
       levels(contract$Ceil.Big)<- list("0k - <100k"=c("[15k,100k)",
                                                       "[0,15k)"),
                                        "100k - <10m"=c("[1m,10m)",
@@ -614,7 +618,7 @@ transform_contract<-function(
                                        "10m - <75m"=c("[10m,75m)"),
                                        "75m+"=c("[75m+]"))
 
-      contract$Ceil.1m<-contract$Ceil
+      contract$Ceil.1m<-contract$qHighCeiling
       levels(contract$Ceil.1m)<- list("0k - <1m"=c("[0,15k)",
                                                    "[15k,100k)",
                                                    "[100k,1m)"
