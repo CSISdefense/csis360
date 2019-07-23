@@ -385,6 +385,7 @@ read_and_join<-function(
 #' @param skip_check_var List of vars that should not be checked for NA values
 #' @param zip_file The source zip file.
 #' @param missing_file Filename to output any unmatched variables for easy of processing
+#' @param create_lookup_rdata Whether to create a rdata file using the lookup for ease of future inputing
 #'
 #' @return The data frame plus new columns from the lookup file. If new_var_checked is
 #' true and only new columns listed in add_var will be kept. Note to self, should
@@ -741,12 +742,13 @@ get_column_key <- function(
   colnames(column_key)[1]<-"column"
 
   #Join up the files
-  column_key<-read_and_join(column_key,
+  column_key<-read_and_join_experiment(column_key,
                             "Lookup_Column_Key.csv",
                             path=path,
                             directory="",
                             by="column",
-                            new_var_checked=FALSE
+                            new_var_checked=FALSE,
+                            case_sensitive = FALSE
   )
 
   #Set empty string coloration.keys equal to na
