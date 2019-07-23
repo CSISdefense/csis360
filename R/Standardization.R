@@ -482,8 +482,8 @@ transform_contract<-function(
 
   #b_Term
   if("Term" %in% colnames(contract)){
-    contract$b_Term<-ifelse(contract$Term=="Terminated",1,NA)
-    contract$b_Term[contract$Term=="Unterminated"]<-0
+    contract$b_Term<-ifelse(contract$Term %in% c("Terminated",1),1,NA)
+    contract$b_Term[contract$Term %in% c("Unterminated",0)]<-0
     #Create a jittered version of Term for display purposes
     #Unlike geom_jitter, this caps values at 0 and 1
     contract$j_Term<-jitter_binary(contract$b_Term)
