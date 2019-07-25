@@ -1343,6 +1343,14 @@ transform_contract<-function(
     # summary(contract$UnmodifiedBaseandExercisedOptionsValue)
   }
 
+  colnames(contract)[colname(contract)=="UnmodifiedBaseAndExercisedOptionsValue"]<-"UnmodifiedContractBaseAndExercisedOptionsValue"
+  if("UnmodifiedContractBaseAndExercisedOptionsValue" %in% colnames(contract)){
+    contract$Base2Ceil<-contract$UnmodifiedContractBaseAndAllOptionsValue.Then.Year/contract$UnmodifiedContractBaseAndExercisedOptionsValue
+    contract$Base2Ceil[contract$Base2Ceil<1 | !is.finite(contract$Base2Ceil)]<-NA
+    contract$cl_Base2Ceil<-arm::rescale(log(contract$Base2Ceil))
+  }
+
+
   if("Crisis" %in% colnames(contract) &
      file.exists(paste(local_semi_clean_path,"ProductOrServiceCode.ProdServHistoryCFTEcoalesceLaggedConst.txt",sep=""))){
     # summary(contract$Crisis)
