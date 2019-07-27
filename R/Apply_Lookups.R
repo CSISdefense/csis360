@@ -419,7 +419,8 @@ read_and_join_experiment<-function(
   col_types=NULL,
   case_sensitive=TRUE,
   missing_file=NULL,
-  create_lookup_rdata=FALSE
+  create_lookup_rdata=FALSE,
+  lookup_char_as_factor=FALSE
 ){
 
 
@@ -487,6 +488,12 @@ read_and_join_experiment<-function(
       trim_ws=TRUE,
       col_types=col_types
     )
+
+    #Convert character strings to factors
+    if (lookup_char_as_factor==TRUE){
+      #Found here: https://stackoverflow.com/questions/2851015/convert-data-frame-columns-from-factors-to-characters/2853231#2853231
+      lookup<-lookup %>% mutate_if(is.character, factor)
+    }
 
     if (create_lookup_rdata==TRUE)
       save(lookup,file=paste(path,directory,
