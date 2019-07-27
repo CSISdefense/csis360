@@ -470,6 +470,9 @@ transform_contract<-function(
     contract$j_Term<-jitter_binary(contract$b_Term)
   }
 
+
+
+
   #Ceiling Breach
   #b_CBre
   if("CBre" %in% colnames(contract)){
@@ -480,50 +483,26 @@ transform_contract<-function(
     contract$j_CBre<-jitter_binary(contract$b_CBre)
   }
 
-  #ChangeOrderBaseAndAllOptionsValue
-  if ("ChangeOrderBaseAndAllOptionsValue" %in% colnames(contract) ){
-    contract$pChangeOrderBaseAndAllOptionsValue<-contract$ChangeOrderBaseAndAllOptionsValue/
-      contract$UnmodifiedContractBaseAndAllOptionsValue
-    contract$pChangeOrderBaseAndAllOptionsValue[
-      is.na(contract$pChangeOrderBaseAndAllOptionsValue) & contract$SumOfisChangeOrder==0]<-0
-    contract$pChangeOrderBaseAndAllOptionsValue<-as.numeric(as.character(contract$pChangeOrderBaseAndAllOptionsValue))
-    contract$pChange3Sig<-round(
-      contract$pChangeOrderBaseAndAllOptionsValue,3)
-    contract$qCrai <- Hmisc::cut2(
-      contract$pChangeOrderBaseAndAllOptionsValue,c(
-        -0.001,
-        0.001,
-        0.15)
-    )
-  }
 
+  #Overrides
+  contract<-read_and_join_experiment( contract,
+                                      "CSIS_contract_inspection.csv",
+                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                      directory="contract/",
+                                      by=c("CSIScontractID"),
+                                      # add_var=c("EntityID","UnmodifiedEntityID"),
+                                      new_var_checked=FALSE,
+                                      create_lookup_rdata=FALSE
+  )
 
-  #ChangeOrderCeilingGrowth
-  if("ChangeOrderCeilingGrowth" %in% colnames(contract)){
-    contract$p_CBre<-(contract$ChangeOrderCeilingGrowth/
-                        contract$UnmodifiedContractBaseAndAllOptionsValue)+1
-    contract$p_CBre[
-      is.na(contract$p_CBre) & contract$b_CBre==0]<-1
-
-    #lp_CBre
-    contract$lp_CBre<-na_non_positive_log(contract$p_CBre)
-    #ln_CBre
-    contract$ln_CBre<-na_non_positive_log(contract$ChangeOrderCeilingGrowth)
-
-  }
-  if ("NewWorkUnmodifiedBaseAndAll" %in% colnames(contract) ){
-    contract$pNewWorkUnmodifiedBaseAndAll<-contract$NewWorkUnmodifiedBaseAndAll/
-      contract$UnmodifiedContractBaseAndAllOptionsValue
-    contract$pNewWorkUnmodifiedBaseAndAll[
-      is.na(contract$pNewWorkUnmodifiedBaseAndAll) & contract$SumOfisChangeOrder==0]<-0
-    contract$pNewWorkUnmodifiedBaseAndAll<-as.numeric(as.character(contract$pNewWorkUnmodifiedBaseAndAll))
-    contract$pChange3Sig<-round(
-      contract$pNewWorkUnmodifiedBaseAndAll,3)
-  }
-
+  #Ceilings
 
 
   if ("UnmodifiedContractBaseAndAllOptionsValue" %in% colnames(contract) ){
+
+    #Set entries to NA when we've inspected them and found them to be wrong.
+    contract$UnmodifiedContractBaseAndAllOptionsValue[contract$override_unmodified_ceiling==TRUE]<-NA
+
     #Deflate the dolla figures
     contract<-deflate(contract,
                       money_var = "Action_Obligation",
@@ -548,28 +527,30 @@ transform_contract<-function(
 
 
     if (all(levels(contract$qHighCeiling)[1:5]==c("[0.00e+00,1.50e+04)",
-                                          "[1.50e+04,1.00e+05)",
-                                          "[1.00e+05,1.00e+06)",
-                                          "[1.00e+06,1.00e+07)",
-                                          "[1.00e+07,7.50e+07)"))|
+                                                  "[1.50e+04,1.00e+05)",
+                                                  "[1.00e+05,1.00e+06)",
+                                                  "[1.00e+06,1.00e+07)",
+                                                  "[1.00e+07,7.50e+07)"))|
         all(levels(contract$qHighCeiling)[1:5]==c("[0.0e+00,1.5e+04)",
-                                          "[1.5e+04,1.0e+05)",
-                                          "[1.0e+05,1.0e+06)",
-                                          "[1.0e+06,1.0e+07)",
-                                          "[1.0e+07,7.5e+07)"))
+                                                  "[1.5e+04,1.0e+05)",
+                                                  "[1.0e+05,1.0e+06)",
+                                                  "[1.0e+06,1.0e+07)",
+                                                  "[1.0e+07,7.5e+07)"))
     ){
       contract$qHighCeiling<-factor(contract$qHighCeiling,
 
-                            levels=levels(contract$qHighCeiling),
-                            labels=c("[0,15k)",
-                                     "[15k,100k)",
-                                     "[100k,1m)",
-                                     "[1m,10m)",
-                                     "[10m,75m)",
-                                     "[75m+]"),
-                            ordered=TRUE
+                                    levels=levels(contract$qHighCeiling),
+                                    labels=c("[0,15k)",
+                                             "[15k,100k)",
+                                             "[100k,1m)",
+                                             "[1m,10m)",
+                                             "[10m,75m)",
+                                             "[75m+]"),
+                                    ordered=TRUE
       )
     }
+
+
 
 
     # if (all(levels(contract$qLowCeiling)[1:4]==c("[0.00e+00,1.50e+04)",
@@ -658,6 +639,52 @@ transform_contract<-function(
     }
 
 
+
+    #ChangeOrderBaseAndAllOptionsValue
+    if ("ChangeOrderBaseAndAllOptionsValue" %in% colnames(contract) ){
+      #Set entries to NA when we've inspected them and found them to be wrong.
+      contract$ChangeOrderBaseAndAllOptionsValue[contract$override_change_order_growth==TRUE]<-NA
+
+      contract$pChangeOrderBaseAndAllOptionsValue<-contract$ChangeOrderBaseAndAllOptionsValue/
+        contract$UnmodifiedContractBaseAndAllOptionsValue.Then.Year
+      contract$pChangeOrderBaseAndAllOptionsValue[
+        is.na(contract$pChangeOrderBaseAndAllOptionsValue) & contract$SumOfisChangeOrder==0]<-0
+      contract$pChangeOrderBaseAndAllOptionsValue<-as.numeric(as.character(contract$pChangeOrderBaseAndAllOptionsValue))
+      contract$pChange3Sig<-round(
+        contract$pChangeOrderBaseAndAllOptionsValue,3)
+      contract$qCrai <- Hmisc::cut2(
+        contract$pChangeOrderBaseAndAllOptionsValue,c(
+          -0.001,
+          0.001,
+          0.15)
+      )
+    }
+
+    #ChangeOrderCeilingGrowth
+    if("ChangeOrderCeilingGrowth" %in% colnames(contract)){
+      #Set entries to NA when we've inspected them and found them to be wrong.
+      contract$ChangeOrderCeilingGrowth[contract$override_change_order_growth==TRUE]<-NA
+
+      contract$p_CBre<-(contract$ChangeOrderCeilingGrowth/
+                          contract$UnmodifiedContractBaseAndAllOptionsValue.Then.Year)+1
+      contract$p_CBre[
+        is.na(contract$p_CBre) & contract$b_CBre==0]<-1
+
+      #lp_CBre
+      contract$lp_CBre<-na_non_positive_log(contract$p_CBre)
+      #ln_CBre
+      contract$ln_CBre<-na_non_positive_log(contract$ChangeOrderCeilingGrowth)
+
+    }
+    if ("NewWorkUnmodifiedBaseAndAll" %in% colnames(contract) ){
+      contract$pNewWorkUnmodifiedBaseAndAll<-contract$NewWorkUnmodifiedBaseAndAll/
+        contract$UnmodifiedContractBaseAndAllOptionsValue.Then.Year
+      contract$pNewWorkUnmodifiedBaseAndAll[
+        is.na(contract$pNewWorkUnmodifiedBaseAndAll) & contract$SumOfisChangeOrder==0]<-0
+      contract$pNewWorkUnmodifiedBaseAndAll<-as.numeric(as.character(contract$pNewWorkUnmodifiedBaseAndAll))
+      contract$pChange3Sig<-round(
+        contract$pNewWorkUnmodifiedBaseAndAll,3)
+    }
 
   }
 
@@ -1353,6 +1380,33 @@ transform_contract<-function(
     # summary(contract$AnyUnmodifiedUnexercisedOptions)
     # summary(factor(contract$AnyUnmodifiedUnexercisedOptionsWhy))
     # summary(contract$UnmodifiedBaseandExercisedOptionsValue)
+
+
+  colnames(contract)[colname(contract)=="UnmodifiedBaseAndExercisedOptionsValue"]<-"UnmodifiedContractBaseAndExercisedOptionsValue"
+  if("UnmodifiedContractBaseAndExercisedOptionsValue" %in% colnames(contract)){
+    contract$UnmodifiedContractBaseAndExercisedOptionsValue[contract$UnmodifiedContractBaseAndExercisedOptionsValue<=0]<-NA
+
+    contract$Base2Ceil<-contract$UnmodifiedContractBaseAndAllOptionsValue.Then.Year/contract$UnmodifiedContractBaseAndExercisedOptionsValue
+    contract$Base2Ceil[contract$Base2Ceil<1 | !is.finite(contract$Base2Ceil)]<-NA
+    contract$cl_Base2Ceil<-arm::rescale(log(contract$Base2Ceil))
+
+
+    contract$l_base<-log(contract$UnmodifiedContractBaseAndExercisedOptionsValue+1)
+    contract$p_OptGrowth<-contract$ExercisedOptions/contract$UnmodifiedContractBaseAndExercisedOptionsValue+1
+    contract$lp_OptGrowth<-log(contract$p_OptGrowth)
+    contract$n_OptGrowth<-contract$ExercisedOptions+1
+    contract$ln_OptGrowth<-log(contract$n_OptGrowth)
+
+    #*********** Options Growth
+
+    contract$Opt<-NA
+    contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==1& contract$ExercisedOptions>0]<-"Option Growth"
+    contract$Opt[(contract$AnyUnmodifiedUnexercisedOptions==1)& contract$ExercisedOptions==0]<-"No Growth"
+    contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==0]<-"Initial Base=Ceiling"
+    contract$Opt<-factor(contract$Opt)
+
+
+  }
   }
 
   if("Crisis" %in% colnames(contract) &
