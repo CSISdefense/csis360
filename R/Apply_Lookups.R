@@ -234,7 +234,8 @@ read_and_join<-function(
   add_var=NULL,
   new_var_checked=TRUE,
   skip_check_var=NULL,
-  missing_file=NULL){
+  missing_file=NULL,
+  lookup_char_as_factor=FALSE){
 
 
   if(is.data.frame(lookup_file))
@@ -267,7 +268,7 @@ read_and_join<-function(
     quote = "\"",#Necessary because there are some 's in the names.
     dec=".",
     strip.white=TRUE,
-    stringsAsFactors=FALSE  #This can get weird when true, as sometimes it confuses numerical variables and factors
+    stringsAsFactors=lookup_char_as_factor  #This can get weird when true, as sometimes it confuses numerical variables and factors
   )
 
 

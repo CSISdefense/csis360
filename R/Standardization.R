@@ -1024,7 +1024,8 @@ transform_contract<-function(
   local_semi_clean_path<-"..\\data\\semi_clean\\"
   if(!dir.exists(local_semi_clean_path)& dir.exists("data\\semi_clean\\"))
     local_semi_clean_path<-"data\\semi_clean\\"
-  else(stop("Don't know where local_semi_clean directory is"))
+  else if(!dir.exists(local_semi_clean_path))
+    stop("Don't know where local_semi_clean directory is")
 
   if("NAICS" %in% colnames(contract) & "StartCY" %in% colnames(contract) ){
     naics.file<-NA
