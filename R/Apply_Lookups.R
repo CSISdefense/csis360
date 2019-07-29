@@ -234,7 +234,8 @@ read_and_join<-function(
   add_var=NULL,
   new_var_checked=TRUE,
   skip_check_var=NULL,
-  missing_file=NULL){
+  missing_file=NULL,
+  lookup_char_as_factor=FALSE){
 
 
   if(is.data.frame(lookup_file))
@@ -267,7 +268,7 @@ read_and_join<-function(
     quote = "\"",#Necessary because there are some 's in the names.
     dec=".",
     strip.white=TRUE,
-    stringsAsFactors=FALSE  #This can get weird when true, as sometimes it confuses numerical variables and factors
+    stringsAsFactors=lookup_char_as_factor  #This can get weird when true, as sometimes it confuses numerical variables and factors
   )
 
 
@@ -419,7 +420,8 @@ read_and_join_experiment<-function(
   col_types=NULL,
   case_sensitive=TRUE,
   missing_file=NULL,
-  create_lookup_rdata=FALSE
+  create_lookup_rdata=FALSE,
+  lookup_char_as_factor=FALSE
 ){
 
 
@@ -487,6 +489,12 @@ read_and_join_experiment<-function(
       trim_ws=TRUE,
       col_types=col_types
     )
+
+    #Convert character strings to factors
+    if (lookup_char_as_factor==TRUE){
+      #Found here: https://stackoverflow.com/questions/2851015/convert-data-frame-columns-from-factors-to-characters/2853231#2853231
+      lookup<-lookup %>% mutate_if(is.character, factor)
+    }
 
     if (create_lookup_rdata==TRUE)
       save(lookup,file=paste(path,directory,
@@ -668,8 +676,8 @@ deflate <- function(
     stop(paste(fy_var," is not present in data."))
 
   if(!money_var %in% colnames(data)){
-    if((paste(money_var,"Then.Year",sep=".") %in% colnames(data)) &
-       (paste(money_var,deflator_var,sep=".") %in% colnames(data))){
+    if((paste(money_var,"Then_Year",sep="_") %in% colnames(data)) &
+       (paste(money_var,deflator_var,sep="_") %in% colnames(data))){
       warning(paste(money_var," is not present in data, due to prior run of deflate with money_var=",money_var,".",sep=""))
       return(data)
     }

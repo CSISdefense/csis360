@@ -923,7 +923,7 @@ transform_contract<-function(
     contract$Intl <- factor(contract$Intl,
                             c("Just U.S.", "Any International"))   #Manually remove "NA" from levels of variable Intl
     levels(contract$Intl)<- list("Just U.S."=c("Just U.S."),
-                            "Any Intl."=c("Any Intl.","Any International"))
+                                 "Any Intl."=c("Any Intl.","Any International"))
 
 
     contract$b_Intl<-contract$Intl
@@ -1021,7 +1021,8 @@ transform_contract<-function(
   local_semi_clean_path<-"..\\data\\semi_clean\\"
   if(!dir.exists(local_semi_clean_path)& dir.exists("data\\semi_clean\\"))
     local_semi_clean_path<-"data\\semi_clean\\"
-  else(stop("Don't know where local_semi_clean directory is"))
+  else if(!dir.exists(local_semi_clean_path))
+    stop("Don't know where local_semi_clean directory is")
 
   if("NAICS" %in% colnames(contract) & "StartCY" %in% colnames(contract) ){
     naics.file<-NA
@@ -1029,7 +1030,7 @@ transform_contract<-function(
     if(file.exists("../output/naics_join.Rdata")) naics.file<-"../output/naics_join.Rdata"
     else if(file.exists("output/naics_join.Rdata")) naics.file<-"output/naics_join.Rdata"
     else if(file.exists(paste(local_semi_clean_path,"naics_join.Rdata",sep="")))
-       naics.file<-paste(local_semi_clean_path,"naics_join.Rdata",sep="")
+      naics.file<-paste(local_semi_clean_path,"naics_join.Rdata",sep="")
     else if(file.exists("../data/clean/naics_join.Rdata")) naics.file<-"../data/clean/naics_join.Rdata"
     else if(file.exists("data/clean/naics_join.Rdata")) naics.file<-"data/clean/naics_join.Rdata"
     if(!is.na(naics.file)){
@@ -1048,18 +1049,25 @@ transform_contract<-function(
       contract$NAICS[substr(contract$NAICS,1,5)==54171 &
                        !is.na(contract$NAICS)]<-54171
 
-      contract<-left_join(contract,NAICS6_join, by=c("StartCY"="CalendarYear",
-                                                     "NAICS"="NAICS6"))
+      if(!"def6_HHI_lag1" %in% colnames(contract))
+        contract<-left_join(contract,NAICS6_join, by=c("StartCY"="CalendarYear",
+                                                       "NAICS"="NAICS6"))
 
-      contract<-left_join(contract,NAICS5_join, by=c("StartCY"="CalendarYear",
-                                                     "NAICS5"="NAICS5"))
+      if(!"def5_HHI_lag1" %in% colnames(contract))
+        contract<-left_join(contract,NAICS5_join, by=c("StartCY"="CalendarYear",
+                                                       "NAICS5"="NAICS5"))
 
-      contract<-left_join(contract,NAICS4_join, by=c("StartCY"="CalendarYear",
-                                                     "NAICS4"="NAICS4"))
-      contract<-left_join(contract,NAICS3_join, by=c("StartCY"="CalendarYear",
-                                                     "NAICS3"="NAICS3"))
-      contract<-left_join(contract,NAICS2_join, by=c("StartCY"="CalendarYear",
-                                                     "NAICS2"="NAICS2"))
+      if(!"def4_HHI_lag1" %in% colnames(contract))
+        contract<-left_join(contract,NAICS4_join, by=c("StartCY"="CalendarYear",
+                                                       "NAICS4"="NAICS4"))
+
+      if(!"def3_HHI_lag1" %in% colnames(contract))
+        contract<-left_join(contract,NAICS3_join, by=c("StartCY"="CalendarYear",
+                                                       "NAICS3"="NAICS3"))
+
+      if(!"def2_HHI_lag1" %in% colnames(contract))
+        contract<-left_join(contract,NAICS2_join, by=c("StartCY"="CalendarYear",
+                                                       "NAICS2"="NAICS2"))
 
 
 
@@ -1174,7 +1182,8 @@ transform_contract<-function(
                                        "CrisisProductOrServiceArea",
                                        "ProductOrServiceCodeText"
                              ),
-                             new_var_checked=FALSE)
+                             new_var_checked=FALSE,
+                             lookup_char_as_factor=TRUE)
 
     contract$ProductServiceOrRnDarea<-factor(contract$ProductServiceOrRnDarea)
     contract$ProductOrServiceArea<-factor(contract$ProductOrServiceArea)
@@ -1193,7 +1202,8 @@ transform_contract<-function(
                              directory="office\\",
                              by="ContractingOfficeCode",
                              add_var=c("PlaceIntlPercent","CrisisPercent"),
-                             new_var_checked=FALSE)
+                             new_var_checked=FALSE,
+                             lookup_char_as_factor=TRUE)
 
 
     colnames(contract)[colnames(contract)=="PlaceIntlPercent"]<-"OffIntl"
@@ -1238,7 +1248,8 @@ transform_contract<-function(
                                                     "office_PBSCobligated_1year",
                                                     "office_obligatedamount_7year"),
                                           new_var_checked=FALSE,
-                                          create_lookup_rdata=TRUE
+                                          create_lookup_rdata=TRUE,
+                                          lookup_char_as_factor=TRUE
       )
 
 
@@ -1315,7 +1326,8 @@ transform_contract<-function(
                                           add_var=c("office_entity_paircount_7year","office_entity_numberofactions_1year",
                                                     "office_entity_obligatedamount_7year"),
                                           new_var_checked=FALSE,
-                                          create_lookup_rdata=TRUE)
+                                          create_lookup_rdata=TRUE,
+                                          lookup_char_as_factor=TRUE)
 
       # summary(contract$EntityID)
       # summary(contract$office_entity_numberofactions_1year)
@@ -1361,13 +1373,18 @@ transform_contract<-function(
                                                   "SteadyScopeOptionRescision",
                                                   "AdminOptionModification"),
                                         new_var_checked=FALSE,
-                                        create_lookup_rdata=TRUE)
+                                        create_lookup_rdata=TRUE,
+                                        lookup_char_as_factor=TRUE)
 
     # summary(contract$SteadyScopeOptionGrowthAlone)
     # summary(contract$AnyUnmodifiedUnexercisedOptions)
     # summary(factor(contract$AnyUnmodifiedUnexercisedOptionsWhy))
     # summary(contract$UnmodifiedBase)
 
+  colnames(contract)[colnames(contract)=="UnmodifiedBaseAndExercisedOptionsValue"]<-"UnmodifiedContractBaseAndExercisedOptionsValue"
+  if("UnmodifiedContractBaseAndExercisedOptionsValue" %in% colnames(contract)){
+    contract$UnmodifiedContractBaseAndExercisedOptionsValue[contract$override_unmodified_base==TRUE]<-NA
+    contract$ExercisedOptions[contract$override_exercised_growth==TRUE]<-NA
 
   if("UnmodifiedBase" %in% colnames(contract)){
     contract$UnmodifiedBase[contract$UnmodifiedBase<=0]<-NA
@@ -1393,7 +1410,7 @@ transform_contract<-function(
 
 
   }
-  }
+
 
   if("Crisis" %in% colnames(contract) &
      file.exists(paste(local_semi_clean_path,"ProductOrServiceCode.ProdServHistoryCFTEcoalesceLaggedConst.txt",sep=""))){
@@ -1410,7 +1427,8 @@ transform_contract<-function(
                              directory=local_semi_clean_path,
                              by=c("fiscal_year","OCO_GF","ProductOrServiceCode"),
                              add_var=c("CFTE_Rate_1year"),
-                             new_var_checked=FALSE)
+                             new_var_checked=FALSE,
+                             lookup_char_as_factor=TRUE)
     colnames(contract)[colnames(contract)=="fiscal_year"]<-"StartFY"
     # summary(contract$CFTE_Rate_1year)
     contract$l_CFTE<-log(contract$CFTE_Rate_1year)
