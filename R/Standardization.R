@@ -1375,19 +1375,19 @@ transform_contract<-function(
                                         new_var_checked=FALSE,
                                         create_lookup_rdata=TRUE,
                                         lookup_char_as_factor=TRUE)
+  }
 
-    # summary(contract$SteadyScopeOptionGrowthAlone)
-    # summary(contract$AnyUnmodifiedUnexercisedOptions)
-    # summary(factor(contract$AnyUnmodifiedUnexercisedOptionsWhy))
-    # summary(contract$UnmodifiedBase)
+  # summary(contract$SteadyScopeOptionGrowthAlone)
+  # summary(contract$AnyUnmodifiedUnexercisedOptions)
+  # summary(factor(contract$AnyUnmodifiedUnexercisedOptionsWhy))
+  # summary(contract$UnmodifiedBase)
 
-  colnames(contract)[colnames(contract)=="UnmodifiedBaseAndExercisedOptionsValue"]<-"UnmodifiedContractBaseAndExercisedOptionsValue"
-  if("UnmodifiedContractBaseAndExercisedOptionsValue" %in% colnames(contract)){
-    contract$UnmodifiedContractBaseAndExercisedOptionsValue[contract$override_unmodified_base==TRUE]<-NA
-    contract$ExercisedOptions[contract$override_exercised_growth==TRUE]<-NA
 
   if("UnmodifiedBase" %in% colnames(contract)){
     contract$UnmodifiedBase[contract$UnmodifiedBase<=0]<-NA
+    contract$UnmodifiedBase[contract$override_unmodified_base==TRUE]<-NA
+    contract$SteadyScopeOptionGrowthAlone[contract$override_exercised_growth==TRUE]<-NA
+
 
     contract$Base2Ceil<-contract$UnmodifiedCeiling_Then_Year/contract$UnmodifiedBase
     contract$Base2Ceil[contract$Base2Ceil<1 | !is.finite(contract$Base2Ceil)]<-NA

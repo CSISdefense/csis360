@@ -700,11 +700,11 @@ deflate <- function(
   data<-plyr::join(data,deflators_retrieved,by=fy_var)
 
   #Create current and constant dollar variants of money_var
-  data[[paste(money_var,deflator_var,sep=".")]] <- as.numeric(as.character(
+  data[[paste(money_var,deflator_var,sep="_")]] <- as.numeric(as.character(
     data[[money_var]])) /
     data[[deflator_var]]
 
-  colnames(data)[colnames(data)==money_var]<-paste(money_var,"Then.Year",sep=".")
+  colnames(data)[colnames(data)==money_var]<-paste(money_var,"Then_Year",sep="_")
 
   #Drop the deflator var unless deflator_dropped = FALSE
   if(deflator_dropped)
@@ -712,8 +712,8 @@ deflate <- function(
 
   #Standardize the newly created names
   data<-standardize_variable_names(data,
-                                   var=c(paste(money_var,"Then.Year",sep="."),
-                                         paste(money_var,deflator_var,sep=".")))
+                                   var=c(paste(money_var,"Then_Year",sep="_"),
+                                         paste(money_var,deflator_var,sep="_")))
 
   return(data)
 }
