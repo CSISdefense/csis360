@@ -926,7 +926,7 @@ transform_contract<-function(
     contract$Intl <- factor(contract$Intl,
                             c("Just U.S.", "Any International"))   #Manually remove "NA" from levels of variable Intl
     levels(contract$Intl)<- list("Just U.S."=c("Just U.S."),
-                            "Any Intl."=c("Any Intl.","Any International"))
+                                 "Any Intl."=c("Any Intl.","Any International"))
 
 
     contract$b_Intl<-contract$Intl
@@ -1033,7 +1033,7 @@ transform_contract<-function(
     if(file.exists("../output/naics_join.Rdata")) naics.file<-"../output/naics_join.Rdata"
     else if(file.exists("output/naics_join.Rdata")) naics.file<-"output/naics_join.Rdata"
     else if(file.exists(paste(local_semi_clean_path,"naics_join.Rdata",sep="")))
-       naics.file<-paste(local_semi_clean_path,"naics_join.Rdata",sep="")
+      naics.file<-paste(local_semi_clean_path,"naics_join.Rdata",sep="")
     else if(file.exists("../data/clean/naics_join.Rdata")) naics.file<-"../data/clean/naics_join.Rdata"
     else if(file.exists("data/clean/naics_join.Rdata")) naics.file<-"data/clean/naics_join.Rdata"
     if(!is.na(naics.file)){
@@ -1381,10 +1381,13 @@ transform_contract<-function(
     # summary(contract$AnyUnmodifiedUnexercisedOptions)
     # summary(factor(contract$AnyUnmodifiedUnexercisedOptionsWhy))
     # summary(contract$UnmodifiedBaseandExercisedOptionsValue)
+  }
 
-
-  colnames(contract)[colname(contract)=="UnmodifiedBaseAndExercisedOptionsValue"]<-"UnmodifiedContractBaseAndExercisedOptionsValue"
+  colnames(contract)[colnames(contract)=="UnmodifiedBaseAndExercisedOptionsValue"]<-"UnmodifiedContractBaseAndExercisedOptionsValue"
   if("UnmodifiedContractBaseAndExercisedOptionsValue" %in% colnames(contract)){
+    contract$override_unmodified_base[contract$override_exercised_growth==TRUE]<-NA
+    contract$ExercisedOptions[contract$override_exercised_growth==TRUE]<-NA
+
     contract$UnmodifiedContractBaseAndExercisedOptionsValue[contract$UnmodifiedContractBaseAndExercisedOptionsValue<=0]<-NA
 
     contract$Base2Ceil<-contract$UnmodifiedContractBaseAndAllOptionsValue.Then.Year/contract$UnmodifiedContractBaseAndExercisedOptionsValue
@@ -1408,7 +1411,7 @@ transform_contract<-function(
 
 
   }
-  }
+
 
   if("Crisis" %in% colnames(contract) &
      file.exists(paste(local_semi_clean_path,"ProductOrServiceCode.ProdServHistoryCFTEcoalesceLaggedConst.txt",sep=""))){
