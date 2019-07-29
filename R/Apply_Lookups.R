@@ -676,8 +676,8 @@ deflate <- function(
     stop(paste(fy_var," is not present in data."))
 
   if(!money_var %in% colnames(data)){
-    if((paste(money_var,"Then.Year",sep=".") %in% colnames(data)) &
-       (paste(money_var,deflator_var,sep=".") %in% colnames(data))){
+    if((paste(money_var,"Then_Year",sep="_") %in% colnames(data)) &
+       (paste(money_var,deflator_var,sep="_") %in% colnames(data))){
       warning(paste(money_var," is not present in data, due to prior run of deflate with money_var=",money_var,".",sep=""))
       return(data)
     }
