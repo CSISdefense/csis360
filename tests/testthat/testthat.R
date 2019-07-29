@@ -4,15 +4,15 @@ library(ggplot2)
 library(dplyr)
 library(tidyverse)
 library(magrittr)
-
+#ERRORS: prompts general warnings regarding being built under R version 3.5.3 and replacing previous imports. Warnings are N/A to running of code.
 
 # read in data
 full_data <- read.csv(system.file("extdata",
                                   "2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
                                   package = "csis360")  ,
-  na.strings=c("NA","NULL"))
+   na.strings=c("NA","NULL"))
 
-context("remove_bom")
+#context("remove_bom")
 bom_data<-remove_bom(full_data)
   test_that("remove_bom fixes ï..", {
     expect_equal(colnames(bom_data)[1], "Fiscal.Year")
@@ -20,7 +20,7 @@ bom_data<-remove_bom(full_data)
 
 
 
-context("standardize_variable_names")
+#context("standardize_variable_names")
 
 full_data <- read.csv(system.file("extdata",
                                   "2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
@@ -34,32 +34,35 @@ test_that("standardize_variable_names fixes ï..", {
 })
 
 test_that("Rename the SumOfObligatedAmount Column", {
-  expect_equal(colnames(std_data)[9], "Action.Obligation")
+  expect_equal(colnames(std_data)[9], "Action_Obligation")
 })
 
 
 
 # coerce Amount to be a numeric variable
-std_data$Action.Obligation <- as.numeric(std_data$Action.Obligation)
+std_data$Action_Obligation <- as.numeric(std_data$Action_Obligation)
 std_data$Number.Of.Actions <- as.numeric(std_data$Number.Of.Actions)
 std_data$Fiscal.Year <- as.numeric(std_data$Fiscal.Year)
 
 # discard pre-2000
-std_data <- subset(std_data,Fiscal.Year >= 2000)
+std_data <- subset(std_data, Fiscal.Year >= 2000)
+
+# Reassign Fiscal.Year column name to match deflate() expectations
+colnames(std_data)[colnames(std_data)=="Fiscal.Year"] <- "Fiscal_Year"
 
 
-context("deflate")
+#context("deflate")
 def_data<-deflate(std_data,
-  money_var = "Action.Obligation",
-  deflator_var="Deflator.2016"
+  money_var = "Action_Obligation",
+  deflator_var="GDPdeflator2016"
 )
 
-expect_true("Action.Obligation.2016" %in% colnames(def_data))
-expect_true("Action.Obligation.Then.Year" %in% colnames(def_data))
-expect_false("Action.Obligationr" %in% colnames(def_data))
+expect_true("Action_Obligation.GDPdeflator2016" %in% colnames(def_data))
+expect_true("Action_Obligation_Then_Year" %in% colnames(def_data))
+expect_false("Action_Obligationr" %in% colnames(def_data))
 
 
-context("read_and_join")
+#context("read_and_join")
 
 #Consolidate categories for Vendor Size
 def_data<-read_and_join(def_data,
@@ -67,12 +70,26 @@ def_data<-read_and_join(def_data,
                         by="Vendor.Size",
                         add_var="Shiny.VendorSize"
 )
+# ERROR: creating unexpected ',' when listing components
 
 # classify competition and a zip file
+
+# debug()
+# https://github.com/CSISdefense/csis360/blob/master/inst/extdata/Lookup_SQL_CompetitionClassification.zip
+# https://github.com/CSISdefense/csis360/blob/master/inst/extdata/Lookup_SQL_CompetitionClassification.zip
+# https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/Lookup_SQL_CompetitionClassification.zip
+# https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/DLA_Contract_SP_ContractPBLscoreSubCustomerProdServOffice.txt
+# https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/DLA_Contract_SP_ContractPBLscoreSubCustomerProdServOffice.txt
+# https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/DLA_Contract_SP_ContractPBLscoreSubCustomerProdServOffice.txt
+#
+#
+# https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/Lookup_SQL_CompetitionClassification.zip
+# file.exists("https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/Lookup_SQL_CompetitionClassification.zip")
+# file.exists("https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/DLA_Contract_SP_ContractPBLscoreSubCustomerProdServOffice.txt")
 debug(read_and_join_experiment)
 def_data<-read_and_join_experiment(def_data,
-                        "Lookup_SQL_CompetitionClassification.csv",
-                        zip_file="Lookup_SQL_CompetitionClassification.zip",
+                        "DLA_Contract_SP_ContractPBLscoreSubCustomerProdServOffice.txt",
+                        zip_file="DLA_Contract_SP_ContractPBLscoreSubCustomerProdServOffice.txt",
                         by=c("CompetitionClassification","ClassifyNumberOfOffers"),
                         replace_na_var="ClassifyNumberOfOffers",
                         path="https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/",
@@ -86,13 +103,12 @@ def_data<-read_and_join_experiment(def_data,
 
 #Classify Product or Service Codes
 def_data<-read_and_join(def_data,
-                        "LOOKUP_Buckets.csv",
-                        by="ProductOrServiceArea",
-                        add_var="ProductServiceOrRnDarea.sum",
-                        replace_na_var="ProductOrServiceArea"
+                        "LOOKUP_Buckets.csv" ,
+                        #by="ProductOrServiceArea" ,
+                        add_var="ProductServiceOrRnDarea.sum" ,
+                        replace_na_var = "ProductOrServiceArea"
 )
 
-context("replace_nas_with_unlabeled")
 def_data<-replace_nas_with_unlabeled(def_data,"SubCustomer","Uncategorized")
 
 def_data<-read_and_join(def_data,
@@ -108,8 +124,8 @@ def_data<-replace_nas_with_unlabeled(def_data,"PlatformPortfolio")
 
 labels_and_colors<-prepare_labels_and_colors(def_data)
 
-
 column_key<-get_column_key(def_data)
+# WARNING: Produces warning about coercing into character vector. Ignore.
 
 # write output to CleanedVendorSize.csv
 
@@ -117,7 +133,7 @@ save(def_data,labels_and_colors, file="2016_unaggregated_FPDS.Rda")
 
 ggplot(data = subset(def_data),
   aes(x=Fiscal.Year,
-    y=Action.Obligation.2016,
+    y=Action_Obligation.2016,
     fill = SubCustomer)) +
   geom_bar(width=.7,stat="identity") +
   ggtitle("Contract Obligations") +
@@ -142,7 +158,7 @@ load(system.file("extdata",
   "Crisis_Funding.RData",
   package = "csis360"))
 
-  # "tests//testthat//Crisis_Funding.RData")
+# "tests//testthat//Crisis_Funding.RData")
 FullData<-replace_nas_with_unlabeled(FullData,"Theater")
 
 labels_and_colors<-prepare_labels_and_colors(FullData,"Theater")
@@ -158,6 +174,8 @@ DLApblScore  <- read.csv(system.file("extdata",
   na.strings = c("NULL","NA",""),
   stringsAsFactors = TRUE
 )
+#ERROR: States that there is no package called 'sysfonts'
+
 #Error message test for by missing
 test_that("read_and_join na special cases", {
 expect_error(read_and_join(DLApblScore,
@@ -193,7 +211,7 @@ component_data <- format_data_for_plot(data=full_data,
                                    fy_var="Fiscal.Year",
                                    start_fy=2009,
                                    end_fy=2016,
-                                   y_var="Action.Obligation.2016",
+                                   y_var="Action_Obligation.2016",
                                    color_var="SubCustomer.platform",
                                    facet_var="SubCustomer.platform",
                                    labels_and_colors=labels_and_colors)
@@ -204,7 +222,7 @@ build_plot(data=component_data,
            chart_geom="Bar Chart",
            share=FALSE,
            x_var="Fiscal.Year",
-           y_var="Action.Obligation.2016",
+           y_var="Action_Obligation.2016",
            color_var="SubCustomer.platform",
            facet_var="None",
            labels_and_colors=labels_and_colors,
@@ -214,7 +232,7 @@ build_plot(data=component_data,
            chart_geom="Bar Chart",
            share=FALSE,
            x_var="Fiscal.Year",
-           y_var="Action.Obligation.2016",
+           y_var="Action_Obligation.2016",
            color_var="SubCustomer.platform",
            facet_var="SubCustomer.platform",
            labels_and_colors=labels_and_colors,
@@ -226,7 +244,7 @@ milserv_data <- format_data_for_plot(data=full_data,
                                        fy_var="Fiscal.Year",
                                        start_fy=2009,
                                        end_fy=2016,
-                                       y_var="Action.Obligation.2016",
+                                       y_var="Action_Obligation.2016",
                                        color_var="SubCustomer.platform",
                                        facet_var="SubCustomer.platform",
                                        labels_and_colors=labels_and_colors)
@@ -237,7 +255,7 @@ build_plot(data=milserv_data,
            chart_geom="Bar Chart",
            share=FALSE,
            x_var="Fiscal.Year",
-           y_var="Action.Obligation.2016",
+           y_var="Action_Obligation.2016",
            color_var="SubCustomer.platform",
            facet_var="None",
            labels_and_colors=labels_and_colors,
@@ -247,7 +265,7 @@ build_plot(data=milserv_data,
            chart_geom="Bar Chart",
            share=FALSE,
            x_var="Fiscal.Year",
-           y_var="Action.Obligation.2016",
+           y_var="Action_Obligation.2016",
            color_var="SubCustomer.platform",
            facet_var="SubCustomer.platform",
            labels_and_colors=labels_and_colors,
@@ -259,7 +277,7 @@ pp_data <- format_data_for_plot(data=full_data,
                                    fy_var="Fiscal.Year",
                                    start_fy=2009,
                                    end_fy=2016,
-                                   y_var="Action.Obligation.2016",
+                                   y_var="Action_Obligation.2016",
                                    color_var="PlatformPortfolio",
                                    facet_var="PlatformPortfolio",
                                    labels_and_colors=labels_and_colors)
@@ -270,7 +288,7 @@ build_plot(data=pp_data,
            chart_geom="Bar Chart",
            share=FALSE,
            x_var="Fiscal.Year",
-           y_var="Action.Obligation.2016",
+           y_var="Action_Obligation.2016",
            color_var="PlatformPortfolio",
            facet_var="PlatformPortfolio",
            labels_and_colors=labels_and_colors,
@@ -281,7 +299,7 @@ build_plot(data=pp_data,
            chart_geom="Bar Chart",
            share=FALSE,
            x_var="Fiscal.Year",
-           y_var="Action.Obligation.2016",
+           y_var="Action_Obligation.2016",
            color_var="PlatformPortfolio",
            # facet_var="PlatformPortfolio",
            labels_and_colors=labels_and_colors,
@@ -295,7 +313,7 @@ area_data <- format_data_for_plot(data=full_data,
                                 fy_var="Fiscal.Year",
                                 start_fy=2009,
                                 end_fy=2016,
-                                y_var="Action.Obligation.2016",
+                                y_var="Action_Obligation.2016",
                                 color_var="ProductServiceOrRnDarea.sum",
                                 facet_var="None",
                                 labels_and_colors=labels_and_colors)
@@ -305,7 +323,7 @@ build_plot(data=area_data,
            chart_geom="Bar Chart",
            share=FALSE,
            x_var="Fiscal.Year",
-           y_var="Action.Obligation.2016",
+           y_var="Action_Obligation.2016",
            color_var="ProductServiceOrRnDarea.sum",
            facet_var="None",
            labels_and_colors=labels_and_colors,
@@ -317,7 +335,7 @@ area_vendor_data <- format_data_for_plot(data=full_data,
                                   fy_var="Fiscal.Year",
                                   start_fy=2009,
                                   end_fy=2016,
-                                  y_var="Action.Obligation.2016",
+                                  y_var="Action_Obligation.2016",
                                   color_var="ProductServiceOrRnDarea.sum",
                                   facet_var="Shiny.VendorSize",
                                   labels_and_colors=labels_and_colors)
@@ -327,7 +345,7 @@ build_plot(data=subset(area_vendor_data,ProductServiceOrRnDarea.sum!="Unlabeled"
            chart_geom="Bar Chart",
            share=FALSE,
            x_var="Fiscal.Year",
-           y_var="Action.Obligation.2016",
+           y_var="Action_Obligation.2016",
            color_var="ProductServiceOrRnDarea.sum",
            facet_var="Shiny.VendorSize",
            labels_and_colors=labels_and_colors,
@@ -340,7 +358,7 @@ comp_data <- format_data_for_plot(data=full_data,
                                          fy_var="Fiscal.Year",
                                          start_fy=2009,
                                          end_fy=2016,
-                                         y_var="Action.Obligation.2016",
+                                         y_var="Action_Obligation.2016",
                                          color_var="Competition.effective.only",
                                          # facet_var="None",
                                          labels_and_colors=labels_and_colors)
@@ -350,7 +368,7 @@ build_plot(data=subset(comp_data,Competition.effective.only!="Unlabeled"),
            chart_geom="Line Chart",
            share=FALSE,
            x_var="Fiscal.Year",
-           y_var="Action.Obligation.2016",
+           y_var="Action_Obligation.2016",
            color_var="Competition.effective.only",
            # facet_var="None",
            labels_and_colors=labels_and_colors,

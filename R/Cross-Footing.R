@@ -389,7 +389,7 @@ append_contract_fixes<- function(Path = "https://github.com/CSISdefense/R-script
   #   print(sum(df$value))
 
 
-  df$Action.Obligation<-FactorToNumber(df$Action.Obligation)
+  df$Action_Obligation<-FactorToNumber(df$Action_Obligation)
 
   df$Actions<-FactorToNumber(df$Actions)
 
