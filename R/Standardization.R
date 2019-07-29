@@ -1385,7 +1385,7 @@ transform_contract<-function(
 
   colnames(contract)[colnames(contract)=="UnmodifiedBaseAndExercisedOptionsValue"]<-"UnmodifiedContractBaseAndExercisedOptionsValue"
   if("UnmodifiedContractBaseAndExercisedOptionsValue" %in% colnames(contract)){
-    contract$override_unmodified_base[contract$override_exercised_growth==TRUE]<-NA
+    contract$UnmodifiedContractBaseAndExercisedOptionsValue[contract$override_unmodified_base==TRUE]<-NA
     contract$ExercisedOptions[contract$override_exercised_growth==TRUE]<-NA
 
     contract$UnmodifiedContractBaseAndExercisedOptionsValue[contract$UnmodifiedContractBaseAndExercisedOptionsValue<=0]<-NA
