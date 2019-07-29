@@ -470,6 +470,9 @@ transform_contract<-function(
     contract$j_Term<-jitter_binary(contract$b_Term)
   }
 
+
+
+
   #Ceiling Breach
   #b_CBre
   if("CBre" %in% colnames(contract)){
@@ -480,48 +483,25 @@ transform_contract<-function(
     contract$j_CBre<-jitter_binary(contract$b_CBre)
   }
 
-  #ChangeOrderBaseAndAllOptionsValue
-  if ("ChangeOrderBaseAndAllOptionsValue" %in% colnames(contract) ){
-    contract$pChangeOrderBaseAndAllOptionsValue<-contract$ChangeOrderBaseAndAllOptionsValue/
-      contract$UnmodifiedContractBaseAndAllOptionsValue
-    contract$pChangeOrderBaseAndAllOptionsValue[
-      is.na(contract$pChangeOrderBaseAndAllOptionsValue) & contract$SumOfisChangeOrder==0]<-0
-    contract$pChangeOrderBaseAndAllOptionsValue<-as.numeric(as.character(contract$pChangeOrderBaseAndAllOptionsValue))
-    contract$pChange3Sig<-round(
-      contract$pChangeOrderBaseAndAllOptionsValue,3)
-    contract$qCrai <- Hmisc::cut2(
-      contract$pChangeOrderBaseAndAllOptionsValue,c(
-        -0.001,
-        0.001,
-        0.15)
-    )
-  }
 
+  #Overrides
+  contract<-read_and_join_experiment( contract,
+                                      "CSIS_contract_inspection.csv",
+                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                      directory="contract/",
+                                      by=c("CSIScontractID"),
+                                      # add_var=c("EntityID","UnmodifiedEntityID"),
+                                      new_var_checked=FALSE,
+                                      create_lookup_rdata=FALSE
+  )
 
-  #ChangeOrderCeilingGrowth
-  if("ChangeOrderCeilingGrowth" %in% colnames(contract)){
-    contract$p_CBre<-(contract$ChangeOrderCeilingGrowth/
-                        contract$UnmodifiedContractBaseAndAllOptionsValue)+1
-    contract$p_CBre[
-      is.na(contract$p_CBre) & contract$b_CBre==0]<-1
+  #Ceilings
 
-    #l_CBre
-    contract$l_CBre<-na_non_positive_log(contract$p_CBre)
+  if ("UnmodifiedCeiling" %in% colnames(contract) ){
 
-  }
-  if ("NewWorkUnmodifiedBaseAndAll" %in% colnames(contract) ){
-    contract$pNewWorkUnmodifiedBaseAndAll<-contract$NewWorkUnmodifiedBaseAndAll/
-      contract$UnmodifiedContractBaseAndAllOptionsValue
-    contract$pNewWorkUnmodifiedBaseAndAll[
-      is.na(contract$pNewWorkUnmodifiedBaseAndAll) & contract$SumOfisChangeOrder==0]<-0
-    contract$pNewWorkUnmodifiedBaseAndAll<-as.numeric(as.character(contract$pNewWorkUnmodifiedBaseAndAll))
-    contract$pChange3Sig<-round(
-      contract$pNewWorkUnmodifiedBaseAndAll,3)
-  }
+    #Set entries to NA when we've inspected them and found them to be wrong.
+    contract$UnmodifiedCeiling[contract$override_unmodified_ceiling==TRUE]<-NA
 
-
-
-  if ("UnmodifiedContractBaseAndAllOptionsValue" %in% colnames(contract) ){
     #Deflate the dolla figures
     contract<-deflate(contract,
                       money_var = "Action_Obligation",
@@ -529,43 +509,47 @@ transform_contract<-function(
                       fy_var="StartFY"
     )
     contract<-deflate(contract,
-                      money_var = "UnmodifiedContractBaseAndAllOptionsValue",
+                      money_var = "UnmodifiedCeiling",
                       # deflator_var="OMB.2019",
                       fy_var="StartFY"
     )
     #l_Ceil
-    contract$l_Ceil<-na_non_positive_log(contract$UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18)
+
+    if(!"l_Ceil" %in% colnames(contract))
+      contract$l_Ceil<-na_non_positive_log(contract$UnmodifiedCeiling_OMB20_GDP18)
 
     # lowroundedcutoffs<-c(15000,100000,1000000,30000000)
     highroundedcutoffs<-c(15000,100000,1000000,10000000,75000000)
-    # contract$qLowCeiling <- Hmisc::cut2(contract$UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18,cuts=lowroundedcutoffs)
-    contract$qHighCeiling <- Hmisc::cut2(contract$UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18,cuts=highroundedcutoffs)
+    # contract$qLowCeiling <- Hmisc::cut2(contract$UnmodifiedCeiling_OMB20_GDP18,cuts=lowroundedcutoffs)
+    contract$qHighCeiling <- Hmisc::cut2(contract$UnmodifiedCeiling_OMB20_GDP18,cuts=highroundedcutoffs)
     rm(highroundedcutoffs)#lowroundedcutoffs,
 
 
-    if (all(levels(contract$Ceil)[1:5]==c("[0.00e+00,1.50e+04)",
-                                          "[1.50e+04,1.00e+05)",
-                                          "[1.00e+05,1.00e+06)",
-                                          "[1.00e+06,1.00e+07)",
-                                          "[1.00e+07,7.50e+07)"))|
-        all(levels(contract$Ceil)[1:5]==c("[0.0e+00,1.5e+04)",
-                                          "[1.5e+04,1.0e+05)",
-                                          "[1.0e+05,1.0e+06)",
-                                          "[1.0e+06,1.0e+07)",
-                                          "[1.0e+07,7.5e+07)"))
+    if (all(levels(contract$qHighCeiling)[1:5]==c("[0.00e+00,1.50e+04)",
+                                                  "[1.50e+04,1.00e+05)",
+                                                  "[1.00e+05,1.00e+06)",
+                                                  "[1.00e+06,1.00e+07)",
+                                                  "[1.00e+07,7.50e+07)"))|
+        all(levels(contract$qHighCeiling)[1:5]==c("[0.0e+00,1.5e+04)",
+                                                  "[1.5e+04,1.0e+05)",
+                                                  "[1.0e+05,1.0e+06)",
+                                                  "[1.0e+06,1.0e+07)",
+                                                  "[1.0e+07,7.5e+07)"))
     ){
-      contract$Ceil<-factor(contract$Ceil,
+      contract$qHighCeiling<-factor(contract$qHighCeiling,
 
-                            levels=levels(contract$Ceil),
-                            labels=c("[0,15k)",
-                                     "[15k,100k)",
-                                     "[100k,1m)",
-                                     "[1m,10m)",
-                                     "[10m,75m)",
-                                     "[75m+]"),
-                            ordered=TRUE
+                                    levels=levels(contract$qHighCeiling),
+                                    labels=c("[0,15k)",
+                                             "[15k,100k)",
+                                             "[100k,1m)",
+                                             "[1m,10m)",
+                                             "[10m,75m)",
+                                             "[75m+]"),
+                                    ordered=TRUE
       )
     }
+
+
 
 
     # if (all(levels(contract$qLowCeiling)[1:4]==c("[0.00e+00,1.50e+04)",
@@ -589,7 +573,7 @@ transform_contract<-function(
     # }
 
     contract<-contract %>% group_by(qHighCeiling) %>%
-      mutate(ceil.median.wt = median(UnmodifiedContractBaseAndAllOptionsValue.OMB20_GDP18))
+      mutate(ceil.median.wt = median(UnmodifiedCeiling_OMB20_GDP18))
 
     if (identical(levels(contract$qHighCeiling),c("[0,15k)",
                                                   "[15k,100k)",
@@ -606,7 +590,7 @@ transform_contract<-function(
                                           "10m+"=c("[75m+]",
                                                    "[10m,75m)"))
 
-      contract$Ceil.Big<-contract$Ceil
+      contract$Ceil.Big<-contract$qHighCeiling
       levels(contract$Ceil.Big)<- list("0k - <100k"=c("[15k,100k)",
                                                       "[0,15k)"),
                                        "100k - <10m"=c("[1m,10m)",
@@ -614,7 +598,7 @@ transform_contract<-function(
                                        "10m - <75m"=c("[10m,75m)"),
                                        "75m+"=c("[75m+]"))
 
-      contract$Ceil.1m<-contract$Ceil
+      contract$Ceil.1m<-contract$qHighCeiling
       levels(contract$Ceil.1m)<- list("0k - <1m"=c("[0,15k)",
                                                    "[15k,100k)",
                                                    "[100k,1m)"
@@ -654,6 +638,50 @@ transform_contract<-function(
     }
 
 
+
+
+
+    #ChangeOrderCeilingGrowth
+    if("ChangeOrderCeilingGrowth" %in% colnames(contract)){
+      #Set entries to NA when we've inspected them and found them to be wrong.
+      contract$ChangeOrderCeilingGrowth[contract$override_change_order_growth==TRUE]<-NA
+
+      contract$p_CBre<-(contract$ChangeOrderCeilingGrowth/
+                          contract$UnmodifiedCeiling_Then_Year)+1
+      contract$p_CBre[
+        is.na(contract$p_CBre) & contract$b_CBre==0]<-1
+
+
+      contract$pChangeOrderCeilingGrowth<-contract$ChangeOrderCeilingGrowth/
+        contract$UnmodifiedCeiling_Then_Year
+      contract$pChangeOrderCeilingGrowth[
+        is.na(contract$pChangeOrderCeilingGrowth) & contract$SumOfisChangeOrder==0]<-0
+      contract$pChangeOrderCeilingGrowth<-as.numeric(as.character(contract$pChangeOrderCeilingGrowth))
+      contract$pChange3Sig<-round(
+        contract$pChangeOrderCeilingGrowth,3)
+      contract$qCrai <- Hmisc::cut2(
+        contract$pChangeOrderCeilingGrowth,c(
+          -0.001,
+          0.001,
+          0.15)
+      )
+
+
+      #lp_CBre
+      contract$lp_CBre<-na_non_positive_log(contract$p_CBre)
+      #ln_CBre
+      contract$ln_CBre<-na_non_positive_log(contract$ChangeOrderCeilingGrowth)
+
+    }
+    if ("NewWorkUnmodifiedBaseAndAll" %in% colnames(contract) ){
+      contract$pNewWorkUnmodifiedBaseAndAll<-contract$NewWorkUnmodifiedBaseAndAll/
+        contract$UnmodifiedCeiling_Then_Year
+      contract$pNewWorkUnmodifiedBaseAndAll[
+        is.na(contract$pNewWorkUnmodifiedBaseAndAll) & contract$SumOfisChangeOrder==0]<-0
+      contract$pNewWorkUnmodifiedBaseAndAll<-as.numeric(as.character(contract$pNewWorkUnmodifiedBaseAndAll))
+      contract$pChange3Sig<-round(
+        contract$pNewWorkUnmodifiedBaseAndAll,3)
+    }
 
   }
 
@@ -895,7 +923,7 @@ transform_contract<-function(
     contract$Intl <- factor(contract$Intl,
                             c("Just U.S.", "Any International"))   #Manually remove "NA" from levels of variable Intl
     levels(contract$Intl)<- list("Just U.S."=c("Just U.S."),
-                            "Any Intl."=c("Any Intl.","Any International"))
+                                 "Any Intl."=c("Any Intl.","Any International"))
 
 
     contract$b_Intl<-contract$Intl
@@ -993,7 +1021,8 @@ transform_contract<-function(
   local_semi_clean_path<-"..\\data\\semi_clean\\"
   if(!dir.exists(local_semi_clean_path)& dir.exists("data\\semi_clean\\"))
     local_semi_clean_path<-"data\\semi_clean\\"
-  else(stop("Don't know where local_semi_clean directory is"))
+  else if(!dir.exists(local_semi_clean_path))
+    stop("Don't know where local_semi_clean directory is")
 
   if("NAICS" %in% colnames(contract) & "StartCY" %in% colnames(contract) ){
     naics.file<-NA
@@ -1001,7 +1030,7 @@ transform_contract<-function(
     if(file.exists("../output/naics_join.Rdata")) naics.file<-"../output/naics_join.Rdata"
     else if(file.exists("output/naics_join.Rdata")) naics.file<-"output/naics_join.Rdata"
     else if(file.exists(paste(local_semi_clean_path,"naics_join.Rdata",sep="")))
-       naics.file<-paste(local_semi_clean_path,"naics_join.Rdata",sep="")
+      naics.file<-paste(local_semi_clean_path,"naics_join.Rdata",sep="")
     else if(file.exists("../data/clean/naics_join.Rdata")) naics.file<-"../data/clean/naics_join.Rdata"
     else if(file.exists("data/clean/naics_join.Rdata")) naics.file<-"data/clean/naics_join.Rdata"
     if(!is.na(naics.file)){
@@ -1020,18 +1049,25 @@ transform_contract<-function(
       contract$NAICS[substr(contract$NAICS,1,5)==54171 &
                        !is.na(contract$NAICS)]<-54171
 
-      contract<-left_join(contract,NAICS6_join, by=c("StartCY"="CalendarYear",
-                                                     "NAICS"="NAICS6"))
+      if(!"def6_HHI_lag1" %in% colnames(contract))
+        contract<-left_join(contract,NAICS6_join, by=c("StartCY"="CalendarYear",
+                                                       "NAICS"="NAICS6"))
 
-      contract<-left_join(contract,NAICS5_join, by=c("StartCY"="CalendarYear",
-                                                     "NAICS5"="NAICS5"))
+      if(!"def5_HHI_lag1" %in% colnames(contract))
+        contract<-left_join(contract,NAICS5_join, by=c("StartCY"="CalendarYear",
+                                                       "NAICS5"="NAICS5"))
 
-      contract<-left_join(contract,NAICS4_join, by=c("StartCY"="CalendarYear",
-                                                     "NAICS4"="NAICS4"))
-      contract<-left_join(contract,NAICS3_join, by=c("StartCY"="CalendarYear",
-                                                     "NAICS3"="NAICS3"))
-      contract<-left_join(contract,NAICS2_join, by=c("StartCY"="CalendarYear",
-                                                     "NAICS2"="NAICS2"))
+      if(!"def4_HHI_lag1" %in% colnames(contract))
+        contract<-left_join(contract,NAICS4_join, by=c("StartCY"="CalendarYear",
+                                                       "NAICS4"="NAICS4"))
+
+      if(!"def3_HHI_lag1" %in% colnames(contract))
+        contract<-left_join(contract,NAICS3_join, by=c("StartCY"="CalendarYear",
+                                                       "NAICS3"="NAICS3"))
+
+      if(!"def2_HHI_lag1" %in% colnames(contract))
+        contract<-left_join(contract,NAICS2_join, by=c("StartCY"="CalendarYear",
+                                                       "NAICS2"="NAICS2"))
 
 
 
@@ -1146,7 +1182,8 @@ transform_contract<-function(
                                        "CrisisProductOrServiceArea",
                                        "ProductOrServiceCodeText"
                              ),
-                             new_var_checked=FALSE)
+                             new_var_checked=FALSE,
+                             lookup_char_as_factor=TRUE)
 
     contract$ProductServiceOrRnDarea<-factor(contract$ProductServiceOrRnDarea)
     contract$ProductOrServiceArea<-factor(contract$ProductOrServiceArea)
@@ -1165,7 +1202,8 @@ transform_contract<-function(
                              directory="office\\",
                              by="ContractingOfficeCode",
                              add_var=c("PlaceIntlPercent","CrisisPercent"),
-                             new_var_checked=FALSE)
+                             new_var_checked=FALSE,
+                             lookup_char_as_factor=TRUE)
 
 
     colnames(contract)[colnames(contract)=="PlaceIntlPercent"]<-"OffIntl"
@@ -1210,7 +1248,8 @@ transform_contract<-function(
                                                     "office_PBSCobligated_1year",
                                                     "office_obligatedamount_7year"),
                                           new_var_checked=FALSE,
-                                          create_lookup_rdata=TRUE
+                                          create_lookup_rdata=TRUE,
+                                          lookup_char_as_factor=TRUE
       )
 
 
@@ -1287,7 +1326,8 @@ transform_contract<-function(
                                           add_var=c("office_entity_paircount_7year","office_entity_numberofactions_1year",
                                                     "office_entity_obligatedamount_7year"),
                                           new_var_checked=FALSE,
-                                          create_lookup_rdata=TRUE)
+                                          create_lookup_rdata=TRUE,
+                                          lookup_char_as_factor=TRUE)
 
       # summary(contract$EntityID)
       # summary(contract$office_entity_numberofactions_1year)
@@ -1326,18 +1366,51 @@ transform_contract<-function(
                                         path="",
                                         directory=local_semi_clean_path,
                                         by=c("CSIScontractID"),
-                                        add_var=c("AnyUnmodifiedUnexercisedOptions"
-                                                  ,"AnyUnmodifiedUnexercisedOptionsWhy"
-                                                  ,"UnmodifiedBaseandExercisedOptionsValue"
-                                                  ,"ExercisedOptions"),
+                                        add_var=c("AnyUnmodifiedUnexercisedOptions",
+                                                  "AnyUnmodifiedUnexercisedOptionsWhy",
+                                                  "UnmodifiedBase",
+                                                  "SteadyScopeOptionGrowthAlone",
+                                                  "SteadyScopeOptionRescision",
+                                                  "AdminOptionModification"),
                                         new_var_checked=FALSE,
-                                        create_lookup_rdata=TRUE)
-
-    # summary(contract$ExercisedOptions)
-    # summary(contract$AnyUnmodifiedUnexercisedOptions)
-    # summary(factor(contract$AnyUnmodifiedUnexercisedOptionsWhy))
-    # summary(contract$UnmodifiedBaseandExercisedOptionsValue)
+                                        create_lookup_rdata=TRUE,
+                                        lookup_char_as_factor=TRUE)
   }
+
+  # summary(contract$SteadyScopeOptionGrowthAlone)
+  # summary(contract$AnyUnmodifiedUnexercisedOptions)
+  # summary(factor(contract$AnyUnmodifiedUnexercisedOptionsWhy))
+  # summary(contract$UnmodifiedBase)
+
+
+  if("UnmodifiedBase" %in% colnames(contract)){
+    contract$UnmodifiedBase[contract$UnmodifiedBase<=0]<-NA
+    contract$UnmodifiedBase[contract$override_unmodified_base==TRUE]<-NA
+    contract$SteadyScopeOptionGrowthAlone[contract$override_exercised_growth==TRUE]<-NA
+
+
+    contract$Base2Ceil<-contract$UnmodifiedCeiling_Then_Year/contract$UnmodifiedBase
+    contract$Base2Ceil[contract$Base2Ceil<1 | !is.finite(contract$Base2Ceil)]<-NA
+    contract$cl_Base2Ceil<-arm::rescale(log(contract$Base2Ceil))
+
+
+    contract$l_base<-log(contract$UnmodifiedBase+1)
+    contract$p_OptGrowth<-contract$SteadyScopeOptionGrowthAlone/contract$UnmodifiedBase+1
+    contract$lp_OptGrowth<-log(contract$p_OptGrowth)
+    contract$n_OptGrowth<-contract$SteadyScopeOptionGrowthAlone+1
+    contract$ln_OptGrowth<-log(contract$n_OptGrowth)
+
+    #*********** Options Growth
+
+    contract$Opt<-NA
+    contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==1& contract$SteadyScopeOptionGrowthAlone>0]<-"Option Growth"
+    contract$Opt[(contract$AnyUnmodifiedUnexercisedOptions==1)& contract$SteadyScopeOptionGrowthAlone==0]<-"No Growth"
+    contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==0]<-"Initial Base=Ceiling"
+    contract$Opt<-factor(contract$Opt)
+
+
+  }
+
 
   if("Crisis" %in% colnames(contract) &
      file.exists(paste(local_semi_clean_path,"ProductOrServiceCode.ProdServHistoryCFTEcoalesceLaggedConst.txt",sep=""))){
@@ -1354,7 +1427,8 @@ transform_contract<-function(
                              directory=local_semi_clean_path,
                              by=c("fiscal_year","OCO_GF","ProductOrServiceCode"),
                              add_var=c("CFTE_Rate_1year"),
-                             new_var_checked=FALSE)
+                             new_var_checked=FALSE,
+                             lookup_char_as_factor=TRUE)
     colnames(contract)[colnames(contract)=="fiscal_year"]<-"StartFY"
     # summary(contract$CFTE_Rate_1year)
     contract$l_CFTE<-log(contract$CFTE_Rate_1year)
@@ -1383,8 +1457,8 @@ transform_contract<-function(
     contract$ObligationWT[contract$ObligationWT<0]<-NA
   }
 
-  if("Action_Obligation.Then.Year" %in% colnames(contract)){
-    contract$ObligationWT_Then_Year<-contract$Action_Obligation.Then.Year
+  if("Action_Obligation_Then_Year" %in% colnames(contract)){
+    contract$ObligationWT_Then_Year<-contract$Action_Obligation_Then_Year
     contract$ObligationWT_Then_Year[contract$ObligationWT_Then_Year<0]<-NA
   }
 
