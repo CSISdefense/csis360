@@ -44,6 +44,25 @@ swap_in_zip<-function(filename,path,directory=""){
   input
 }
 
+#' Turn a factor  into a number
+#'
+#' @param x The factor or character string
+#'
+#' @return The same column in numerical format.
+#'
+#' @details Returns the variable after removing $s and ,s.
+#'
+#' @examples get_delim("test.csv")
+FactorToNumber<-function(x){
+  if ((is.factor(x))||(is.character(x))){
+    x<-gsub('\\$','',as.character( x))
+    x<-as.double(gsub('\\,','',as.character( x)))
+  }
+  x
+}
+
+
+
 #' Return the appropriate delimeter for the file type
 #'
 #' @param filename The name of the data file
