@@ -109,6 +109,7 @@ replace_nas_with_unlabeled<- function(data,
                                       var,
                                       replacement="Unlabeled"){
   data<-as.data.frame(data)
+  if(is.factor(var)) var<-as.character(var)
 
   if(!is.factor(data[,var]))
     data[,var]<-factor(data[,var])
@@ -648,7 +649,7 @@ read_and_join_experiment<-function(
     }
   }
 
-  data
+ return(data)
 }
 
 
@@ -720,8 +721,7 @@ deflate <- function(
 
   #Create current and constant dollar variants of money_var
   data[[paste(money_var,deflator_var,sep="_")]] <- as.numeric(as.character(
-    data[[money_var]])) /
-    data[[deflator_var]]
+    data[[money_var]])) / as.numeric(data[[deflator_var]])
 
   colnames(data)[colnames(data)==money_var]<-paste(money_var,"Then_Year",sep="_")
 
@@ -791,3 +791,4 @@ text_to_number<-function(x){
   }
   x
 }
+
