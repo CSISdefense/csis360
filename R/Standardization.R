@@ -106,15 +106,21 @@ group_data_for_plot <-function(
   # account for potential spaces in breakout and x_var
   # note that this doesn't test for whether quotes already exist
 
+  if(!y_var %in% colnames(data)) stop(paste("y_var: ",y_var,"is missing from data."))
+  if(is.na(breakout)) breakout<-NULL
   if(grepl(" ", x_var)) x_var <- paste0("`", x_var, "`")
+  if(!x_var %in% colnames(data)) stop(paste("x_var: ",x_var,"is missing from data."))
   if(length(breakout) >= 1){
     if(grepl(" ", breakout[1])) breakout[1] <- paste0("`", breakout[1], "`")
+    if(!breakout[1] %in% colnames(data)) stop(paste("breakout[1]: ",breakout[1],"is missing from data."))
   }
   if(length(breakout) >= 2){
     if(grepl(" ", breakout[2])) breakout[2] <- paste0("`", breakout[2], "`")
+    if(!breakout[2] %in% colnames(data)) stop(paste("breakout[2]: ",breakout[1],"is missing from data."))
   }
   if(length(breakout) == 3){
     if(grepl(" ", breakout[3])) breakout[3] <- paste0("`", breakout[3], "`")
+    if(!breakout[3] %in% colnames(data)) stop(paste("breakout[3]: ",breakout[1],"is missing from data."))
   }
 
   data<-data %>% filter(!is.na(!! as.name(y_var)))
@@ -195,7 +201,7 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
       breakout
     )
   }
-
+  shown_data<-as.data.frame(shown_data)
   if(!is.na(start_fy) & !is.na(end_fy)){
     # filter by year - see https://tinyurl.com/lm2u8xs
     if(is.numeric(shown_data[,fy_var])){

@@ -4,13 +4,14 @@ library(ggplot2)
 library(dplyr)
 library(tidyverse)
 library(magrittr)
-#ERRORS: prompts general warnings regarding being built under R version 3.5.3 and replacing previous imports. Warnings are N/A to running of code.
+#WARNING: [ignore] prompts general warnings regarding being built under R version 3.5.3 and replacing previous imports. Warnings are N/A to running of code.
 
 # read in data
 full_data <- read.csv(system.file("extdata",
                                   "2016_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
                                   package = "csis360")  ,
    na.strings=c("NA","NULL"))
+full_data <- standardize_variable_names(full_data)
 
 #context("remove_bom")
 bom_data<-remove_bom(full_data)
@@ -70,62 +71,9 @@ def_data<-read_and_join(def_data,
                         by="Vendor.Size",
                         add_var="Shiny.VendorSize"
 )
-# ERROR: creating unexpected ',' when listing components
-
-# classify competition and a zip file
-
-# debug()
-# https://github.com/CSISdefense/csis360/blob/master/inst/extdata/Lookup_SQL_CompetitionClassification.zip
-# https://github.com/CSISdefense/csis360/blob/master/inst/extdata/Lookup_SQL_CompetitionClassification.zip
-# https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/Lookup_SQL_CompetitionClassification.zip
-# https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/DLA_Contract_SP_ContractPBLscoreSubCustomerProdServOffice.txt
-# https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/DLA_Contract_SP_ContractPBLscoreSubCustomerProdServOffice.txt
-# https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/DLA_Contract_SP_ContractPBLscoreSubCustomerProdServOffice.txt
-#
-#
-# https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/Lookup_SQL_CompetitionClassification.zip
-# file.exists("https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/Lookup_SQL_CompetitionClassification.zip")
-# file.exists("https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/DLA_Contract_SP_ContractPBLscoreSubCustomerProdServOffice.txt")
-debug(read_and_join_experiment)
-def_data<-read_and_join_experiment(def_data,
-                        "DLA_Contract_SP_ContractPBLscoreSubCustomerProdServOffice.txt",
-                        zip_file="DLA_Contract_SP_ContractPBLscoreSubCustomerProdServOffice.txt",
-                        by=c("CompetitionClassification","ClassifyNumberOfOffers"),
-                        replace_na_var="ClassifyNumberOfOffers",
-                        path="https://raw.githubusercontent.com/CSISdefense/csis360/master/inst/extdata/",
-                        directory="",
-                        add_var=c("Competition.sum",
-                                           "Competition.multisum",
-                                           "Competition.effective.only",
-                                           "No.Competition.sum")
-)
 
 
-#Classify Product or Service Codes
-def_data<-read_and_join(def_data,
-                        "LOOKUP_Buckets.csv" ,
-                        #by="ProductOrServiceArea" ,
-                        add_var="ProductServiceOrRnDarea.sum" ,
-                        replace_na_var = "ProductOrServiceArea"
-)
-
-def_data<-replace_nas_with_unlabeled(def_data,"SubCustomer","Uncategorized")
-
-def_data<-read_and_join(def_data,
-                        "Lookup_SubCustomer.csv",
-                        by=c("Customer","SubCustomer"),
-                        add_var="SubCustomer.platform",
-                        new_var_checked=TRUE
-)
-
-labels_and_colors<-prepare_labels_and_colors(def_data,"SubCustomer")
-
-def_data<-replace_nas_with_unlabeled(def_data,"PlatformPortfolio")
-
-labels_and_colors<-prepare_labels_and_colors(def_data)
-
-column_key<-get_column_key(def_data)
-# WARNING: Produces warning about coercing into character vector. Ignore.
+#WARNING: Additional warning messages about coercing into character vector.
 
 # write output to CleanedVendorSize.csv
 
@@ -196,7 +144,6 @@ DLApblScore<-read_and_join(DLApblScore,
 
 
 
-
 # format_data_for_plot(full_data,
 #   "Fiscal.Year",
 #   "")
@@ -211,12 +158,12 @@ component_data <- format_data_for_plot(data=full_data,
                                    fy_var="Fiscal.Year",
                                    start_fy=2009,
                                    end_fy=2016,
-                                   y_var="Action_Obligation.2016",
+                                   y_var="Action.Obligation.2016",
                                    color_var="SubCustomer.platform",
                                    facet_var="SubCustomer.platform",
                                    labels_and_colors=labels_and_colors)
 
-
+#ERROR:  Error in as.POSIXlt.numeric(x, tz = tz(x)) : 'origin' must be supplied
 
 build_plot(data=component_data,
            chart_geom="Bar Chart",
@@ -228,6 +175,8 @@ build_plot(data=component_data,
            labels_and_colors=labels_and_colors,
            column_key=column_key)+theme(legend.position = "right")
 
+#ERROR: error in as.data.frame(data) object 'component_data' not found
+
 build_plot(data=component_data,
            chart_geom="Bar Chart",
            share=FALSE,
@@ -238,18 +187,19 @@ build_plot(data=component_data,
            labels_and_colors=labels_and_colors,
            column_key=column_key,legend=FALSE)
 
+#ERROR: error in as.data.frame(data) object 'component_data' not found
 
 milserv_data <- format_data_for_plot(data=full_data,
                                        share=FALSE,
                                        fy_var="Fiscal.Year",
                                        start_fy=2009,
                                        end_fy=2016,
-                                       y_var="Action_Obligation.2016",
+                                       y_var="Action.Obligation.2016",
                                        color_var="SubCustomer.platform",
                                        facet_var="SubCustomer.platform",
                                        labels_and_colors=labels_and_colors)
 
-
+#ERROR:  Error in as.POSIXlt.numeric(x, tz = tz(x)) : 'origin' must be supplied
 
 build_plot(data=milserv_data,
            chart_geom="Bar Chart",
@@ -261,6 +211,8 @@ build_plot(data=milserv_data,
            labels_and_colors=labels_and_colors,
            column_key=column_key)+theme(legend.position = "right")
 
+#ERROR: as.data.frame(data) : object 'milserv_data' not found
+
 build_plot(data=milserv_data,
            chart_geom="Bar Chart",
            share=FALSE,
@@ -271,19 +223,19 @@ build_plot(data=milserv_data,
            labels_and_colors=labels_and_colors,
            column_key=column_key,legend=FALSE)
 
+#ERROR: as.data.frame(data) : object 'milserv_data' not found
 
 pp_data <- format_data_for_plot(data=full_data,
                                    share=FALSE,
                                    fy_var="Fiscal.Year",
                                    start_fy=2009,
                                    end_fy=2016,
-                                   y_var="Action_Obligation.2016",
+                                   y_var="Action.Obligation.2016",
                                    color_var="PlatformPortfolio",
                                    facet_var="PlatformPortfolio",
                                    labels_and_colors=labels_and_colors)
 
-
-
+#ERROR: Error in as.POSIXlt.numeric(x, tz = tz(x)) : 'origin' must be supplied
 build_plot(data=pp_data,
            chart_geom="Bar Chart",
            share=FALSE,
@@ -295,6 +247,8 @@ build_plot(data=pp_data,
            column_key=column_key,
            legend=FALSE)
 
+#ERROR: Error in as.data.frame(data) : object 'pp_data' not found
+
 build_plot(data=pp_data,
            chart_geom="Bar Chart",
            share=FALSE,
@@ -305,19 +259,19 @@ build_plot(data=pp_data,
            labels_and_colors=labels_and_colors,
            column_key=column_key)
 
-colnames(full_data)
-
+#ERROR: Error in as.data.frame(data) : object 'pp_data' not found
 
 area_data <- format_data_for_plot(data=full_data,
                                 share=FALSE,
                                 fy_var="Fiscal.Year",
                                 start_fy=2009,
                                 end_fy=2016,
-                                y_var="Action_Obligation.2016",
+                                y_var="Action.Obligation.2016",
                                 color_var="ProductServiceOrRnDarea.sum",
                                 facet_var="None",
                                 labels_and_colors=labels_and_colors)
 
+#ERROR: Error in as.POSIXlt.numeric(x, tz = tz(x)) : 'origin' must be supplied
 
 build_plot(data=area_data,
            chart_geom="Bar Chart",
@@ -329,17 +283,19 @@ build_plot(data=area_data,
            labels_and_colors=labels_and_colors,
            column_key=column_key)
 
+#ERROR: in as.data.frame(data) : object 'area_data' not found
 
 area_vendor_data <- format_data_for_plot(data=full_data,
                                   share=FALSE,
                                   fy_var="Fiscal.Year",
                                   start_fy=2009,
                                   end_fy=2016,
-                                  y_var="Action_Obligation.2016",
+                                  y_var="Action.Obligation.2016",
                                   color_var="ProductServiceOrRnDarea.sum",
                                   facet_var="Shiny.VendorSize",
                                   labels_and_colors=labels_and_colors)
 
+#ERROR:  Error in as.POSIXlt.numeric(x, tz = tz(x)) : 'origin' must be supplied
 
 build_plot(data=subset(area_vendor_data,ProductServiceOrRnDarea.sum!="Unlabeled"),
            chart_geom="Bar Chart",
@@ -351,18 +307,19 @@ build_plot(data=subset(area_vendor_data,ProductServiceOrRnDarea.sum!="Unlabeled"
            labels_and_colors=labels_and_colors,
            column_key=column_key)
 
-
+#ERROR:  Error in subset(area_vendor_data, ProductServiceOrRnDarea.sum != "Unlabeled") : object 'area_vendor_data' not found
 
 comp_data <- format_data_for_plot(data=full_data,
                                          share=TRUE,
                                          fy_var="Fiscal.Year",
                                          start_fy=2009,
                                          end_fy=2016,
-                                         y_var="Action_Obligation.2016",
+                                         y_var="Action.Obligation.2016",
                                          color_var="Competition.effective.only",
                                          # facet_var="None",
                                          labels_and_colors=labels_and_colors)
 
+#ERROR: 'area_vendor_data' not found
 
 build_plot(data=subset(comp_data,Competition.effective.only!="Unlabeled"),
            chart_geom="Line Chart",
@@ -374,6 +331,8 @@ build_plot(data=subset(comp_data,Competition.effective.only!="Unlabeled"),
            labels_and_colors=labels_and_colors,
            column_key=column_key)
 
+#ERROR:  Error in subset(comp_data, Competition.effective.only != "Unlabeled") : object 'comp_data' not found
+
 #Defense Contracts
 load(file="tests/testthat/defense_CSIScontractID_mini.Rdata")
 
@@ -382,20 +341,12 @@ head(def)
 def<-csis360::transform_contract(def)
 def<-csis360::transform_contract(def)
 
+#ERROR: Error in read_and_join_experiment(contract, "CSIS_contract_inspection.csv",  : CSIScontractID not present in data
+
 
 load(def_full,file="tests/testthat/def_all_mini.Rdata")
 
-
-def_full<-csis360::read_and_join_experiment(data=def_full
-                                            , "Contract.SP_ContractLocationCustomer.txt"
-                                            ,path=""
-                                            ,dir="tests/testthat/"
-                                            ,by="CSIScontractID"
-                                            ,new_var_checked=FALSE
-)
-
-
-
+#ERROR: Error in load(def_full, file = "tests/testthat/def_all_mini.Rdata") : object 'def_full' not found
 def_full<-csis360::read_and_join_experiment(data=def_full
                                             , "Contract.SP_ContractUnmodifiedandOutcomeDetailsCustomer.txt"
                                             ,path=""
@@ -403,6 +354,9 @@ def_full<-csis360::read_and_join_experiment(data=def_full
                                             ,by="CSIScontractID"
                                             ,new_var_checked=FALSE
 )
+
+#Error in swap_in_zip(lookup_file, path, directory) : tests/testthat/Contract.SP_ContractUnmodifiedandOutcomeDetailsCustomer.txt does not exist
+
 debug(read_and_join_experiment)
 def_full<-read_and_join_experiment(data=def_full
                                             , "Contract.SP_ContractUnmodifiedAndOutcomeDetailsCustomer.txt"
@@ -431,21 +385,34 @@ readr::read_delim(
   trim_ws=TRUE
 )
 
+#ERROR: 'tests/testthat/Contract_SP_ContractDefenseSubCustomer.zip' does not exist in current working directory ('C:/Users/MGagne/Desktop/Current Projects/csis360').
+
 file.info("tests/testthat/Contract_SP_ContractDefenseSubCustomer.zip")$size
 
 
 read.table(unz(description="tests/testthat/Contract.SP_ContractUnmodifiedandOutcomeDetailsCustomer.zip",
              filename="Contract.SP_ContractUnmodifiedandOutcomeDetailsCustomer.txt"))
 
+#ERROR: in open.connection(file, "rt") : cannot open the connection
+#WARNING: Cannot open zip file
+
 read.table(unz(description="tests/testthat/Defense_Contract_SP_ContractBucketPlatformCustomer.zip",
                filename="Defense_Contract_SP_ContractBucketPlatformCustomer.csv"))
+
+#ERROR: in open.connection(file, "rt") : cannot open the connection
+#WARNING: Cannot open zip file
 
 read.table(unz(description="tests/testthat/Contract_SP_ContractDefenseSubCustomer.zip",
                filename="Contract_SP_ContractDefenseSubCustomer.csv"),
            header=TRUE)
+
+#ERROR: in open.connection(file, "rt") : cannot open the connection
+#WARNING: Cannot open zip file
 
 
 read.table(unz(description="tests/testthat/Defense_Contract_SP_ContractBucketPlatformCustomer.zip",
                filename="Defense_Contract_SP_ContractBucketPlatformCustomer.csv"),
            header=TRUE)
 
+#ERROR: in open.connection(file, "rt") : cannot open the connection
+#WARNING: Cannot open zip file
