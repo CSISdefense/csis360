@@ -644,9 +644,10 @@ transform_contract<-function(
     #ChangeOrderCeilingGrowth
     if("ChangeOrderCeilingGrowth" %in% colnames(contract)){
       #Set entries to NA when we've inspected them and found them to be wrong.
-      contract$ChangeOrderCeilingGrowth[contract$override_change_order_growth==TRUE]<-NA
+      if(!"n_CBre" %in% colnames(contract)) stop("n_CBre is missing. Rerun the relevant create dataset file.")
+      contract$n_CBre[contract$override_change_order_growth==TRUE]<-NA
 
-      contract$p_CBre<-(contract$ChangeOrderCeilingGrowth/
+      contract$p_CBre<-(contract$n_CBre/
                           contract$UnmodifiedCeiling_Then_Year)+1
       contract$p_CBre[
         is.na(contract$p_CBre) & contract$b_CBre==0]<-1
@@ -673,15 +674,15 @@ transform_contract<-function(
       contract$ln_CBre<-na_non_positive_log(contract$ChangeOrderCeilingGrowth)
 
     }
-    if ("NewWorkUnmodifiedBaseAndAll" %in% colnames(contract) ){
-      contract$pNewWorkUnmodifiedBaseAndAll<-contract$NewWorkUnmodifiedBaseAndAll/
-        contract$UnmodifiedCeiling_Then_Year
-      contract$pNewWorkUnmodifiedBaseAndAll[
-        is.na(contract$pNewWorkUnmodifiedBaseAndAll) & contract$SumOfisChangeOrder==0]<-0
-      contract$pNewWorkUnmodifiedBaseAndAll<-as.numeric(as.character(contract$pNewWorkUnmodifiedBaseAndAll))
-      contract$pChange3Sig<-round(
-        contract$pNewWorkUnmodifiedBaseAndAll,3)
-    }
+    # if ("NewWorkUnmodifiedBaseAndAll" %in% colnames(contract) ){
+    #   contract$pNewWorkUnmodifiedBaseAndAll<-contract$NewWorkUnmodifiedBaseAndAll/
+    #     contract$UnmodifiedCeiling_Then_Year
+    #   contract$pNewWorkUnmodifiedBaseAndAll[
+    #     is.na(contract$pNewWorkUnmodifiedBaseAndAll) & contract$SumOfisChangeOrder==0]<-0
+    #   contract$pNewWorkUnmodifiedBaseAndAll<-as.numeric(as.character(contract$pNewWorkUnmodifiedBaseAndAll))
+    #   contract$pChange3Sig<-round(
+    #     contract$pNewWorkUnmodifiedBaseAndAll,3)
+    # }
 
   }
 
