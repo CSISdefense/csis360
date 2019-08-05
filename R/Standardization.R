@@ -658,6 +658,11 @@ transform_contract<-function(
       contract$p_CBre[
         is.na(contract$p_CBre) & contract$b_CBre==0]<-1
 
+      contract<-deflate(contract,
+                        money_var = "n_CBre",
+                        # deflator_var="OMB.2019",
+                        fy_var="StartFY"
+      )
 
       contract$pChangeOrderCeilingGrowth<-contract$ChangeOrderCeilingGrowth/
         contract$UnmodifiedCeiling_Then_Year
@@ -677,7 +682,8 @@ transform_contract<-function(
       #lp_CBre
       contract$lp_CBre<-na_non_positive_log(contract$p_CBre)
       #ln_CBre
-      contract$ln_CBre<-na_non_positive_log(contract$ChangeOrderCeilingGrowth)
+      contract$ln_CBre_Then_Year<-na_non_positive_log(contract$n_CBre_Then_Year)
+      contract$ln_CBre_OMB20_GDP18<-na_non_positive_log(contract$n_CBre_OMB20_GDP18)
 
     }
     # if ("NewWorkUnmodifiedBaseAndAll" %in% colnames(contract) ){
@@ -1367,55 +1373,41 @@ transform_contract<-function(
     colnames(contract)[colnames(contract)=="ContractingOfficeCode"]<-"Office"
     colnames(contract)[colnames(contract)=="fiscal_year"]<-"StartFY"
   }
-  if(file.exists(paste(local_semi_clean_path,"Contract.sp_ContractExercisedOptions.txt",sep=""))){
-    contract<-read_and_join_experiment( contract,
-                                        "Contract.sp_ContractExercisedOptions.txt",
-                                        path="",
-                                        directory=local_semi_clean_path,
-                                        by=c("CSIScontractID"),
-                                        add_var=c("AnyUnmodifiedUnexercisedOptions",
-                                                  "AnyUnmodifiedUnexercisedOptionsWhy",
-                                                  "UnmodifiedBase",
-                                                  "SteadyScopeOptionGrowthAlone",
-                                                  "SteadyScopeOptionRescision",
-                                                  "AdminOptionModification"),
-                                        new_var_checked=FALSE,
-                                        create_lookup_rdata=TRUE,
-                                        lookup_char_as_factor=TRUE)
-  }
 
-  # summary(contract$SteadyScopeOptionGrowthAlone)
-  # summary(contract$AnyUnmodifiedUnexercisedOptions)
-  # summary(factor(contract$AnyUnmodifiedUnexercisedOptionsWhy))
-  # summary(contract$UnmodifiedBase)
-
-
+  #Base and Options
   if("UnmodifiedBase" %in% colnames(contract)){
     contract$UnmodifiedBase[contract$UnmodifiedBase<=0]<-NA
     contract$UnmodifiedBase[contract$override_unmodified_base==TRUE]<-NA
-    contract$SteadyScopeOptionGrowthAlone[contract$override_exercised_growth==TRUE]<-NA
 
+    contract<-deflate(contract,
+                      money_var = "UnmodifiedBase",
+                      # deflator_var="OMB.2019",
+                      fy_var="StartFY"
+    )
 
-    contract$Base2Ceil<-contract$UnmodifiedCeiling_Then_Year/contract$UnmodifiedBase
+    contract$Base2Ceil<-contract$UnmodifiedCeiling_Then_Year/contract$UnmodifiedBase_Then_Year
     contract$Base2Ceil[contract$Base2Ceil<1 | !is.finite(contract$Base2Ceil)]<-NA
     contract$cl_Base2Ceil<-arm::rescale(log(contract$Base2Ceil))
 
+    contract$ln_base<-na_non_positive_log(contract$UnmodifiedBase_OMB20_GDP18)
 
-    contract$l_base<-log(contract$UnmodifiedBase+1)
-    contract$p_OptGrowth<-contract$SteadyScopeOptionGrowthAlone/contract$UnmodifiedBase+1
-    contract$lp_OptGrowth<-log(contract$p_OptGrowth)
-    contract$n_OptGrowth<-contract$SteadyScopeOptionGrowthAlone+1
-    contract$ln_OptGrowth<-log(contract$n_OptGrowth)
+    if("SteadyScopeOptionGrowthAlone" %in% colnames(contract)){
+      contract$SteadyScopeOptionGrowthAlone[contract$override_exercised_growth==TRUE]<-NA
 
-    #*********** Options Growth
+      contract$p_OptGrowth<-contract$SteadyScopeOptionGrowthAlone/contract$UnmodifiedBase_Then_Year+1
+      contract$lp_OptGrowth<-log(contract$p_OptGrowth)
+      contract$n_OptGrowth<-contract$SteadyScopeOptionGrowthAlone+1
+      contract$ln_OptGrowth<-log(contract$n_OptGrowth)
 
-    contract$Opt<-NA
-    contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==1& contract$SteadyScopeOptionGrowthAlone>0]<-"Option Growth"
-    contract$Opt[(contract$AnyUnmodifiedUnexercisedOptions==1)& contract$SteadyScopeOptionGrowthAlone==0]<-"No Growth"
-    contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==0]<-"Initial Base=Ceiling"
-    contract$Opt<-factor(contract$Opt)
+      #*********** Options Growth
 
+      contract$Opt<-NA
+      contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==1& contract$SteadyScopeOptionGrowthAlone>0]<-"Option Growth"
+      contract$Opt[(contract$AnyUnmodifiedUnexercisedOptions==1)& contract$SteadyScopeOptionGrowthAlone==0]<-"No Growth"
+      contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==0]<-"Initial Base=Ceiling"
+      contract$Opt<-factor(contract$Opt)
 
+    }
   }
 
 
