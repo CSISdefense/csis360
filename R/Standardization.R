@@ -1391,19 +1391,25 @@ transform_contract<-function(
 
     contract$ln_base<-na_non_positive_log(contract$UnmodifiedBase_OMB20_GDP18)
 
-    if("SteadyScopeOptionGrowthAlone" %in% colnames(contract)){
-      contract$SteadyScopeOptionGrowthAlone[contract$override_exercised_growth==TRUE]<-NA
+    if("n_OptGrowth" %in% colnames(contract)){
+      contract$n_OptGrowth[contract$override_exercised_growth==TRUE]<-NA
 
-      contract$p_OptGrowth<-contract$SteadyScopeOptionGrowthAlone/contract$UnmodifiedBase_Then_Year+1
+      contract$p_OptGrowth<-contract$n_OptGrowth/contract$UnmodifiedBase_Then_Year+1
       contract$lp_OptGrowth<-log(contract$p_OptGrowth)
-      contract$n_OptGrowth<-contract$SteadyScopeOptionGrowthAlone+1
       contract$ln_OptGrowth<-log(contract$n_OptGrowth)
+
+
+      contract<-deflate(contract,
+                        money_var = "n_OptGrowth",
+                        # deflator_var="OMB.2019",
+                        fy_var="StartFY"
+      )
 
       #*********** Options Growth
 
       contract$Opt<-NA
-      contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==1& contract$SteadyScopeOptionGrowthAlone>0]<-"Option Growth"
-      contract$Opt[(contract$AnyUnmodifiedUnexercisedOptions==1)& contract$SteadyScopeOptionGrowthAlone==0]<-"No Growth"
+      contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==1& contract$n_OptGrowth_Then_Year>0]<-"Option Growth"
+      contract$Opt[(contract$AnyUnmodifiedUnexercisedOptions==1)& contract$n_OptGrowth_Then_Year==0]<-"No Growth"
       contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==0]<-"Initial Base=Ceiling"
       contract$Opt<-factor(contract$Opt)
 
