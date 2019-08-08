@@ -52,7 +52,7 @@ swap_in_zip<-function(filename,path,directory=""){
 #'
 #' @details Returns the variable after removing $s and ,s.
 #'
-#' @examples get_delim("test.csv")
+#' @examples FactorToNumber("5")
 FactorToNumber<-function(x){
   if ((is.factor(x))||(is.character(x))){
     x<-gsub('\\$','',as.character( x))

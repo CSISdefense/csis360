@@ -1396,7 +1396,7 @@ transform_contract<-function(
 
       contract$p_OptGrowth<-contract$n_OptGrowth/contract$UnmodifiedBase_Then_Year+1
       contract$lp_OptGrowth<-log(contract$p_OptGrowth)
-      contract$ln_OptGrowth<-log(contract$n_OptGrowth)
+
 
 
       contract<-deflate(contract,
@@ -1406,6 +1406,8 @@ transform_contract<-function(
       )
 
       #*********** Options Growth
+
+      contract$ln_OptGrowth_OMB20_GDP18<-log(contract$n_OptGrowth_OMB20_GDP18)
 
       contract$Opt<-NA
       contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==1& contract$n_OptGrowth_Then_Year>0]<-"Option Growth"
@@ -1489,8 +1491,8 @@ transform_contract<-function(
 #'
 #' @param smp A data frame of contracts ready for statistical analysis, which must contain CSIScontractID.
 #' @param full A data frame of contracts with no key missing data and which must contain CSIScontractID.
-#' @col Speific columns to add, if blank, add all in full missing from sample
-#' @drop_and_replace If true, drop rows from sample missing from full. Then replace them with new rows from full.
+#' @param col Speific columns to add, if blank, add all in full missing from sample
+#' @param drop_and_replace If true, drop rows from sample missing from full. Then replace them with new rows from full.
 #'
 #' @return The updated sample
 #'

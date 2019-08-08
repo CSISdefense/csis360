@@ -4,9 +4,8 @@
 \alias{deflate}
 \title{Deflation using GitHub-based CSV file}
 \usage{
-deflate(data, money_var = "Amount", fy_var = "Fiscal.Year",
-  deflator_file = "Lookup_Deflators.csv",
-  deflator_var = "Deflator.2017",
+deflate(data, money_var = "Amount", fy_var = "Fiscal_Year",
+  deflator_file = "Lookup_Deflators.csv", deflator_var = "OMB20_GDP18",
   path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
   directory = "economic/", deflator_dropped = TRUE)
 }
