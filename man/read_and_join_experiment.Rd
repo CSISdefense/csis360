@@ -6,10 +6,11 @@
 \usage{
 read_and_join_experiment(data, lookup_file,
   path = "https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
-  directory = "Lookups\\\\", by = NULL, replace_na_var = NULL,
+  directory = "Lookups/", by = NULL, replace_na_var = NULL,
   overlap_var_replaced = TRUE, add_var = NULL,
   new_var_checked = TRUE, skip_check_var = NULL, zip_file = NULL,
-  col_types = NULL, case_sensitive = TRUE, missing_file = NULL)
+  col_types = NULL, case_sensitive = TRUE, missing_file = NULL,
+  create_lookup_rdata = FALSE, lookup_char_as_factor = FALSE)
 }
 \arguments{
 \item{data}{The data frame to be joined}
@@ -35,6 +36,8 @@ read_and_join_experiment(data, lookup_file,
 \item{zip_file}{The source zip file.}
 
 \item{missing_file}{Filename to output any unmatched variables for easy of processing}
+
+\item{create_lookup_rdata}{Whether to create a rdata file using the lookup for ease of future inputing}
 }
 \value{
 The data frame plus new columns from the lookup file. If new_var_checked is
