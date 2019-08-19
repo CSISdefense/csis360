@@ -1389,7 +1389,7 @@ transform_contract<-function(
     contract$Base2Ceil[contract$Base2Ceil<1 | !is.finite(contract$Base2Ceil)]<-NA
     contract$cl_Base2Ceil<-arm::rescale(log(contract$Base2Ceil))
 
-    contract$ln_base<-na_non_positive_log(contract$UnmodifiedBase_OMB20_GDP18)
+    contract$l_Base<-na_non_positive_log(contract$UnmodifiedBase_OMB20_GDP18)
 
     if("n_OptGrowth" %in% colnames(contract)){
       contract$n_OptGrowth[contract$override_exercised_growth==TRUE]<-NA
@@ -1442,6 +1442,8 @@ transform_contract<-function(
 
 
 
+  if("l_Base" %in% colnames(contract))
+    contract$cl_Ceil<-arm::rescale(contract$l_Base)
 
   if("l_Ceil" %in% colnames(contract))
     contract$cl_Ceil<-arm::rescale(contract$l_Ceil)
