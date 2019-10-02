@@ -550,8 +550,7 @@ transform_contract<-function(
                                              "[100k,1m)",
                                              "[1m,10m)",
                                              "[10m,75m)",
-                                             "[75m+]"),
-                                    ordered=TRUE
+                                             "[75m+]")
       )
     }
 
