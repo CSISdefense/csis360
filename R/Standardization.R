@@ -469,7 +469,12 @@ transform_contract<-function(
 
   #b_Term
   if("Term" %in% colnames(contract)){
-    contract$b_Term<-ifelse(contract$Term %in% c("Terminated",1),1,NA)
+    #Not sure why Term was swapped to binary, but fixing it.
+    if(!is.factor(contract$Term)) contract$Term<-factor(contract$Term)
+      levels(contract)<- list("Partial or Complete Termination"=c("Partial or Complete Termination","Terminated","1",1),
+                                   "Unterminated"=c("Unterminated","0",0))
+
+    contract$b_Term<-ifelse(contract$Term %in% c("Partial or Complete Termination","Terminated",1),1,NA)
     contract$b_Term[contract$Term %in% c("Unterminated",0)]<-0
     #Create a jittered version of Term for display purposes
     #Unlike geom_jitter, this caps values at 0 and 1
@@ -715,7 +720,7 @@ transform_contract<-function(
     contract$capped_UnmodifiedDays <- ifelse(contract$UnmodifiedDays > 3650, 3650, contract$UnmodifiedDays)
 
     contract$l_Days<-na_non_positive_log(contract$UnmodifiedDays)
-    contract$cl_Days<-arm::rescale(contract$l_Days)
+    contract$cln_Days<-arm::rescale(contract$l_Days)
 
     contract$capped_l_Days<-na_non_positive_log(contract$capped_UnmodifiedDays)
     contract$capped_cl_Days<-arm::rescale(contract$capped_l_Days)
@@ -1088,7 +1093,7 @@ transform_contract<-function(
       contract$c_def6_HHI_lag1<-arm::rescale(contract$def6_HHI_lag1)
 
       contract$l_def6_HHI_lag1<-na_non_positive_log(contract$def6_HHI_lag1)
-      contract$cl_def6_HHI_lag1<-arm::rescale(contract$l_def6_HHI_lag1)
+      contract$cln_Def6HHI<-arm::rescale(contract$l_def6_HHI_lag1)
 
       contract$def5_HHI_lag1[contract$def5_HHI_lag1==0]<-NA
       contract$c_def5_HHI_lag1<-arm::rescale(contract$def5_HHI_lag1)
@@ -1106,7 +1111,7 @@ transform_contract<-function(
       contract$c_def3_HHI_lag1<-arm::rescale(contract$def3_HHI_lag1)
 
       contract$l_def3_HHI_lag1<-na_non_positive_log(contract$def3_HHI_lag1)
-      contract$cl_def3_HHI_lag1<-arm::rescale(contract$l_def3_HHI_lag1)
+      contract$cln_Def3HHI<-arm::rescale(contract$l_def3_HHI_lag1)
 
       contract$def2_HHI_lag1[contract$def2_HHI_lag1==0]<-NA
       contract$c_def2_HHI_lag1<-arm::rescale(contract$def2_HHI_lag1)
@@ -1117,7 +1122,7 @@ transform_contract<-function(
 
       contract$capped_def6_ratio_lag1<-cap(contract$def6_ratio_lag1,1)
       contract$l_def6_ratio_lag1<-na_non_positive_log(contract$def6_ratio_lag1)
-      contract$cl_def6_ratio_lag1<-arm::rescale(contract$def6_ratio_lag1)
+      contract$clr_Def6toUS<-arm::rescale(contract$def6_ratio_lag1)
 
       contract$capped_def5_ratio_lag1<-cap(contract$def5_ratio_lag1,1)
       contract$l_def5_ratio_lag1<-na_non_positive_log(contract$def5_ratio_lag1)
@@ -1130,7 +1135,7 @@ transform_contract<-function(
 
       contract$capped_def3_ratio_lag1<-cap(contract$def3_ratio_lag1,1)
       contract$l_def3_ratio_lag1<-na_non_positive_log(contract$def3_ratio_lag1)
-      contract$cl_def3_ratio_lag1<-arm::rescale(contract$def3_ratio_lag1)
+      contract$clr_Def3toUS<-arm::rescale(contract$def3_ratio_lag1)
 
       contract$capped_def2_ratio_lag1<-cap(contract$def2_ratio_lag1,1)
       contract$l_def2_ratio_lag1<-na_non_positive_log(contract$def2_ratio_lag1)
@@ -1138,7 +1143,7 @@ transform_contract<-function(
 
 
       contract$l_def6_obl_lag1<-na_non_positive_log(contract$def6_obl_lag1)
-      contract$cl_def6_obl_lag1<-arm::rescale(contract$l_def6_obl_lag1)
+      contract$cln_Def6Obl<-arm::rescale(contract$l_def6_obl_lag1)
       contract$l_def5_obl_lag1<-na_non_positive_log(contract$def5_obl_lag1)
       contract$cl_def5_obl_lag1<-arm::rescale(contract$l_def5_obl_lag1)
       contract$l_def4_obl_lag1<-na_non_positive_log(contract$def4_obl_lag1)
@@ -1285,12 +1290,12 @@ transform_contract<-function(
       contract$l_OffCA<-log(contract$office_numberofactions_1year+1)
       contract$cl_OffCA<-arm::rescale(contract$l_OffCA)
       contract$l_OffVol<-log(contract$office_obligatedamount_7year+1)
-      contract$cl_OffVol<-arm::rescale(contract$l_OffVol)
+      contract$cln_OffObl7<-arm::rescale(contract$l_OffVol)
 
       # summary(contract$l_OffVol)
-      # summary(contract$cl_OffVol)
+      # summary(contract$cln_OffObl7)
       #
-      contract$c_pPBSC<-arm::rescale(contract$pPBSC)
+      contract$cp_OffPerf7<-arm::rescale(contract$pPBSC)
     }
 
     if("ProductOrServiceCode" %in% colnames(contract) &
@@ -1322,11 +1327,11 @@ transform_contract<-function(
       contract$pOffPSC[is.na(contract$ContractingOfficeCode) |
                          is.na(contract$ProductOrServiceCode)]<-NA
 
-      contract$c_pOffPSC<-arm::rescale(contract$pOffPSC)
+      contract$cp_OffPSC7<-arm::rescale(contract$pOffPSC)
     }
 
     # summary(contract$l_OffVol)
-    # summary(contract$cl_OffVol)
+    # summary(contract$cln_OffObl7)
     #
 
     if("EntityID" %in% colnames(contract)){
@@ -1360,10 +1365,10 @@ transform_contract<-function(
       contract$pMarket[contract$pMarket>1]<-1
       # summary(contract$pMarket)
 
-      contract$c_pMarket<-arm::rescale(contract$pMarket)
+      contract$cp_PairObl7<-arm::rescale(contract$pMarket)
       contract$l_pairCA<-log(contract$office_entity_numberofactions_1year+1)
-      contract$cl_pairCA<-arm::rescale(contract$l_pairCA)
-      contract$c_pairHist<-arm::rescale(contract$office_entity_paircount_7year)
+      contract$cln_PairCA<-arm::rescale(contract$l_pairCA)
+      contract$cn_PairHist7<-arm::rescale(contract$office_entity_paircount_7year)
 
     }
 
@@ -1384,9 +1389,9 @@ transform_contract<-function(
                       fy_var="StartFY"
     )
 
-    contract$Base2Ceil<-contract$UnmodifiedCeiling_Then_Year/contract$UnmodifiedBase_Then_Year
-    contract$Base2Ceil[contract$Base2Ceil<1 | !is.finite(contract$Base2Ceil)]<-NA
-    contract$cl_Base2Ceil<-arm::rescale(log(contract$Base2Ceil))
+    contract$Ceil2Base<-contract$UnmodifiedCeiling_Then_Year/contract$UnmodifiedBase_Then_Year
+    contract$Ceil2Base[contract$Ceil2Base<1 | !is.finite(contract$Ceil2Base)]<-NA
+    contract$clr_Ceil2Base<-arm::rescale(log(contract$Ceil2Base))
 
     contract$l_Base<-na_non_positive_log(contract$UnmodifiedBase_OMB20_GDP18)
 
@@ -1438,7 +1443,7 @@ transform_contract<-function(
     colnames(contract)[colnames(contract)=="fiscal_year"]<-"StartFY"
     # summary(contract$CFTE_Rate_1year)
     contract$l_CFTE<-log(contract$CFTE_Rate_1year)
-    contract$cl_CFTE<-arm::rescale(contract$l_CFTE)
+    contract$cln_PSCrate<-arm::rescale(contract$l_CFTE)
   }
 
 
@@ -1449,16 +1454,8 @@ transform_contract<-function(
   if("l_Ceil" %in% colnames(contract))
     contract$cl_Ceil<-arm::rescale(contract$l_Ceil)
 
-  if("cl_Days" %in% colnames(contract))
-    contract$cl_Days<-arm::rescale(contract$l_Days)
-
-
-
-
-  if("TermNum" %in% colnames(contract))
-    contract$TermNum<-as.integer(as.character(factor(contract$Term,
-                                                     levels=c("Terminated","Unterminated"),
-                                                     labels=c(1,0))))
+  if("cln_Days" %in% colnames(contract))
+    contract$cln_Days<-arm::rescale(contract$l_Days)
 
   if("Action_Obligation" %in% colnames(contract)){
     contract$ObligationWT<-contract$Action_Obligation
