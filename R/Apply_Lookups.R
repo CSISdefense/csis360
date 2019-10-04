@@ -443,6 +443,12 @@ read_and_join_experiment<-function(
   create_lookup_rdata=FALSE,
   lookup_char_as_factor=FALSE
 ){
+  if(!is.null(names(by)))
+    left_by<-names(by)
+  else left_by<-by
+  # read.delim doesn't like \\
+  path<-gsub("\\\\","//",path)
+  directory<-gsub("\\\\","//",directory)
 
 
   case_match<-function(name, list){
@@ -531,9 +537,9 @@ read_and_join_experiment<-function(
     by<-by[!by %in% colnames(lookup)]
     stop(paste(paste(by,collapse=" & "), "not present in lookup"))
   }
-  if(any(!by %in% colnames(data))){
-    by<-by[!by %in% colnames(data)]
-    stop(paste(paste(by,collapse=" & "),"not present in data"))
+  if(any(!left_by %in% colnames(data))){
+    left_by<-left_by[!left_by %in% colnames(data)]
+    stop(paste(paste(left_by,collapse=" & "),"not present in data"))
   }
 
 
@@ -598,13 +604,13 @@ read_and_join_experiment<-function(
     if(case_sensitive==FALSE){
       #Create a temporary holder for original values of each of the by ariables
       #And then switch them to lower case before the  join is run.
-      for(i in 1:length(by)){
-        original_temp_name<-paste(by[i],"original",sep="_")
+      for(i in 1:length(left_by)){
+        original_temp_name<-paste(left_by[i],"original",sep="_")
         if(original_temp_name %in% colnames(data)) stop(paste(original_temp_name,"already exists as a column in data, nowhere to store the original values."))
-        data[,original_temp_name]<-data[,by[i]]
-        data[,by[i]]<-tolower(data[,by[i]])
-        # lookup[,original_temp_name]<-lookup[,by[i]]
-        lookup[,by[i]]<-tolower(lookup[,by[i]])
+        data[,original_temp_name]<-data[,left_by[i]]
+        data[,left_by[i]]<-tolower(data[,left_by[i]])
+        # lookup[,original_temp_name]<-lookup[,left_by[i]]
+        lookup[,left_by[i]]<-tolower(lookup[,left_by[i]])
       }
     }
 
@@ -620,11 +626,11 @@ read_and_join_experiment<-function(
       #Switch back the by variables to their pre-tolower value
       #Lookup isn't kept, commented code was just switching it back for error checking purposes.
       #But creating a lookup column also imports it into data, a needless compllication.
-      for(i in 1:length(by)){
-        original_temp_name<-paste(by[i],"original",sep="_")
-        data[,by[i]]<-data[,original_temp_name]
+      for(i in 1:length(left_by)){
+        original_temp_name<-paste(left_by[i],"original",sep="_")
+        data[,left_by[i]]<-data[,original_temp_name]
         data <- data[,!(colnames(data) %in% original_temp_name)]
-        # lookup[,by[i]]<-lookup[,original_temp_name]
+        # lookup[,left_by[i]]<-lookup[,original_temp_name]
         # lookup <- lookup[,!(colnames(lookup) %in% original_temp_name)]
       }
     }
@@ -642,7 +648,7 @@ read_and_join_experiment<-function(
     #First verify  there are any variables to check
     if(length(add_var)>0){
       na_check(data,
-               input_var=by,
+               input_var=left_by,
                output_var=add_var,
                lookup_file = lookup_file,
                missing_file= missing_file)
