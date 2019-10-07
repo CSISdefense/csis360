@@ -549,18 +549,14 @@ read_and_join_experiment<-function(
     droplist<-names(lookup)[names(lookup) %in% names(data)]
     droplist<-droplist[!droplist %in% by]
 
-    #If add_var is specified, dropped new fields not in add_var
-    if(!is.null(add_var)){
-      droplist<-names(lookup)[!names(lookup) %in% by
-                              &!names(lookup) %in% add_var]
-      lookup<-lookup[,!names(lookup) %in% droplist]
-    }
-
     if(length(droplist)>0){
       if(overlap_var_replaced)
         data<-data[,!names(data) %in% droplist]
-      else
+      else{
+        if(!is.null(add_var) & any(names(lookup) %in% add_var))
+          stop(paste("Not replacing overlap, but add_var present in data:",droplist[droplist %in% add_var]))
         lookup<-lookup[,!names(lookup) %in% droplist]
+      }
     }
   }
 
