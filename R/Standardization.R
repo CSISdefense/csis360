@@ -657,10 +657,12 @@ transform_contract<-function(
       if(!"n_CBre" %in% colnames(contract)) stop("n_CBre is missing. Rerun the relevant create dataset file.")
       contract$n_CBre[contract$override_change_order_growth==TRUE]<-NA
 
+      if(min(contract$n_CBre,na.rm=TRUE)>0) stop("1 has been added to n_CBre. Fix this before proceeding.")
+
       contract$p_CBre<-(contract$n_CBre/
-                          contract$UnmodifiedCeiling_Then_Year)+1
+                          contract$UnmodifiedCeiling_Then_Year)
       contract$p_CBre[
-        is.na(contract$p_CBre) & contract$b_CBre==0]<-1
+        is.na(contract$p_CBre) & contract$b_CBre==0]<-0
 
       contract<-deflate(contract,
                         money_var = "n_CBre",
@@ -668,16 +670,11 @@ transform_contract<-function(
                         fy_var="StartFY"
       )
 
-      contract$pChangeOrderCeilingGrowth<-contract$ChangeOrderCeilingGrowth/
-        contract$UnmodifiedCeiling_Then_Year
-      contract$pChangeOrderCeilingGrowth[
-        is.na(contract$pChangeOrderCeilingGrowth) & contract$SumOfisChangeOrder==0]<-0
-      contract$pChangeOrderCeilingGrowth<-as.numeric(as.character(contract$pChangeOrderCeilingGrowth))
       contract$pChange3Sig<-round(
-        contract$pChangeOrderCeilingGrowth,3)
+        contract$p_CBre,3)
       contract$qCrai <- Hmisc::cut2(
-        contract$pChangeOrderCeilingGrowth,c(
-          -0.001,
+        contract$p_CBre,c(
+          0,
           0.001,
           0.15)
       )
@@ -1414,10 +1411,12 @@ transform_contract<-function(
       contract$ln_OptGrowth_OMB20_GDP18<-log(contract$n_OptGrowth_OMB20_GDP18)
 
       contract$Opt<-NA
-      contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==1& contract$n_OptGrowth_Then_Year>0]<-"Option Growth"
-      contract$Opt[(contract$AnyUnmodifiedUnexercisedOptions==1)& contract$n_OptGrowth_Then_Year==0]<-"No Growth"
+      contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==1]<-"Available Options"
+      # contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==1& contract$n_OptGrowth_Then_Year>0]<-"Option Growth"
+      # contract$Opt[(contract$AnyUnmodifiedUnexercisedOptions==1)& contract$n_OptGrowth_Then_Year==0]<-"Not Some Growth"
       contract$Opt[contract$AnyUnmodifiedUnexercisedOptions==0]<-"Initial Base=Ceiling"
-      contract$Opt<-factor(contract$Opt)
+      contract$Opt[contract$UnmodifiedBase_Then_Year>contract$UnmodifiedCeiling_Then_Year]<-NA
+      contract$Opt<-factor(contract$Opt,levels=c("Initial Base=Ceiling","Available Options"))
 
     }
   }
