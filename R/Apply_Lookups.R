@@ -703,8 +703,11 @@ deflate <- function(
   #Tiblbes run into trouble with the [[]] new variable specifying.
   data<-as.data.frame(data)
 
-  if(!fy_var %in% colnames(data))
+  if(!fy_var %in% colnames(data)){
+    if(fy_var == "Fiscal_Year" & "Fiscal.Year" %in% colnames(date)) fy_var<-"Fiscal.Year"
+
     stop(paste(fy_var," is not present in data."))
+  }
 
   if(!money_var %in% colnames(data)){
     if((paste(money_var,"Then_Year",sep="_") %in% colnames(data)) &
