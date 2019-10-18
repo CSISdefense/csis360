@@ -541,7 +541,10 @@ read_and_join_experiment<-function(
     left_by<-left_by[!left_by %in% colnames(data)]
     stop(paste(paste(left_by,collapse=" & "),"not present in data"))
   }
-
+  if(any(!add_var %in% colnames(lookup))){
+    add_var<-add_var[!add_var %in% colnames(lookup)]
+    stop(paste(paste(add_var,collapse=" & "),"not present in lookup"))
+  }
 
   #Handle any fields in both data and lookup held in common not used in the joining
   if(!is.null(by)){
@@ -551,7 +554,13 @@ read_and_join_experiment<-function(
 
     if(length(droplist)>0){
       if(overlap_var_replaced)
-        data<-data[,!names(data) %in% droplist]
+        if(is.null(add_var))
+          data<-data[,!names(data) %in% droplist]
+        if(!is.null(add_var)){
+          data<-data[,!names(data) %in% add_var]
+          droplist<-droplist[!droplist %in% add_var]
+          lookup<-lookup[,names(lookup) %in% c(by, add_var)]
+        }
       else{
         if(!is.null(add_var) & any(names(lookup) %in% add_var))
           stop(paste("Not replacing overlap, but add_var present in data:",droplist[droplist %in% add_var]))
