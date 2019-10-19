@@ -704,7 +704,7 @@ deflate <- function(
   data<-as.data.frame(data)
 
   if(!fy_var %in% colnames(data)){
-    if(fy_var == "Fiscal_Year" & "Fiscal.Year" %in% colnames(date)) fy_var<-"Fiscal.Year"
+    if(fy_var == "Fiscal_Year" & "Fiscal.Year" %in% colnames(data)) fy_var<-"Fiscal.Year"
     else stop(paste(fy_var," is not present in data."))
   }
 
