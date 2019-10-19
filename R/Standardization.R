@@ -73,7 +73,10 @@ standardize_variable_names<- function(data,
     }
   }
 
-  if(any(duplicated(colnames(data)))) stop("Duplicated columns after name standardization")
+  if(any(duplicated(colnames(data)))){
+    stop(paste("Duplicated columns (",colnames(data)[duplicated(colnames(data))],
+               ") after name standardization"))
+  }
   data
 }
 
