@@ -120,11 +120,11 @@ group_data_for_plot <-function(
   }
   if(length(breakout) >= 2){
     if(grepl(" ", breakout[2])) breakout[2] <- paste0("`", breakout[2], "`")
-    if(!breakout[2] %in% colnames(data)) stop(paste("breakout[2]: ",breakout[1],"is missing from data."))
+    if(!breakout[2] %in% colnames(data)) stop(paste("breakout[2]: ",breakout[2],"is missing from data."))
   }
   if(length(breakout) == 3){
     if(grepl(" ", breakout[3])) breakout[3] <- paste0("`", breakout[3], "`")
-    if(!breakout[3] %in% colnames(data)) stop(paste("breakout[3]: ",breakout[1],"is missing from data."))
+    if(!breakout[3] %in% colnames(data)) stop(paste("breakout[3]: ",breakout[3],"is missing from data."))
   }
 
   data<-data %>% filter(!is.na(!! as.name(y_var)))
