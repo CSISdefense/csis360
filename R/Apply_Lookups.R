@@ -797,6 +797,21 @@ get_column_key <- function(
 }
 
 
+
+#' Get Column Key based on the names in a data frame
+#'
+#' @param x A list of numbers stored as characters or factor
+#'
+#' @return The list in numerical format
+#'
+#' @details Converts from factor/character to number and strips
+#' out commas and $s along the way.
+#'
+#' @examples
+#'
+#' text_to_number(c('10','1,000','$20.00'))
+#'
+#' @export
 text_to_number<-function(x){
   if ((is.factor(x))||(is.character(x))){
     x<-gsub('\\$','',as.character( x))
