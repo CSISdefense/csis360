@@ -547,26 +547,30 @@ read_and_join_experiment<-function(
   }
 
   #Handle any fields in both data and lookup held in common not used in the joining
+  #And if add_vars is specified, drop non-add_vars from lookup.
   if(!is.null(by)){
+    if(!is.null(add_var))
+      lookup<-lookup[,names(lookup) %in% c(by, add_var)]
 
     droplist<-names(lookup)[names(lookup) %in% names(data)]
     droplist<-droplist[!droplist %in% by]
 
     if(length(droplist)>0){
       if(overlap_var_replaced)
-        if(is.null(add_var))
-          data<-data[,!names(data) %in% droplist]
-        if(!is.null(add_var)){
-          data<-data[,!names(data) %in% add_var]
-          droplist<-droplist[!droplist %in% add_var]
-          lookup<-lookup[,names(lookup) %in% c(by, add_var)]
-        }
+        data<-data[,!names(data) %in% droplist]
       else{
-        if(!is.null(add_var) & any(names(lookup) %in% add_var))
-          stop(paste("Not replacing overlap, but add_var present in data:",droplist[droplist %in% add_var]))
+        if(!is.null(add_var))
+          stop(paste("Not replacing overlap, but add_var present in data:",droplist))
         lookup<-lookup[,!names(lookup) %in% droplist]
       }
     }
+    rm(droplist)
+  }
+  #If add_vars is specified but there is no buy, drop non add_vars from lookup
+  else if( !is.null(add_var)){
+    bylist<-names(lookup)[names(lookup) %in% names(data)]
+    lookup<-lookup[,names(lookup) %in% c(bylist, add_var)]
+    rm(bylist)
   }
 
   #Fixes for Excel's penchant to drop leading 0s.
@@ -797,6 +801,21 @@ get_column_key <- function(
 }
 
 
+
+#' Get Column Key based on the names in a data frame
+#'
+#' @param x A list of numbers stored as characters or factor
+#'
+#' @return The list in numerical format
+#'
+#' @details Converts from factor/character to number and strips
+#' out commas and $s along the way.
+#'
+#' @examples
+#'
+#' text_to_number(c('10','1,000','$20.00'))
+#'
+#' @export
 text_to_number<-function(x){
   if ((is.factor(x))||(is.character(x))){
     x<-gsub('\\$','',as.character( x))
