@@ -614,13 +614,15 @@ read_and_join_experiment<-function(
     if(case_sensitive==FALSE){
       #Create a temporary holder for original values of each of the by ariables
       #And then switch them to lower case before the  join is run.
+      data<-as.data.frame(data)
+      lookup<-as.data.frame(lookup)
       for(i in 1:length(left_by)){
         original_temp_name<-paste(left_by[i],"original",sep="_")
         if(original_temp_name %in% colnames(data)) stop(paste(original_temp_name,"already exists as a column in data, nowhere to store the original values."))
         data[,original_temp_name]<-data[,left_by[i]]
         data[,left_by[i]]<-tolower(data[,left_by[i]])
         # lookup[,original_temp_name]<-lookup[,left_by[i]]
-        lookup[,left_by[i]]<-tolower(lookup[,left_by[i]])
+        lookup[,by[i]]<-tolower(lookup[,by[i]])
       }
     }
 

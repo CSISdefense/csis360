@@ -814,9 +814,9 @@ if (caption==TRUE)
 #'
 #' @import ggplot2
 #' @export
-ggsave600dpi<-function(filename,gg,width,height,units="in",size=60){
+ggsave600dpi<-function(filename,gg,width,height,units="in",size=60,lineheight=0.13){
   ggsave(filename, gg+
-         theme(text=element_text(size=size,lineheight=0.13),
+         theme(text=element_text(size=size,lineheight=lineheight),
                legend.spacing.x = unit(0.1, 'cm'),
                plot.caption = element_text(size=round(size * 5/6,0))
                ),
