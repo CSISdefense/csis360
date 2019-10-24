@@ -54,6 +54,7 @@ swap_in_zip<-function(filename,path,directory=""){
 #'
 #' @examples FactorToNumber("5")
 FactorToNumber<-function(x){
+  warning("Deprecated in favor of text_to_number")
   if ((is.factor(x))||(is.character(x))){
     x<-gsub('\\$','',as.character( x))
     x<-as.double(gsub('\\,','',as.character( x)))
