@@ -442,15 +442,15 @@ transform_contract<-function(
     contract$Who[contract$Who=="Uncategorized"]<-NA
 
     #b_ODoD
-    contract$b_ODoD<-contract$Who
-    levels(contract$b_ODoD)<- list("1"=c("Other DoD"),
-                                   "0"=c("Air Force","Army","Navy"))
+    # contract$b_ODoD<-contract$Who
+    # levels(contract$b_ODoD)<- list("1"=c("Other DoD"),
+    #                                "0"=c("Air Force","Army","Navy"))
 
-    contract$b_ODoD<-as.integer(as.character(contract$b_ODoD))
+    # contract$b_ODoD<-as.integer(as.character(contract$b_ODoD))
 
-    contract$ODoD<-contract$Who
-    levels(contract$ODoD)<- list("Military Departments"=c("Air Force","Army","Navy"),
-                                 "Other DoD"=c("Other DoD"))
+    # contract$ODoD<-contract$Who
+    # levels(contract$ODoD)<- list("Military Departments"=c("Air Force","Army","Navy"),
+    #                              "Other DoD"=c("Other DoD"))
 
 
 
@@ -840,11 +840,11 @@ transform_contract<-function(
     contract$b_Comp<-as.integer(as.character(contract$b_Comp))
 
     #n_Comp
-    contract$n_Comp<-contract$EffComp #Fix in Rdata, and add back comp
-    levels(contract$n_Comp) <-
-      list("0"="No Comp.",
-           "0.5"="1 Offer",
-           "1"="2+ Offers")
+    # contract$n_Comp<-contract$EffComp #Fix in Rdata, and add back comp
+    # levels(contract$n_Comp) <-
+    #   list("0"="No Comp.",
+    #        "0.5"="1 Offer",
+    #        "1"="2+ Offers")
     # contract$n_Comp<-as.numeric(as.character(contract$n_Comp))
 
 
@@ -863,14 +863,6 @@ transform_contract<-function(
                       !is.na(contract$b_Comp)&
                       contract$b_Comp==0
                     ]<-"1"
-    contract$nq_Offr<-contract$q_Offr
-    levels(contract$nq_Offr) <-
-      list("1"=c("1"),
-           "2"=c("2"),
-           "3"=c("3-4"),
-           "4"=c("5+"))
-
-
 
     contract$nq_Offr<-as.integer(as.character(contract$nq_Offr))
     contract$nq_Offr[contract$b_Comp==0 & !is.na(contract$b_Comp)]<-0
@@ -888,10 +880,8 @@ transform_contract<-function(
     contract$l_Offr<-na_non_positive_log(contract$UnmodifiedNumberOfOffersReceived)
 
 
-    contract$cb_Comp<-arm::rescale(contract$b_Comp)
-    contract$cn_Comp<-arm::rescale(contract$n_Comp)
-    contract$cn_Offr<-arm::rescale(contract$nq_Offr)
-    contract$cl_Offr<-arm::rescale(contract$l_Offr)
+    # contract$cn_Offr<-arm::rescale(contract$nq_Offr)
+    # contract$cl_Offr<-arm::rescale(contract$l_Offr)
 
     #Urgency
     contract$b_Urg<-NA
@@ -983,33 +973,7 @@ transform_contract<-function(
                                         "FSS/GWAC",
                                         "BPA/BOA"))
 
-    #SIDV
-    contract$SIDV<-contract$Veh
-    levels(contract$SIDV) <-
-      list("1"=c("S-IDC"),
-           "0"=c("Def/Pur","M-IDC","FSS/GWAC","BPA/BOA"))
-    contract$SIDV<-as.integer(as.character(contract$SIDV))
-
-    #MIDV
-    contract$MIDV<-contract$Veh
-    levels(contract$MIDV) <-
-      list("1"=c("M-IDC"),
-           "0"=c("Def/Pur","S-IDC","FSS/GWAC","BPA/BOA"))
-    contract$MIDV<-as.integer(as.character(contract$MIDV))
-
-    #FSSGWAC
-    contract$FSSGWAC<-contract$Veh
-    levels(contract$FSSGWAC) <-
-      list("1"=c("FSS/GWAC"),
-           "0"=c("Def/Pur","S-IDC", "M-IDC","BPA/BOA"))
-    contract$FSSGWAC<-as.integer(as.character(contract$FSSGWAC))
-
-    #BPABOA
-    contract$BPABOA<-contract$Veh
-    levels(contract$BPABOA) <-
-      list("1"=c("BPA/BOA"),
-           "0"=c("Def/Pur","S-IDC", "M-IDC","FSS/GWAC"))
-    contract$BPABOA<-as.integer(as.character(contract$BPABOA))
+  }
 
     if("Crisis" %in% colnames(contract)){
       #Crisis Dataset
@@ -1024,7 +988,7 @@ transform_contract<-function(
       contract$Crisis[is.na(contract$Crisis)]<-"Other"
       levels(contract$Crisis)[levels(contract$Crisis)=="Disaster"]<-"Dis"
       contract$Crisis<-factor(contract$Crisis,c("Other","ARRA","Dis","OCO"))
-    }
+
   }
 
   #Calendar Year
@@ -1188,7 +1152,7 @@ transform_contract<-function(
   }
 
   if("ProductOrServiceCode" %in% colnames(contract)){
-    contract<-read_and_join( contract,
+    contract<-read_and_join_experiment( contract,
                              "ProductOrServiceCodes.csv",
                              path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
                              directory="",
@@ -1214,12 +1178,12 @@ transform_contract<-function(
   colnames(contract)[colnames(contract)=="Office"]<-"ContractingOfficeCode"
   if("ContractingOfficeCode" %in% colnames(contract)){
 
-    contract<-read_and_join( contract,
+    contract<-read_and_join_experiment( contract,
                              "Office.ContractingOfficeCode.txt",
                              path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
                              directory="office\\",
                              by="ContractingOfficeCode",
-                             add_var=c("PlaceIntlPercent","CrisisPercent"),
+                             add_var=c("ContractingOfficeName","PlaceIntlPercent","CrisisPercent"),
                              new_var_checked=FALSE,
                              lookup_char_as_factor=TRUE)
 
@@ -1435,7 +1399,7 @@ transform_contract<-function(
            "OCO"="OCO")
     # summary(contract$OCO_GF)
     colnames(contract)[colnames(contract)=="StartFY"]<-"fiscal_year"
-    contract<-read_and_join( contract,
+    contract<-read_and_join_experiment( contract,
                              "ProductOrServiceCode.ProdServHistoryCFTEcoalesceLaggedConst.txt",
                              path="",
                              directory=local_semi_clean_path,
