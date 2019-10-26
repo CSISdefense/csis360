@@ -1328,6 +1328,22 @@ transform_contract<-function(
       contract$pMarket[contract$office_obligatedamount_7year==0 &
                          !is.na(contract$EntityID)&!is.na(contract$ContractingOfficeCode)]<-0
       contract$pMarket[contract$pMarket>1]<-1
+
+
+      contract<-deflate(contract,
+                        money_var = "office_entity_obligatedamount_7year",
+                        # deflator_var="OMB.2019",
+                        fy_var="StartFY"
+      )
+
+      contract$cln_PairObl7<-arm::rescale(log(contract$office_entity_obligatedamount_7year_OMB20_GDP18+1))
+
+
+      #*********** Options Growth
+
+
+
+
       # summary(contract$pMarket)
 
       contract$cp_PairObl7<-arm::rescale(contract$pMarket)
@@ -1416,10 +1432,10 @@ transform_contract<-function(
 
 
   if("l_Base" %in% colnames(contract))
-    contract$cl_Ceil<-arm::rescale(contract$l_Base)
+    contract$cln_Base<-arm::rescale(contract$l_Base)
 
   if("l_Ceil" %in% colnames(contract))
-    contract$cl_Ceil<-arm::rescale(contract$l_Ceil)
+    contract$cln_Ceil<-arm::rescale(contract$l_Ceil)
 
   if("cln_Days" %in% colnames(contract))
     contract$cln_Days<-arm::rescale(contract$l_Days)
