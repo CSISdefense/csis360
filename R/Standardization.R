@@ -308,7 +308,9 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
         )
     }
     #If x-axis variable is a factor
-    if(is.factor(shown_data[,colnames(shown_data)==fy_var]) & fy_var %in% labels_and_colors$column){
+    if(is.factor(shown_data[,colnames(shown_data)==fy_var]) &
+       fy_var %in% labels_and_colors$column &
+       !fy_var %in% c(color_var,facet_var,second_var)){
       shown_data[,colnames(shown_data)==fy_var]<-
         ordered(shown_data[,colnames(shown_data)==fy_var],
                 levels=subset(labels_and_colors,column==fy_var)$variable,
