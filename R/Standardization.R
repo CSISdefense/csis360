@@ -288,24 +288,31 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
   shown_data<-as.data.frame(shown_data)
   if(!is.null(labels_and_colors)){
     if(color_var!="None"){
+      if(!color_var %in% labels_and_colors$column) stop("color_var missing from labels_and_colors")
       shown_data[,colnames(shown_data)==color_var]<-
         ordered(shown_data[,colnames(shown_data)==color_var],
                 levels=subset(labels_and_colors,column==color_var)$variable,
                 labels=subset(labels_and_colors,column==color_var)$Label)
     }
     if(facet_var!="None" & color_var != facet_var){
-      shown_data[,colnames(shown_data)==facet_var]<-
-        ordered(shown_data[,colnames(shown_data)==facet_var],
-                levels=subset(labels_and_colors,column==facet_var)$variable,
-                labels=subset(labels_and_colors,column==facet_var)$Label
-        )
+      if(!facet_var %in% labels_and_colors$column) warning("facet_var missing from labels_and_colors")
+      else{
+        shown_data[,colnames(shown_data)==facet_var]<-
+          ordered(shown_data[,colnames(shown_data)==facet_var],
+                  levels=subset(labels_and_colors,column==facet_var)$variable,
+                  labels=subset(labels_and_colors,column==facet_var)$Label
+          )
+      }
     }
     if(all(!is.null(second_var), color_var != second_var)){
+      if(!second_var %in% labels_and_colors$column) warning("second_var missing from labels_and_colors")
+      else{
       shown_data[,colnames(shown_data)==second_var]<-
         ordered(shown_data[,colnames(shown_data)==second_var],
                 levels=subset(labels_and_colors,column==second_var)$variable,
                 labels=subset(labels_and_colors,column==second_var)$Label
         )
+      }
     }
     #If x-axis variable is a factor
     if(is.factor(shown_data[,colnames(shown_data)==fy_var]) &

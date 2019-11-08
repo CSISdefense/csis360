@@ -147,6 +147,7 @@ prepare_labels_and_colors<-function(data
     labels_category_data$Display.Order<-as.numeric(as.character(labels_category_data$Display.Order))
     labels_category_data<-labels_category_data[order(labels_category_data$Display.Order),]
     labels_category_data$column<-c
+    warning(c)
     names.data<-rbind(names.data,labels_category_data)
   }
   names.data
