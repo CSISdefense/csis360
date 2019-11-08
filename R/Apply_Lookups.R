@@ -464,6 +464,7 @@ read_and_join_experiment<-function(
 
   #Replace NAs in input column if requested
   if(!is.null(replace_na_var)){
+    if(!replace_na_var %in% colnames(data)) stop("replace_na_var is missing.")
     data<-replace_nas_with_unlabeled(data,
                                      replace_na_var)
   }
