@@ -442,7 +442,8 @@ read_and_join_experiment<-function(
   case_sensitive=TRUE,
   missing_file=NULL,
   create_lookup_rdata=FALSE,
-  lookup_char_as_factor=FALSE
+  lookup_char_as_factor=FALSE,
+  guess_max=NULL
 ){
   if(!is.null(names(by)))
     left_by<-names(by)
@@ -508,14 +509,26 @@ read_and_join_experiment<-function(
     else{#No zip file
       input<-swap_in_zip(lookup_file,path,directory)
     }
-    lookup<-readr::read_delim(
-      input,
-      col_names=TRUE,
-      delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
-      na=c("NA","NULL"),
-      trim_ws=TRUE,
-      col_types=col_types
-    )
+    if(is.null(guess_max)){
+      lookup<-readr::read_delim(
+        input,
+        col_names=TRUE,
+        delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
+        na=c("NA","NULL"),
+        trim_ws=TRUE,
+        col_types=col_types
+      )
+    } else{
+      lookup<-readr::read_delim(
+        input,
+        col_names=TRUE,
+        delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
+        na=c("NA","NULL"),
+        trim_ws=TRUE,
+        col_types=col_types,
+        guess_max =guess_max
+      )
+    }
 
     #Convert character strings to factors
     if (lookup_char_as_factor==TRUE){
