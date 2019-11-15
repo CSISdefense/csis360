@@ -45,6 +45,7 @@ prepare_labels_and_colors<-function(data
     header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
     stringsAsFactors=FALSE
   )
+  if(ncol(coloration)!=12) stop("Mismatched number of columns in coloration.txt.")
 
   #Fix oddities involving coloration text
   coloration$variable <- gsub("\\\\n","\n",coloration$variable)
@@ -106,6 +107,7 @@ prepare_labels_and_colors<-function(data
          !is.na(NA.labels[1])&
          NA.labels[1]=="Unlabeled")
       {
+
         labels_category_data<-rbind(labels_category_data,
                                     data.frame(coloration.key=column_key$coloration.key[v],
                                                variable="Unlabeled",
