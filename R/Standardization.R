@@ -1095,25 +1095,19 @@ transform_contract<-function(
 
 
       contract$capped_def6_ratio_lag1<-cap(contract$def6_ratio_lag1,1)
-      contract$l_def6_ratio_lag1<-na_non_positive_log(contract$capped_def6_ratio_lag1)
-      contract$clr_Def6toUS<-arm::rescale(contract$def6_ratio_lag1)
+      contract$clr_Def6toUS<-arm::rescale(na_non_positive_log(contract$capped_def6_ratio_lag1))
 
       contract$capped_def5_ratio_lag1<-cap(contract$def5_ratio_lag1,1)
-      contract$l_def5_ratio_lag1<-na_non_positive_log(contract$capped_def5_ratio_lag1)
-      contract$cl_def5_ratio_lag1<-arm::rescale(contract$def5_ratio_lag1)
+      contract$clr_Def5toUS<-arm::rescale(na_non_positive_log(contract$capped_def5_ratio_lag1))
 
       contract$capped_def4_ratio_lag1<-cap(contract$def4_ratio_lag1,1)
-      contract$l_def4_ratio_lag1<-na_non_positive_log(contract$capped_def4_ratio_lag1)
-      contract$cl_def4_ratio_lag1<-arm::rescale(contract$def4_ratio_lag1)
-
+      contract$clr_Def4toUS<-arm::rescale(na_non_positive_log(contract$capped_def4_ratio_lag1))
 
       contract$capped_def3_ratio_lag1<-cap(contract$def3_ratio_lag1,1)
-      contract$l_def3_ratio_lag1<-na_non_positive_log(contract$capped_def3_ratio_lag1)
-      contract$clr_Def3toUS<-arm::rescale(contract$def3_ratio_lag1)
+      contract$clr_Def3toUS<-arm::rescale(na_non_positive_log(contract$capped_def3_ratio_lag1))
 
       contract$capped_def2_ratio_lag1<-cap(contract$def2_ratio_lag1,1)
-      contract$l_def2_ratio_lag1<-na_non_positive_log(contract$capped_def2_ratio_lag1)
-      contract$cl_def2_ratio_lag1<-arm::rescale(contract$def2_ratio_lag1)
+      contract$clr_Def2toUS<-arm::rescale(na_non_positive_log(contract$capped_def2_ratio_lag1))
 
 
       contract$l_def6_obl_lag1<-na_non_positive_log(contract$def6_obl_lag1)
@@ -1129,22 +1123,15 @@ transform_contract<-function(
 
 
 
-      contract$l_US6_avg_sal_lag1<-na_non_positive_log(contract$US6_avg_sal_lag1)
-      contract$cl_US6_avg_sal_lag1<-arm::rescale(contract$l_US6_avg_sal_lag1)
+      contract$cl_US6_avg_sal_lag1<-arm::rescale(na_non_positive_log(contract$US6_avg_sal_lag1))
 
+      contract$cl_US5_avg_sal_lag1<-arm::rescale(na_non_positive_log(contract$US5_avg_sal_lag1))
 
-      contract$l_US5_avg_sal_lag1<-na_non_positive_log(contract$US5_avg_sal_lag1)
-      contract$cl_US5_avg_sal_lag1<-arm::rescale(contract$l_US5_avg_sal_lag1)
+      contract$cl_US4_avg_sal_lag1<-arm::rescale(na_non_positive_log(contract$US4_avg_sal_lag1))
 
+      contract$cl_US3_avg_sal_lag1<-arm::rescale(na_non_positive_log(contract$US3_avg_sal_lag1))
 
-      contract$l_US4_avg_sal_lag1<-na_non_positive_log(contract$US4_avg_sal_lag1)
-      contract$cl_US4_avg_sal_lag1<-arm::rescale(contract$l_US4_avg_sal_lag1)
-
-      contract$l_US3_avg_sal_lag1<-na_non_positive_log(contract$US3_avg_sal_lag1)
-      contract$cl_US3_avg_sal_lag1<-arm::rescale(contract$l_US3_avg_sal_lag1)
-
-      contract$l_US2_avg_sal_lag1<-na_non_positive_log(contract$US2_avg_sal_lag1)
-      contract$cl_US2_avg_sal_lag1<-arm::rescale(contract$l_US2_avg_sal_lag1)
+      contract$cl_US2_avg_sal_lag1<-arm::rescale(na_non_positive_log(contract$US2_avg_sal_lag1))
 
 
 
@@ -1261,10 +1248,8 @@ transform_contract<-function(
       contract$office_PBSCobligated_1year[is.na(contract$ContractingOfficeCode)]<-NA
       contract$pPBSC[is.na(contract$ContractingOfficeCode)]<-NA
 
-      contract$l_OffCA<-log(contract$office_numberofactions_1year+1)
-      contract$cl_OffCA<-arm::rescale(contract$l_OffCA)
-      contract$l_OffVol<-log(contract$office_obligatedamount_7year+1)
-      contract$cln_OffObl7<-arm::rescale(contract$l_OffVol)
+      contract$cln_OffCA<-arm::rescale(log(contract$office_numberofactions_1year+1))
+      contract$cln_OffObl7<-arm::rescale(log(contract$office_obligatedamount_7year+1))
 
       # summary(contract$l_OffVol)
       # summary(contract$cln_OffObl7)
