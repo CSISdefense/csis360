@@ -1095,24 +1095,24 @@ transform_contract<-function(
 
 
       contract$capped_def6_ratio_lag1<-cap(contract$def6_ratio_lag1,1)
-      contract$l_def6_ratio_lag1<-na_non_positive_log(contract$def6_ratio_lag1)
+      contract$l_def6_ratio_lag1<-na_non_positive_log(contract$capped_def6_ratio_lag1)
       contract$clr_Def6toUS<-arm::rescale(contract$def6_ratio_lag1)
 
       contract$capped_def5_ratio_lag1<-cap(contract$def5_ratio_lag1,1)
-      contract$l_def5_ratio_lag1<-na_non_positive_log(contract$def5_ratio_lag1)
+      contract$l_def5_ratio_lag1<-na_non_positive_log(contract$capped_def5_ratio_lag1)
       contract$cl_def5_ratio_lag1<-arm::rescale(contract$def5_ratio_lag1)
 
       contract$capped_def4_ratio_lag1<-cap(contract$def4_ratio_lag1,1)
-      contract$l_def4_ratio_lag1<-na_non_positive_log(contract$def4_ratio_lag1)
+      contract$l_def4_ratio_lag1<-na_non_positive_log(contract$capped_def4_ratio_lag1)
       contract$cl_def4_ratio_lag1<-arm::rescale(contract$def4_ratio_lag1)
 
 
       contract$capped_def3_ratio_lag1<-cap(contract$def3_ratio_lag1,1)
-      contract$l_def3_ratio_lag1<-na_non_positive_log(contract$def3_ratio_lag1)
+      contract$l_def3_ratio_lag1<-na_non_positive_log(contract$capped_def3_ratio_lag1)
       contract$clr_Def3toUS<-arm::rescale(contract$def3_ratio_lag1)
 
       contract$capped_def2_ratio_lag1<-cap(contract$def2_ratio_lag1,1)
-      contract$l_def2_ratio_lag1<-na_non_positive_log(contract$def2_ratio_lag1)
+      contract$l_def2_ratio_lag1<-na_non_positive_log(contract$capped_def2_ratio_lag1)
       contract$cl_def2_ratio_lag1<-arm::rescale(contract$def2_ratio_lag1)
 
 

@@ -5,7 +5,7 @@ Version: 0.0.0.9100
 Authors@R: person("Gregory","Sanders",email="gsanders@csis.org",
                   role = c("aut", "cre"))
 Description: Tools for supporting CSIS quantitative research projects.
-Imports: plyr (>= 0.1.8.4), ggplot2, magrittr, dplyr, lazyeval, forcats, readr, tidyverse, lubridate, stringr, scales, Hmisc
+Imports: plyr (>= 0.1.8.4), ggplot2, magrittr, dplyr, lazyeval, forcats, readr, tidyverse, lubridate, stringr, scales, Hmisc, sysfonts
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
