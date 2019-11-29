@@ -224,6 +224,7 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
   #
   # NOTE: NAs replaced with 0 here; potential data quality issue
   #
+  shown_data %<>% replace_nas_with_unlabeled(color_var)
   shown_data[is.na(shown_data)] <- 0
 
   # calculate shares if share checkbox is checked
@@ -253,7 +254,7 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
       #
       # NOTE: NAs replaced with 0 here; potential data quality issue
       #
-      shown_data[is.na(shown_data)] <- 0
+
 
       # calculate a total for each row - i.e. the total for the shares breakout
       # variable for each fiscal year,
@@ -289,6 +290,13 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
   if(!is.null(labels_and_colors)){
     if(color_var!="None"){
       if(!color_var %in% labels_and_colors$column) stop("color_var missing from labels_and_colors")
+      if(!all(levels(factor(data[,color_var])) %in%
+        subset(labels_and_colors,column==color_var)$variable)){
+        print(levels(factor(data[,color_var]))[
+          !levels(factor(data[,color_var])) %in% subset(labels_and_colors,column==color_var)$variable])
+        stop(paste("color_var:",color_var,"is missing labels within labels_and_colors"))
+      }
+      shown_data %<>% replace_nas_with_unlabeled(color_var)
       shown_data[,colnames(shown_data)==color_var]<-
         ordered(shown_data[,colnames(shown_data)==color_var],
                 levels=subset(labels_and_colors,column==color_var)$variable,
