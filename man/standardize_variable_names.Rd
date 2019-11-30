@@ -4,9 +4,11 @@
 \alias{standardize_variable_names}
 \title{Standardize variable names}
 \usage{
-standardize_variable_names(data,
+standardize_variable_names(
+  data,
   path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/",
-  var = NULL)
+  var = NULL
+)
 }
 \arguments{
 \item{data}{the data frame to be joined}

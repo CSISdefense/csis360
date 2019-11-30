@@ -4,13 +4,25 @@
 \alias{read_and_join_experiment}
 \title{Read in an external file and join it with an existing data frame}
 \usage{
-read_and_join_experiment(data, lookup_file,
+read_and_join_experiment(
+  data,
+  lookup_file,
   path = "https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
-  directory = "Lookups/", by = NULL, replace_na_var = NULL,
-  overlap_var_replaced = TRUE, add_var = NULL,
-  new_var_checked = TRUE, skip_check_var = NULL, zip_file = NULL,
-  col_types = NULL, case_sensitive = TRUE, missing_file = NULL,
-  create_lookup_rdata = FALSE, lookup_char_as_factor = FALSE)
+  directory = "Lookups/",
+  by = NULL,
+  replace_na_var = NULL,
+  overlap_var_replaced = TRUE,
+  add_var = NULL,
+  new_var_checked = TRUE,
+  skip_check_var = NULL,
+  zip_file = NULL,
+  col_types = NULL,
+  case_sensitive = TRUE,
+  missing_file = NULL,
+  create_lookup_rdata = FALSE,
+  lookup_char_as_factor = FALSE,
+  guess_max = NULL
+)
 }
 \arguments{
 \item{data}{The data frame to be joined}

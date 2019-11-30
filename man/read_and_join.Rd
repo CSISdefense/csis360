@@ -4,12 +4,20 @@
 \alias{read_and_join}
 \title{Read in an external file and join it with an existing data frame}
 \usage{
-read_and_join(data, lookup_file,
+read_and_join(
+  data,
+  lookup_file,
   path = "https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
-  directory = "Lookups/", by = NULL, replace_na_var = NULL,
-  overlap_var_replaced = TRUE, add_var = NULL,
-  new_var_checked = TRUE, skip_check_var = NULL, missing_file = NULL,
-  lookup_char_as_factor = FALSE)
+  directory = "Lookups/",
+  by = NULL,
+  replace_na_var = NULL,
+  overlap_var_replaced = TRUE,
+  add_var = NULL,
+  new_var_checked = TRUE,
+  skip_check_var = NULL,
+  missing_file = NULL,
+  lookup_char_as_factor = FALSE
+)
 }
 \arguments{
 \item{data}{The data frame to be joined}

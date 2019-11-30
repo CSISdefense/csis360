@@ -4,8 +4,11 @@
 \alias{create_edit_values_list}
 \title{Creates the list of values available for editing, when the user changes the variable they are examining}
 \usage{
-create_edit_values_list(current_data, input,
-  session = getDefaultReactiveDomain())
+create_edit_values_list(
+  current_data,
+  input,
+  session = getDefaultReactiveDomain()
+)
 }
 \arguments{
 \item{current_data}{The current data frame for the app}

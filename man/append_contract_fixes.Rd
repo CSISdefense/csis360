@@ -4,9 +4,10 @@
 \alias{append_contract_fixes}
 \title{Apply know fixes to contract files.}
 \usage{
-
-  append_contract_fixes(Path = "https://github.com/CSISdefense/R-scripts-and-data/blob/master/Lookups/",
-  df)
+append_contract_fixes(
+  Path = "https://github.com/CSISdefense/R-scripts-and-data/blob/master/Lookups/",
+  df
+)
 }
 \arguments{
 \item{Path}{File path}

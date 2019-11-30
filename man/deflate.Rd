@@ -4,10 +4,16 @@
 \alias{deflate}
 \title{Deflation using GitHub-based CSV file}
 \usage{
-deflate(data, money_var = "Amount", fy_var = "Fiscal_Year",
-  deflator_file = "Lookup_Deflators.csv", deflator_var = "OMB20_GDP18",
+deflate(
+  data,
+  money_var = "Amount",
+  fy_var = "Fiscal_Year",
+  deflator_file = "Lookup_Deflators.csv",
+  deflator_var = "OMB20_GDP18",
   path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
-  directory = "economic/", deflator_dropped = TRUE)
+  directory = "economic/",
+  deflator_dropped = TRUE
+)
 }
 \arguments{
 \item{data}{A data frame}
@@ -38,7 +44,7 @@ not in a live app.  It reads an external file from GitHub,
 which will slow down an app substantially if done repeatedly.
 }
 \examples{
-Path<-"K:\\\\2007-01 PROFESSIONAL SERVICES\\\\R scripts and data\\\\"
+Path<-"K:\\2007-01 PROFESSIONAL SERVICES\\R scripts and data\\"
 
 FullData <- read_csv("2017_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
   col_names = TRUE, col_types = "cccccccccc",na=c("NA","NULL"))

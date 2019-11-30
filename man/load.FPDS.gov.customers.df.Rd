@@ -4,9 +4,11 @@
 \alias{load.FPDS.gov.customers.df}
 \title{Returns a dataframe with customer data for quality control check}
 \usage{
-
-  load.FPDS.gov.customers.df(Path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/",
-  prod_serv_blank = "", customer = "")
+load.FPDS.gov.customers.df(
+  Path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/",
+  prod_serv_blank = "",
+  customer = ""
+)
 }
 \arguments{
 \item{Path}{file path name where Lookup files are stored}

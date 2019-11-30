@@ -5,7 +5,15 @@
 \title{Extract a legend https://stackoverflow.com/questions/43366616/ggplot2-legend-only-in-a-plot
 Alternate unused approach From https://github.com/tidyverse/ggplot2/wiki/Share-a-legend-between-two-ggplot2-graphs}
 \usage{
-ggsave600dpi(filename, gg, width, height, units = "in", size = 60)
+ggsave600dpi(
+  filename,
+  gg,
+  width,
+  height,
+  units = "in",
+  size = 60,
+  lineheight = 0.13
+)
 }
 \arguments{
 \item{filename}{Output file}

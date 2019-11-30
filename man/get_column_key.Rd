@@ -4,8 +4,10 @@
 \alias{get_column_key}
 \title{Get Column Key based on the names in a data frame}
 \usage{
-get_column_key(data,
-  path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/")
+get_column_key(
+  data,
+  path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/"
+)
 }
 \arguments{
 \item{data}{A data frame}

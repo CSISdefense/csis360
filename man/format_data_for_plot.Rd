@@ -4,10 +4,20 @@
 \alias{format_data_for_plot}
 \title{Returns data in the appropriate format for the user-specified plot}
 \usage{
-format_data_for_plot(data, fy_var, y_var, share = FALSE, start_fy = NA,
-  end_fy = NA, color_var = "None", facet_var = "None",
-  second_var = NULL, labels_and_colors = NULL, group = TRUE,
-  drop_missing_labels = TRUE)
+format_data_for_plot(
+  data,
+  fy_var,
+  y_var,
+  share = FALSE,
+  start_fy = NA,
+  end_fy = NA,
+  color_var = "None",
+  facet_var = "None",
+  second_var = NULL,
+  labels_and_colors = NULL,
+  group = TRUE,
+  drop_missing_labels = TRUE
+)
 }
 \arguments{
 \item{data}{A data frame to format for the plot, as a tibble}
