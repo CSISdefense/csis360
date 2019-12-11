@@ -745,20 +745,12 @@ transform_contract<-function(
     }
 
     if (levels(contract$qDuration)[[2]]=="[   61,  214)"){
-      contract$qDuration<-factor(contract$qDuration,
-
-                                 levels=c("[    0,   61)",
-                                          "[   61,  214)",
-                                          "[  214,  366)",
-                                          "[  366,  732)",
-                                          levels(contract$qDuration)[5]),
-                                 labels=c("[0 months,~2 months)",
-                                          "[~2 months,~7 months)",
-                                          "[~7 months-~1 year]",
-                                          "(~1 year,~2 years]",
-                                          "(~2 years+]"),
-                                 ordered=TRUE
-      )
+      levels(contract$qDuration)<- list(
+        "[0 months,~2 months)"=c("[    0,   61)","[    1,   61)"),
+        "[~2 months,~7 months)"="[   61,  214)",
+        "[~7 months-~1 year]"="[  214,  366)",
+        "(~1 year,~2 years]"="[  366,  732)",
+        "(~2 years+]"=levels(contract$qDuration)[5])
     }
 
     contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA

@@ -74,6 +74,8 @@ prepare_labels_and_colors<-function(data
     column_key<-subset(column_key, !is.na(coloration.key))
   }
 
+  if(nrow(column_key)==0) stop("No matching columns")
+
   names.data<-NULL
   for(v in (1:nrow(column_key))){
     if(na_replaced==TRUE){
@@ -83,6 +85,9 @@ prepare_labels_and_colors<-function(data
     #Limit the lookup table to those series that match the variable
     labels_category_data<-subset(coloration, coloration.key==
                                    column_key$coloration.key[v] )
+
+    if(nrow(labels_category_data)==0) stop("No matching levels.")
+
     #Error checking for duplicates in lookup_coloration.csv
     if(anyDuplicated(labels_category_data$variable)>0){
       print(labels_category_data$variable[
