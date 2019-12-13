@@ -550,10 +550,8 @@ transform_contract<-function(
                       # deflator_var="OMB.2019",
                       fy_var="StartFY"
     )
-    #l_Ceil
-
-    if(!"l_Ceil" %in% colnames(contract))
-      contract$l_Ceil<-na_non_positive_log(contract$UnmodifiedCeiling_OMB20_GDP18)
+    #cln_Ceil
+    contract$cln_Ceil<-arm::rescale(contract$UnmodifiedCeiling_OMB20_GDP18)
 
     # lowroundedcutoffs<-c(15000,100000,1000000,30000000)
     highroundedcutoffs<-c(15000,100000,1000000,10000000,75000000)
@@ -1382,7 +1380,8 @@ transform_contract<-function(
     contract$Ceil2Base[contract$Ceil2Base<1 | !is.finite(contract$Ceil2Base)]<-NA
     contract$clr_Ceil2Base<-arm::rescale(log(contract$Ceil2Base))
 
-    contract$l_Base<-na_non_positive_log(contract$UnmodifiedBase_OMB20_GDP18)
+    contract$cln_Base<-arm::rescale(na_non_positive_log(contract$UnmodifiedBase_OMB20_GDP18))
+
 
     if("n_OptGrowth" %in% colnames(contract)){
       contract$n_OptGrowth[contract$override_exercised_growth==TRUE]<-NA
@@ -1441,11 +1440,8 @@ transform_contract<-function(
 
 
 
-  if("l_Base" %in% colnames(contract))
-    contract$cln_Base<-arm::rescale(contract$l_Base)
 
-  if("l_Ceil" %in% colnames(contract))
-    contract$cln_Ceil<-arm::rescale(contract$l_Ceil)
+
 
   if("cln_Days" %in% colnames(contract))
     contract$cln_Days<-arm::rescale(contract$l_Days)
