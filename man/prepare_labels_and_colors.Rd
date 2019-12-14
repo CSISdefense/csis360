@@ -4,9 +4,13 @@
 \alias{prepare_labels_and_colors}
 \title{Prepare Labels And Colors}
 \usage{
-prepare_labels_and_colors(data, var = NULL, na_replaced = TRUE,
+prepare_labels_and_colors(
+  data,
+  var = NULL,
+  na_replaced = TRUE,
   path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/",
-  missing_allowed = FALSE)
+  missing_allowed = FALSE
+)
 }
 \arguments{
 \item{data}{the data frame to be joined}

@@ -45,6 +45,8 @@ prepare_labels_and_colors<-function(data
     header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
     stringsAsFactors=FALSE
   )
+  if(min(nchar(coloration$RGB[!is.na(coloration$RGB)]))!=7) stop("Malformed hex code in RGB")
+
   if(ncol(coloration)!=12) stop("Mismatched number of columns in coloration.txt.")
 
   #Fix oddities involving coloration text

@@ -4,8 +4,12 @@
 \alias{drop_from_frame}
 \title{Filters out and drops factor levels from a factor in a data frame}
 \usage{
-drop_from_frame(passed_frame, passed_var, passed_levels,
-  session = getDefaultReactiveDomain())
+drop_from_frame(
+  passed_frame,
+  passed_var,
+  passed_levels,
+  session = getDefaultReactiveDomain()
+)
 }
 \arguments{
 \item{passed_frame}{A data frame, as an object}

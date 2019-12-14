@@ -4,10 +4,21 @@
 \alias{build_plot}
 \title{Adds a geom layer to a ggplot object based on user input.}
 \usage{
-build_plot(data, chart_geom = "Line Chart", share = FALSE,
-  x_var = NULL, y_var, color_var = "None", facet_var = "None",
-  second_var = NULL, legend = TRUE, caption = TRUE,
-  labels_and_colors = NULL, column_key = NULL, format = FALSE)
+build_plot(
+  data,
+  chart_geom = "Line Chart",
+  share = FALSE,
+  x_var = NULL,
+  y_var,
+  color_var = "None",
+  facet_var = "None",
+  second_var = NULL,
+  legend = TRUE,
+  caption = TRUE,
+  labels_and_colors = NULL,
+  column_key = NULL,
+  format = FALSE
+)
 }
 \arguments{
 \item{data}{A tibble of formatted data for the ggplot}

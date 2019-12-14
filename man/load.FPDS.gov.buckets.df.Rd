@@ -4,9 +4,11 @@
 \alias{load.FPDS.gov.buckets.df}
 \title{Load product or service code downloads from FPDS.gov}
 \usage{
-
-  load.FPDS.gov.buckets.df(Path = "https://github.com/CSISdefense/Lookup-Tables",
-  prod_serv_blank = "", customer = "")
+load.FPDS.gov.buckets.df(
+  Path = "https://github.com/CSISdefense/Lookup-Tables",
+  prod_serv_blank = "",
+  customer = ""
+)
 }
 \arguments{
 \item{Path}{file path name where Lookup files are stored}

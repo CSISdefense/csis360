@@ -4,12 +4,26 @@
 \alias{LatticePlotWrapper_csis360}
 \title{A legacy function for graphs that allows primary and s econdary facets and}
 \usage{
-LatticePlotWrapper_csis360(VAR.color.legend.label, VAR.main.label,
-  VAR.X.label, VAR.Y.label, VAR.Coloration, VAR.long.DF, VAR.ncol = NA,
-  VAR.x.variable, VAR.y.variable, VAR.y.series, VAR.facet.primary = NA,
-  VAR.facet.secondary = NA, MovingAverage = 1, MovingSides = 1,
-  DataLabels = NA, caption = FALSE, legend = FALSE,
-  geom.text.size = 2.5)
+LatticePlotWrapper_csis360(
+  VAR.color.legend.label,
+  VAR.main.label,
+  VAR.X.label,
+  VAR.Y.label,
+  VAR.Coloration,
+  VAR.long.DF,
+  VAR.ncol = NA,
+  VAR.x.variable,
+  VAR.y.variable,
+  VAR.y.series,
+  VAR.facet.primary = NA,
+  VAR.facet.secondary = NA,
+  MovingAverage = 1,
+  MovingSides = 1,
+  DataLabels = NA,
+  caption = FALSE,
+  legend = FALSE,
+  geom.text.size = 2.5
+)
 }
 \arguments{
 \item{VAR.color.legend.label}{Label for the fill legend}

@@ -4,8 +4,12 @@
 \alias{update_title}
 \title{Populates the title field with a dynamic title, if appropriate}
 \usage{
-update_title(passed_data, input, user_title,
-  session = getDefaultReactiveDomain())
+update_title(
+  passed_data,
+  input,
+  user_title,
+  session = getDefaultReactiveDomain()
+)
 }
 \arguments{
 \item{passed_data}{The data used in the plot}

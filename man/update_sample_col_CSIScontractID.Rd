@@ -4,8 +4,12 @@
 \alias{update_sample_col_CSIScontractID}
 \title{Update a sample using a larger data frame.}
 \usage{
-update_sample_col_CSIScontractID(smp, full, col = NULL,
-  drop_and_replace = FALSE)
+update_sample_col_CSIScontractID(
+  smp,
+  full,
+  col = NULL,
+  drop_and_replace = FALSE
+)
 }
 \arguments{
 \item{smp}{A data frame of contracts ready for statistical analysis, which must contain CSIScontractID.}
