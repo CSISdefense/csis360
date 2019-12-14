@@ -867,9 +867,6 @@ transform_contract<-function(
     #        "1"="2+ Offers")
     # contract$n_Comp<-as.numeric(as.character(contract$n_Comp))
 
-
-
-
     contract$q_Offr<-Hmisc::cut2(contract$UnmodifiedNumberOfOffersReceived,c(2,3,5))
     levels(contract$q_Offr) <-
       list("1"=c("1","  1"),
@@ -942,6 +939,19 @@ transform_contract<-function(
            "2-4 offers"=c("2 offers","3-4 offers"),
            "5+ offers"="5+ offers")
     summary(contract$Comp1or5)
+  }
+  else if ("Offr" %in% colnames(contract) & !"Comp1or5" %in% colnames(contract)){
+    contract$Comp1or5<-as.character(contract$EffComp)
+    contract$Comp1or5[!is.na(contract$Comp1or5)&
+                        contract$Comp1or5=="2+ Offers"]<-
+      as.character(contract$Offr[!is.na(contract$Comp1or5)&
+                         contract$Comp1or5=="2+ Offers"])
+    contract$Comp1or5<-factor(contract$Comp1or5)
+    levels(contract$Comp1or5)<-
+      list("No Comp."=c("No Competition","No Comp."),
+           "1 Offer"=c("1 offer","1 Offer"),
+           "2-4 Offers"=c("2 offers","3-4 offers","2","3-4"),
+           "5+ Offers"=c("5+ offers","5+"))
   }
 
 
