@@ -550,10 +550,8 @@ transform_contract<-function(
                       # deflator_var="OMB.2019",
                       fy_var="StartFY"
     )
-    #l_Ceil
-
-    if(!"l_Ceil" %in% colnames(contract))
-      contract$l_Ceil<-na_non_positive_log(contract$UnmodifiedCeiling_OMB20_GDP18)
+    #cln_Ceil
+    contract$cln_Ceil<-arm::rescale(contract$UnmodifiedCeiling_OMB20_GDP18)
 
     # lowroundedcutoffs<-c(15000,100000,1000000,30000000)
     highroundedcutoffs<-c(15000,100000,1000000,10000000,75000000)
@@ -758,20 +756,12 @@ transform_contract<-function(
     }
 
     if (levels(contract$qDuration)[[2]]=="[   61,  214)"){
-      contract$qDuration<-factor(contract$qDuration,
-
-                                 levels=c("[    0,   61)",
-                                          "[   61,  214)",
-                                          "[  214,  366)",
-                                          "[  366,  732)",
-                                          levels(contract$qDuration)[5]),
-                                 labels=c("[0 months,~2 months)",
-                                          "[~2 months,~7 months)",
-                                          "[~7 months-~1 year]",
-                                          "(~1 year,~2 years]",
-                                          "(~2 years+]"),
-                                 ordered=TRUE
-      )
+      levels(contract$qDuration)<- list(
+        "[0 months,~2 months)"=c("[    0,   61)","[    1,   61)"),
+        "[~2 months,~7 months)"="[   61,  214)",
+        "[~7 months-~1 year]"="[  214,  366)",
+        "(~1 year,~2 years]"="[  366,  732)",
+        "(~2 years+]"=levels(contract$qDuration)[5])
     }
 
     contract$qDuration[contract$UnmodifiedYearsCat<0]<-NA
@@ -869,9 +859,6 @@ transform_contract<-function(
     #        "1"="2+ offers")
     # contract$n_Comp<-as.numeric(as.character(contract$n_Comp))
 
-
-
-
     contract$q_Offr<-Hmisc::cut2(contract$UnmodifiedNumberOfOffersReceived,c(2,3,5))
     levels(contract$q_Offr) <-
       list("1"=c("1","  1"),
@@ -944,6 +931,19 @@ transform_contract<-function(
            "2-4 offers"=c("2 offers","3-4 offers"),
            "5+ offers"="5+ offers")
     summary(contract$Comp1or5)
+  }
+  else if ("Offr" %in% colnames(contract) & !"Comp1or5" %in% colnames(contract)){
+    contract$Comp1or5<-as.character(contract$EffComp)
+    contract$Comp1or5[!is.na(contract$Comp1or5)&
+                        contract$Comp1or5=="2+ Offers"]<-
+      as.character(contract$Offr[!is.na(contract$Comp1or5)&
+                         contract$Comp1or5=="2+ Offers"])
+    contract$Comp1or5<-factor(contract$Comp1or5)
+    levels(contract$Comp1or5)<-
+      list("No Comp."=c("No Competition","No Comp."),
+           "1 Offer"=c("1 offer","1 Offer"),
+           "2-4 Offers"=c("2 offers","3-4 offers","2","3-4"),
+           "5+ Offers"=c("5+ offers","5+"))
   }
 
 
@@ -1382,7 +1382,8 @@ transform_contract<-function(
     contract$Ceil2Base[contract$Ceil2Base<1 | !is.finite(contract$Ceil2Base)]<-NA
     contract$clr_Ceil2Base<-arm::rescale(log(contract$Ceil2Base))
 
-    contract$l_Base<-na_non_positive_log(contract$UnmodifiedBase_OMB20_GDP18)
+    contract$cln_Base<-arm::rescale(na_non_positive_log(contract$UnmodifiedBase_OMB20_GDP18))
+
 
     if("n_OptGrowth" %in% colnames(contract)){
       contract$n_OptGrowth[contract$override_exercised_growth==TRUE]<-NA
@@ -1441,11 +1442,8 @@ transform_contract<-function(
 
 
 
-  if("l_Base" %in% colnames(contract))
-    contract$cln_Base<-arm::rescale(contract$l_Base)
 
-  if("l_Ceil" %in% colnames(contract))
-    contract$cln_Ceil<-arm::rescale(contract$l_Ceil)
+
 
   if("cln_Days" %in% colnames(contract))
     contract$cln_Days<-arm::rescale(contract$l_Days)

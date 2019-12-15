@@ -704,7 +704,7 @@ read_and_join_experiment<-function(
 #' not in a live app.  It reads an external file from GitHub,
 #' which will slow down an app substantially if done repeatedly.
 #'
-#' @examples Path<-"K:\\2007-01 PROFESSIONAL SERVICES\\R scripts and data\\"
+#' @examples
 #'
 #' FullData <- read_csv("2017_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
 #'   col_names = TRUE, col_types = "cccccccccc",na=c("NA","NULL"))
