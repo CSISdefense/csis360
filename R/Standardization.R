@@ -866,7 +866,7 @@ transform_contract<-function(
     # levels(contract$n_Comp) <-
     #   list("0"="No Comp.",
     #        "0.5"="1 Offer",
-    #        "1"="2+ Offers")
+    #        "1"="2+ offers")
     # contract$n_Comp<-as.numeric(as.character(contract$n_Comp))
 
 
