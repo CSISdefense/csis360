@@ -855,7 +855,7 @@ transform_contract<-function(
     # contract$n_Comp<-contract$EffComp #Fix in Rdata, and add back comp
     # levels(contract$n_Comp) <-
     #   list("0"="No Comp.",
-    #        "0.5"="1 Offer",
+    #        "0.5"="1 offer",
     #        "1"="2+ offers")
     # contract$n_Comp<-as.numeric(as.character(contract$n_Comp))
 
@@ -935,15 +935,15 @@ transform_contract<-function(
   else if ("Offr" %in% colnames(contract) & !"Comp1or5" %in% colnames(contract)){
     contract$Comp1or5<-as.character(contract$EffComp)
     contract$Comp1or5[!is.na(contract$Comp1or5)&
-                        contract$Comp1or5=="2+ Offers"]<-
+                        contract$Comp1or5=="2+ offers"]<-
       as.character(contract$Offr[!is.na(contract$Comp1or5)&
-                         contract$Comp1or5=="2+ Offers"])
+                         contract$Comp1or5=="2+ offers"])
     contract$Comp1or5<-factor(contract$Comp1or5)
     levels(contract$Comp1or5)<-
       list("No Comp."=c("No Competition","No Comp."),
-           "1 Offer"=c("1 offer","1 Offer"),
-           "2-4 Offers"=c("2 offers","3-4 offers","2","3-4"),
-           "5+ Offers"=c("5+ offers","5+"))
+           "1 offer"=c("1 offer","1 Offer"),
+           "2-4 offers"=c("2 offers","3-4 offers","2","3-4"),
+           "5+ offers"=c("5+ offers","5+"))
   }
 
 
