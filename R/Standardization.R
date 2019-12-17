@@ -135,24 +135,24 @@ group_data_for_plot <-function(
 
   if(aggregate=="sum"){
     if(length(breakout) == 0){
-      data %<>%
+      data <- data %>%
         dplyr::group_by(!! as.name(x_var)) %>%
         summarize_(
           agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
     } else {
-      data %<>%
+      data <- data %>%
         dplyr::group_by_(.dots = c(x_var, breakout)) %>%
         summarize_(
           agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
     }
   } else if (aggregate=="mean"){
     if(length(breakout) == 0){
-      data %<>%
+      data <- data %>%
         dplyr::group_by(as.name(!! as.name(x_var))) %>%
         summarize_(
           agg_val = lazyeval::interp(~mean(var, na.rm = TRUE), var = as.name(y_var)))
     } else {
-      data %<>%
+      data <- data %>%
         group_by_(.dots = c(x_var, breakout)) %>%
         summarize_(
           agg_val = lazyeval::interp(~mean(var, na.rm = TRUE), var = as.name(y_var)))
@@ -225,11 +225,11 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
   # NOTE: NAs replaced with 0 here; potential data quality issue
   #
   if(color_var!="None")
-    shown_data %<>% replace_nas_with_unlabeled(color_var)
+    shown_data <- shown_data %>% replace_nas_with_unlabeled(color_var)
   if(facet_var!="None")
-    shown_data %<>% replace_nas_with_unlabeled(facet_var)
+    shown_data <- shown_data %>% replace_nas_with_unlabeled(facet_var)
   if(!is.null(second_var))
-    shown_data %<>% replace_nas_with_unlabeled(second_var)
+    shown_data <- shown_data %>% replace_nas_with_unlabeled(second_var)
   shown_data[is.na(shown_data)] <- 0
 
   # calculate shares if share checkbox is checked
@@ -301,7 +301,7 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
           !unlist(unique(shown_data[,color_var])) %in% subset(labels_and_colors,column==color_var)$variable])
         stop(paste("color_var:",color_var,"is missing labels within labels_and_colors"))
       }
-      shown_data %<>% replace_nas_with_unlabeled(color_var)
+      shown_data <- shown_data %>% replace_nas_with_unlabeled(color_var)
       shown_data[,colnames(shown_data)==color_var]<-
         ordered(shown_data[,colnames(shown_data)==color_var],
                 levels=subset(labels_and_colors,column==color_var)$variable,

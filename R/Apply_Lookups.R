@@ -841,3 +841,25 @@ text_to_number<-function(x){
   x
 }
 
+#' Get Column Key based on the names in a data frame
+#'
+#' @param x A date.
+#'
+#' @return The fiscal year of the date.
+#'
+#' @details Converts the date to fiscal year by
+#' extracting the date and adding 1 if the month
+#' is october or later.
+#' @examples
+#'
+#' get_fiscal_year(as.Date('2019-12-10'))
+#'
+#' @export
+get_fiscal_year<-function(
+  x){
+
+  year(x)+ifelse(month(x)<10,0,+1)
+  # ymd(paste(          ,"-10-1",sep=""))
+}
+
+
