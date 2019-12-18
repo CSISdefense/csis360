@@ -858,7 +858,7 @@ text_to_number<-function(x){
 get_fiscal_year<-function(
   x){
 
-  year(x)+ifelse(month(x)<10,0,+1)
+  lubridate::year(x)+ifelse(lubridate::month(x)<10,0,+1)
   # ymd(paste(          ,"-10-1",sep=""))
 }
 
