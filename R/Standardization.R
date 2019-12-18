@@ -430,7 +430,7 @@ transform_contract<-function(
   if("Action_Obligation" %in% colnames(contract))
     contract$Action_Obligation <-  as.numeric(contract$Action_Obligation)
   if("Number.Of.Actions" %in% colnames(contract))
-    contract$Number.Of.Actions %<>% as.numeric()
+    contract$Number.Of.Actions <- as.numeric(contract$Number.Of.Actions )
 
   create_naics2<-function(NAICS){
     NAICS2<-substring(NAICS,1,2)
