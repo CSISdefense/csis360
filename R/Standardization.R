@@ -740,11 +740,7 @@ transform_contract<-function(
     contract$UnmodifiedDays[contract$UnmodifiedDays<0]<-NA
     contract$capped_UnmodifiedDays <- ifelse(contract$UnmodifiedDays > 3650, 3650, contract$UnmodifiedDays)
 
-    contract$l_Days<-na_non_positive_log(contract$UnmodifiedDays)
-    contract$cln_Days<-arm::rescale(contract$l_Days)
-
-    contract$capped_l_Days<-na_non_positive_log(contract$capped_UnmodifiedDays)
-    contract$capped_cl_Days<-arm::rescale(contract$capped_l_Days)
+    contract$cln_Days<-arm::rescale(na_non_positive_log(contract$capped_UnmodifiedDays))
 
     contract$UnmodifiedYearsFloat<-contract$UnmodifiedDays/365.25
     contract$UnmodifiedYearsCat<-floor(contract$UnmodifiedYearsFloat)
@@ -890,7 +886,7 @@ transform_contract<-function(
 
 
     # contract$cn_Offr<-arm::rescale(contract$nq_Offr)
-    # contract$cl_Offr<-arm::rescale(contract$l_Offr)
+    # contract$cln_Offr<-arm::rescale(contract$l_Offr)
 
     #Urgency
     contract$b_Urg<-NA
@@ -1077,34 +1073,34 @@ transform_contract<-function(
 
       #Remove 0s, they make no sense, source must be one contractors in field have 0 obligations, which is just missing data really
       contract$def6_HHI_lag1[contract$def6_HHI_lag1==0]<-NA
-      contract$c_def6_HHI_lag1<-arm::rescale(contract$def6_HHI_lag1)
+      contract$cn_def6_HHI_lag1<-arm::rescale(contract$def6_HHI_lag1)
 
       contract$l_def6_HHI_lag1<-na_non_positive_log(contract$def6_HHI_lag1)
       contract$cln_Def6HHI<-arm::rescale(contract$l_def6_HHI_lag1)
 
       contract$def5_HHI_lag1[contract$def5_HHI_lag1==0]<-NA
-      contract$c_def5_HHI_lag1<-arm::rescale(contract$def5_HHI_lag1)
+      contract$cn_def5_HHI_lag1<-arm::rescale(contract$def5_HHI_lag1)
 
       contract$l_def5_HHI_lag1<-na_non_positive_log(contract$def5_HHI_lag1)
-      contract$cl_def5_HHI_lag1<-arm::rescale(contract$l_def5_HHI_lag1)
+      contract$cln_def5_HHI_lag1<-arm::rescale(contract$l_def5_HHI_lag1)
 
       contract$def4_HHI_lag1[contract$def4_HHI_lag1==0]<-NA
-      contract$c_def4_HHI_lag1<-arm::rescale(contract$def4_HHI_lag1)
+      contract$cn_def4_HHI_lag1<-arm::rescale(contract$def4_HHI_lag1)
 
       contract$l_def4_HHI_lag1<-na_non_positive_log(contract$def4_HHI_lag1)
-      contract$cl_def4_HHI_lag1<-arm::rescale(contract$l_def4_HHI_lag1)
+      contract$cln_def4_HHI_lag1<-arm::rescale(contract$l_def4_HHI_lag1)
 
       contract$def3_HHI_lag1[contract$def3_HHI_lag1==0]<-NA
-      contract$c_def3_HHI_lag1<-arm::rescale(contract$def3_HHI_lag1)
+      contract$cn_def3_HHI_lag1<-arm::rescale(contract$def3_HHI_lag1)
 
       contract$l_def3_HHI_lag1<-na_non_positive_log(contract$def3_HHI_lag1)
       contract$cln_Def3HHI<-arm::rescale(contract$l_def3_HHI_lag1)
 
       contract$def2_HHI_lag1[contract$def2_HHI_lag1==0]<-NA
-      contract$c_def2_HHI_lag1<-arm::rescale(contract$def2_HHI_lag1)
+      contract$cn_def2_HHI_lag1<-arm::rescale(contract$def2_HHI_lag1)
 
       contract$l_def2_HHI_lag1<-na_non_positive_log(contract$def2_HHI_lag1)
-      contract$cl_def2_HHI_lag1<-arm::rescale(contract$l_def2_HHI_lag1)
+      contract$cln_def2_HHI_lag1<-arm::rescale(contract$l_def2_HHI_lag1)
 
 
       contract$capped_def6_ratio_lag1<-cap(contract$def6_ratio_lag1,1)
@@ -1126,25 +1122,25 @@ transform_contract<-function(
       contract$l_def6_obl_lag1<-na_non_positive_log(contract$def6_obl_lag1)
       contract$cln_Def6Obl<-arm::rescale(contract$l_def6_obl_lag1)
       contract$l_def5_obl_lag1<-na_non_positive_log(contract$def5_obl_lag1)
-      contract$cl_def5_obl_lag1<-arm::rescale(contract$l_def5_obl_lag1)
+      contract$cln_def5_obl_lag1<-arm::rescale(contract$l_def5_obl_lag1)
       contract$l_def4_obl_lag1<-na_non_positive_log(contract$def4_obl_lag1)
-      contract$cl_def4_obl_lag1<-arm::rescale(contract$l_def4_obl_lag1)
+      contract$cln_def4_obl_lag1<-arm::rescale(contract$l_def4_obl_lag1)
       contract$l_def3_obl_lag1<-na_non_positive_log(contract$def3_obl_lag1)
-      contract$cl_def3_obl_lag1<-arm::rescale(contract$l_def3_obl_lag1)
+      contract$cln_def3_obl_lag1<-arm::rescale(contract$l_def3_obl_lag1)
       contract$l_def2_obl_lag1<-na_non_positive_log(contract$def2_obl_lag1)
-      contract$cl_def2_obl_lag1<-arm::rescale(contract$l_def2_obl_lag1)
+      contract$cln_def2_obl_lag1<-arm::rescale(contract$l_def2_obl_lag1)
 
 
 
-      contract$cl_US6_avg_sal_lag1<-arm::rescale(na_non_positive_log(contract$US6_avg_sal_lag1))
+      contract$cln_US6_avg_sal_lag1<-arm::rescale(na_non_positive_log(contract$US6_avg_sal_lag1))
 
-      contract$cl_US5_avg_sal_lag1<-arm::rescale(na_non_positive_log(contract$US5_avg_sal_lag1))
+      contract$cln_US5_avg_sal_lag1<-arm::rescale(na_non_positive_log(contract$US5_avg_sal_lag1))
 
-      contract$cl_US4_avg_sal_lag1<-arm::rescale(na_non_positive_log(contract$US4_avg_sal_lag1))
+      contract$cln_US4_avg_sal_lag1<-arm::rescale(na_non_positive_log(contract$US4_avg_sal_lag1))
 
-      contract$cl_US3_avg_sal_lag1<-arm::rescale(na_non_positive_log(contract$US3_avg_sal_lag1))
+      contract$cln_US3_avg_sal_lag1<-arm::rescale(na_non_positive_log(contract$US3_avg_sal_lag1))
 
-      contract$cl_US2_avg_sal_lag1<-arm::rescale(na_non_positive_log(contract$US2_avg_sal_lag1))
+      contract$cln_US2_avg_sal_lag1<-arm::rescale(na_non_positive_log(contract$US2_avg_sal_lag1))
 
 
 
