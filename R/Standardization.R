@@ -254,7 +254,7 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
 
       # spread the shares breakout variable across multiple columns
       shown_data<-shown_data %>%
-        spread(color_var, y_var)
+        tidyr::spread(color_var, y_var)
 
       #
       # NOTE: NAs replaced with 0 here; potential data quality issue
@@ -484,12 +484,12 @@ transform_contract<-function(
   if("SumOfisChangeOrder" %in% colnames(contract))
     contract$qNChg <- Hmisc::cut2(contract$SumOfisChangeOrder,c(1,2,3))
 
-
+  contract$What[contract$What=="Unlabeled"]<-NA
   #PSR_What
   if("PSR_What" %in% colnames(contract)){
     contract$PSR_What<-factor(paste(as.character(contract$PSR),
                                     as.character(contract$What),sep="."))
-    contract$PSR_What[contract$PSR_What=="Unlabeled"]<-NA
+
   }
 
 
@@ -1495,6 +1495,12 @@ update_sample_col_CSIScontractID<-function(smp,
                                            full,
                                            col=NULL,
                                            drop_and_replace=FALSE){
+
+  if(is.null(full)) stop("full variable is null")
+  if(is.null(smp)) stop("smp variable is null")
+  if(nrow(smp)==0) stop("No observations in smp")
+  if(nrow(full)==0) stop("No observations in full")
+
   #If column(s) are specified
   if(!is.null(col)){
     toadd<-full[,colnames(full) %in% c("CSIScontractID",col)]
@@ -1507,6 +1513,9 @@ update_sample_col_CSIScontractID<-function(smp,
   }
 
   if(drop_and_replace==FALSE){
+    missing<-sum(!smp$CSIScontractID %in% full$CSIScontractID)
+    if(missing>0) stop(paste("There are",missing,"rows in smp not present in full"))
+
     if(ncol(toadd)==1) stop("No columns to add")
     smp<-left_join(smp,toadd)
   }
