@@ -43,15 +43,15 @@ prepare_labels_and_colors<-function(data
 
     paste(path,"Lookup_Coloration.csv",sep=""),
     header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
-    stringsAsFactors=FALSE
+    stringsAsFactors=FALSE,encoding="UTF-8"
   )
   if(min(nchar(coloration$RGB[!is.na(coloration$RGB)]))!=7) stop("Malformed hex code in RGB")
 
   if(ncol(coloration)!=12) stop("Mismatched number of columns in coloration.txt.")
 
   #Fix oddities involving coloration text, and handle accented characters.
-  coloration$variable <- iconv(gsub("\\\\n","\n",coloration$variable), from="LATIN1", to="UTF-8")
-  coloration$Label <- iconv(gsub("\\\\n","\n",coloration$Label), from="LATIN1", to="UTF-8")
+  coloration$variable <- gsub("\\\\n","\n",coloration$variable)#iconv, from="UTF-8", to="LATIN1")
+  coloration$Label <- gsub("\\\\n","\n",coloration$Label)#incov, from="UTF-8", to="LATIN1")
 
   #Translate the category name into the appropriate coloration.key
   #This is used because we have more category names than coloration.key
