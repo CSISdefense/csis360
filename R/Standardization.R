@@ -1540,3 +1540,22 @@ update_sample_col_CSIScontractID<-function(smp,
 
   smp
 }
+
+
+check_key<-function(x,key){
+  x<-x[,key]
+  dupes<-duplicated(x)
+  if(sum(dupes)>0){
+    warning(paste(sum(dupes),"duplicates out of",nrow(x),"rows."))
+    return(FALSE)
+  } else
+    return (TRUE)
+
+
+
+}
+
+all_duplicate<-function(x,key=NULL){
+  if(is.null(key)) key<-colnames(x)
+  x[duplicated(x[,key])|duplicated(x[,key],fromLast=TRUE),]
+}
