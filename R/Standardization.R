@@ -1559,3 +1559,10 @@ all_duplicate<-function(x,key=NULL){
   if(is.null(key)) key<-colnames(x)
   x[duplicated(x[,key])|duplicated(x[,key],fromLast=TRUE),]
 }
+
+check_derived<-function(x,key,derived_col){
+  if(all(is.na(x[,derived_col]))) stop("dirved_col is all na")
+  if(derived_col %in% key) stop("derived_col should not be part of key")
+  x<-unique(x[,c(key,derived_col)])
+  return(check_key(x,key))
+}
