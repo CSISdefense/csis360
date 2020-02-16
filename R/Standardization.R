@@ -1566,3 +1566,10 @@ check_derived<-function(x,key,derived_col){
   x<-unique(x[,c(key,derived_col)])
   return(check_key(x,key))
 }
+
+
+group_by_list<-function(x,key){
+  for(i in 1:length(key))
+    x<-x %>% group_by(!!as.name(key[i]),add=TRUE)
+  x
+}
