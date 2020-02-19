@@ -1540,3 +1540,33 @@ update_sample_col_CSIScontractID<-function(smp,
 
   smp
 }
+
+
+
+
+#***********************Check Key
+#' Check Key
+#'
+#' @param x the data frame to be checked
+#' @param key list of one or more column names that are suspected to be the key
+#'
+#' @return True if the columns are unique identifiers, false with warning otherwise.
+#'
+#' @details This function is uesed to check if a provided set of columns act as
+#' unique identifiers. This is often particularly valuable before merging two
+#' sets of tables, though it has a variety of other uses.
+#'
+#' @examples
+#'
+#' @export
+check_key<-function(x,key){
+  if(!all(key %in% colnames(x))) stop("Key(s) missing from data frame")
+  dupe<-sum(duplicated(x[,key]))
+  if(dupe>0){
+    warning(paste("Using pk list (",paste(key,collapse=", "),")",dupe,"out of",nrow(x),"are duplicated"))
+    return(FALSE)
+  }
+  else{
+    return(TRUE)
+  }
+}
