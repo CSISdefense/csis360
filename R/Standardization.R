@@ -1570,3 +1570,24 @@ check_key<-function(x,key){
     return(TRUE)
   }
 }
+
+
+
+all_duplicate<-function(x,key=NULL){
+  if(is.null(key)) key<-colnames(x)
+  x[duplicated(x[,key])|duplicated(x[,key],fromLast=TRUE),]
+}
+
+check_derived<-function(x,key,derived_col){
+  if(all(is.na(x[,derived_col]))) stop("dirved_col is all na")
+  if(derived_col %in% key) stop("derived_col should not be part of key")
+  x<-unique(x[,c(key,derived_col)])
+  return(check_key(x,key))
+}
+
+
+group_by_list<-function(x,key){
+  for(i in 1:length(key))
+    x<-x %>% group_by(!!as.name(key[i]),add=TRUE)
+  x
+}
