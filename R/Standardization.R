@@ -1573,10 +1573,44 @@ check_key<-function(x,key){
 
 
 
+
+#***********************All Duplicates
+#' All Duplicates
+#'
+#' @param x the data frame to be checked
+#' @param key list of one or more column names that are suspected to be the key
+#'
+#' @return All instances of rows where the primary key is duplicated
+#'
+#' @details Duplicated just returns the 2nd row of duplicates and doesn't have
+#' a trivially easy way of just checking for duplicates in primary keys rather
+#' than all rows, this function covers both.
+#'
+#' @examples
+#'
+#' @export
 all_duplicate<-function(x,key=NULL){
   if(is.null(key)) key<-colnames(x)
   x[duplicated(x[,key])|duplicated(x[,key],fromLast=TRUE),]
 }
+
+
+
+#***********************Check Derived
+#' Check Derived
+#'
+#' @param x the data frame to be checked
+#' @param key list of one or more column names that are suspected to be the key
+#' @param derived_col check whether this variable only varies with the primary key
+#'
+#' @return True if the derived_col varies only with primary key.
+#'
+#' @details A derived column is one that could be consolidated only to the primary keys
+#' and the derived column
+#'
+#' @examples
+#'
+#' @export
 
 check_derived<-function(x,key,derived_col){
   if(all(is.na(x[,derived_col]))) stop("dirved_col is all na")
@@ -1586,12 +1620,39 @@ check_derived<-function(x,key,derived_col){
 }
 
 
+#***********************Group By List
+#' Group By List
+#'
+#' @param x the data frame to be checked
+#' @param key list of one or more column names that are suspected to be the key
+#'
+#' @return Group_By using a list of quoted names.
+#'
+#' @details Replacement for group_by_ now that it has been depricated.
+#'
+#' @examples
+#'
+#' @export
 group_by_list<-function(x,key){
   for(i in 1:length(key))
     x<-x %>% group_by(!!as.name(key[i]),add=TRUE)
   x
 }
 
+#***********************Get Base Folder
+#' Get Base Folder
+#'
+#' @param folder
+#'
+#' @return "../[folder]" or "[folder]" depending on the relative position.
+#'
+#' @details When a project is open, R files use the base of the repository
+#' as the working directory. RMD files use their own position, typically
+#' script or analysis.
+#'
+#' @examples
+#'
+#' @export
 get_base_folder<-function(folder){
   if(dir.exists(folder)) return(folder)
   else if(dir.exists(file.path("..",folder))) return(paste("..",folder,sep="/"))
