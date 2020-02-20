@@ -1591,3 +1591,9 @@ group_by_list<-function(x,key){
     x<-x %>% group_by(!!as.name(key[i]),add=TRUE)
   x
 }
+
+get_base_folder<-function(folder){
+  if(dir.exists(folder)) return(dir.exists(folder))
+  else if(dir.exists(file.path("..",folder))) return(file.path("..",folder))
+  else stop("Directory not found, is it present in repository base and areyou in a project?")
+}
