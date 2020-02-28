@@ -360,28 +360,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
     #   mainplot<-mainplot+scale_y_continuous(label = unit_format(unit = "M", scale = 1e-6))
 
     mainplot <- mainplot + scale_y_continuous(
-      labels = function(x){
-        sapply(x, function(y){
-          if(is.na(y)) return("NA")
-          y_lab <- "yuge"
-          if(abs(y) < 1e15) y_lab <- paste0(round(y/1e12), "T")
-          if(abs(y) < 1e14) y_lab <- paste0(round(y/1e12, 1), "T")
-          if(abs(y) < 1e13) y_lab <- paste0(round(y/1e12, 2), "T")
-          if(abs(y) < 1e12) y_lab <- paste0(round(y/1e9), "B")
-          if(abs(y) < 1e11) y_lab <- paste0(round(y/1e9, 1), "B")
-          if(abs(y) < 1e10) y_lab <- paste0(round(y/1e9, 2), "B")
-          if(abs(y) < 1e9) y_lab <- paste0(round(y/1e6), "M")
-          if(abs(y) < 1e9) y_lab <- paste0(round(y/1e6, 1), "M")
-          if(abs(y) < 1e7) y_lab <- paste0(round(y/1e6, 2), "M")
-          if(abs(y) < 1e6) y_lab <- paste0(round(y/1000), "k")
-          if(abs(y) < 1e5) y_lab <- paste0(round(y/1000, 1), "k")
-          if(abs(y) < 1e4) y_lab <- paste0(round(y/1000, 2), "k")
-          if(abs(y) < 1000) ylab <- as.character(round(y))
-          if(abs(y) < 100) y_lab <- as.character(round(y,1))
-          if(abs(y) < 10) y_lab <- as.character(round(y,2))
-          return(y_lab)
-        })
-      }
+      labels = label_units
     )
   }
 
@@ -825,4 +804,40 @@ ggsave600dpi<-function(filename,gg,width,height,units="in",size=60,lineheight=0.
                  # font("legend.text", size = 45) +
                  # theme(text = element_text(size = 45+
                 width=width, height= height, units=units,dpi=600)
+}
+
+
+#' Automatically put an axis in a standardized unit.
+#'
+#' @param x A column of data
+#'
+#' @return Data in a standardized form.
+#'
+#'
+#'
+#'
+#'
+#' @import ggplot2
+#' @export
+label_units<-function(x){
+  sapply(x, function(y){
+    if(is.na(y)) return("NA")
+    y_lab <- "yuge"
+    if(abs(y) < 1e15) y_lab <- paste0(round(y/1e12), "T")
+    if(abs(y) < 1e14) y_lab <- paste0(round(y/1e12, 1), "T")
+    if(abs(y) < 1e13) y_lab <- paste0(round(y/1e12, 2), "T")
+    if(abs(y) < 1e12) y_lab <- paste0(round(y/1e9), "B")
+    if(abs(y) < 1e11) y_lab <- paste0(round(y/1e9, 1), "B")
+    if(abs(y) < 1e10) y_lab <- paste0(round(y/1e9, 2), "B")
+    if(abs(y) < 1e9) y_lab <- paste0(round(y/1e6), "M")
+    if(abs(y) < 1e9) y_lab <- paste0(round(y/1e6, 1), "M")
+    if(abs(y) < 1e7) y_lab <- paste0(round(y/1e6, 2), "M")
+    if(abs(y) < 1e6) y_lab <- paste0(round(y/1000), "k")
+    if(abs(y) < 1e5) y_lab <- paste0(round(y/1000, 1), "k")
+    if(abs(y) < 1e4) y_lab <- paste0(round(y/1000, 2), "k")
+    if(abs(y) < 1000) ylab <- as.character(round(y))
+    if(abs(y) < 100) y_lab <- as.character(round(y,1))
+    if(abs(y) < 10) y_lab <- as.character(round(y,2))
+    return(y_lab)
+  })
 }
