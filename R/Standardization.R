@@ -1634,7 +1634,9 @@ check_derived<-function(x,key,derived_col){
 #'
 #' @export
 group_by_list<-function(x,key){
-  for(i in 1:length(key))
+  if(key=="" | length(key)==0) return(group_by(x))
+  x<-x %>% group_by(!!as.name(key[1]),add=FALSE)
+  for(i in 2:length(key))
     x<-x %>% group_by(!!as.name(key[i]),add=TRUE)
   x
 }
