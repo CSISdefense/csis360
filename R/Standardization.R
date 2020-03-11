@@ -35,8 +35,14 @@
 #' @export
 standardize_variable_names<- function(data,
                                       path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/",
-                                      var = NULL
+                                      var = NULL,
+                                      replace_special=FALSE
 ){
+
+  if(replace_special==TRUE){
+    colnames(data)<-gsub("[ ()&*/-]|\r\n",".",colnames(data))
+  }
+
   if(!is.null(var) & any(!var %in% colnames(data)))
     stop(paste(var," is not present in colnames(data)."))
 
