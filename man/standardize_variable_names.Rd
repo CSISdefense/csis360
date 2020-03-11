@@ -7,7 +7,8 @@
 standardize_variable_names(
   data,
   path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/",
-  var = NULL
+  var = NULL,
+  replace_special = FALSE
 )
 }
 \arguments{
