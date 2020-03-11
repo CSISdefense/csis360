@@ -19,6 +19,7 @@
 #' @param data the data frame to be joined
 #' @param path the location of the lookup file
 #' @param var the variable names to standardize; by default all will be done
+#' @param replace_special whether to replaces spaces and special characters in column names with periods
 #'
 #' @return Data with standardized variable names.
 #'
@@ -35,8 +36,13 @@
 #' @export
 standardize_variable_names<- function(data,
                                       path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/",
-                                      var = NULL
+                                      var = NULL,
+                                      replace_special = FALSE
 ){
+  if(replace_special==TRUE)
+    colnames(data)<-gsub("[ ()&*/-]|\r\n",".",colnames(data))
+
+
   if(!is.null(var) & any(!var %in% colnames(data)))
     stop(paste(var," is not present in colnames(data)."))
 
