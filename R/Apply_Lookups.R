@@ -581,7 +581,7 @@ read_and_join_experiment<-function(
     }
     rm(droplist)
   }
-  #If add_vars is specified but there is no buy, drop non add_vars from lookup
+  #If add_vars is specified but there is no by, drop non add_vars from lookup
   else if( !is.null(add_var)){
     bylist<-names(lookup)[names(lookup) %in% names(data)]
     lookup<-lookup[,names(lookup) %in% c(bylist, add_var)]
@@ -617,6 +617,10 @@ read_and_join_experiment<-function(
   #Conduct the join
   if(is.null(by)){
     if(case_sensitive==FALSE) stop("Haven't implemented case insensitive yet w/o by parameter")
+
+    #If add_var is not specified, set it equal to all lookup vars not present in data
+    if(is.null(add_var))
+      add_var<-colnames(lookup)[!colnames(lookup) %in% colnames(data)]
 
     data<- dplyr::left_join(
       data,
@@ -663,7 +667,7 @@ read_and_join_experiment<-function(
   }
 
 
-  if(!is.null(by)&new_var_checked==TRUE){
+  if(new_var_checked==TRUE){
     #If add_var is not specified, set it equal to all new vars
     if(is.null(add_var))
       add_var<-colnames(lookup)[!colnames(lookup) %in% by]

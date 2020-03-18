@@ -17,6 +17,8 @@ standardize_variable_names(
 \item{path}{the location of the lookup file}
 
 \item{var}{the variable names to standardize; by default all will be done}
+
+\item{replace_special}{whether to replaces spaces and special characters in column names with periods}
 }
 \value{
 Data with standardized variable names.
