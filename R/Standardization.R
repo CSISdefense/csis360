@@ -1619,7 +1619,7 @@ all_duplicate<-function(x,key=NULL){
 #' @export
 
 check_derived<-function(x,key,derived_col){
-  if(all(is.na(x[,derived_col]))) stop("dirved_col is all na")
+  if(all(is.na(x[,derived_col]))) stop("derived_col is all na")
   if(derived_col %in% key) stop("derived_col should not be part of key")
   x<-unique(x[,c(key,derived_col)])
   return(check_key(x,key))

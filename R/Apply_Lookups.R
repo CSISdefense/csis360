@@ -621,6 +621,8 @@ read_and_join_experiment<-function(
     #If add_var is not specified, set it equal to all lookup vars not present in data
     if(is.null(add_var))
       add_var<-colnames(lookup)[!colnames(lookup) %in% colnames(data)]
+    left_by<-colnames(lookup)[colnames(lookup) %in% colnames(data)]
+
 
     data<- dplyr::left_join(
       data,
