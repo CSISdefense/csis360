@@ -1566,7 +1566,9 @@ update_sample_col_CSIScontractID<-function(smp,
 #'
 #' @export
 check_key<-function(x,key){
-  if(!all(key %in% colnames(x))) stop("Key(s) missing from data frame")
+  if(!all(key %in% colnames(x))){
+    stop(paste("Key(s) missing from data frame: ",key[!key %in% colnames(x)],"\n"))
+  }
   dupe<-sum(duplicated(x[,key]))
   if(dupe>0){
     warning(paste("Using pk list (",paste(key,collapse=", "),")",dupe,"out of",nrow(x),"are duplicated"))
