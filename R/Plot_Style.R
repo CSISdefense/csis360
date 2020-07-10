@@ -476,6 +476,14 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
   #Input protection for when the y.series column is entirely na.
   if(all(is.na(VAR.long.DF[,VAR.y.series]))) stop(paste(VAR.y.series,"is entirely NA."))
 
+
+  #Ordered Discrete X variables
+  labels.x.DF<-subset(VAR.Coloration,column==VAR.x.variable)
+  if(nrow(labels.x.DF)>0){
+    VAR.long.DF<-as.data.frame(VAR.long.DF)
+    VAR.long.DF[,VAR.x.variable]<-factor(VAR.long.DF[,VAR.x.variable],
+                                         levels=labels.x.DF$variable)
+  }
   #   }
   #   else{
   #     labels.category.DF<-PrepareLabelsAndColors(VAR.Coloration
