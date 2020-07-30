@@ -750,7 +750,7 @@ deflate <- function(
   data[[money_var]] <- as.numeric(data[[money_var]])
 
   cat(paste("\n Applying\n", deflator_var, "\n in \n", deflator_file, "\n from\n", path, "\n"))
-  deflators_retrieved <- readr::read_csv(paste0(path, directory,deflator_file))
+  deflators_retrieved <- readr::read_csv(file.path(path, directory,deflator_file))
 
   #Rename the Fiscal.Year variable to be match the name used in data
   colnames(deflators_retrieved)[colnames(deflators_retrieved)=="Fiscal_Year"]<-fy_var

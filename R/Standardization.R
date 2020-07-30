@@ -490,7 +490,9 @@ transform_contract<-function(
   if("SumOfisChangeOrder" %in% colnames(contract))
     contract$qNChg <- Hmisc::cut2(contract$SumOfisChangeOrder,c(1,2,3))
 
-  contract$What[contract$What=="Unlabeled"]<-NA
+  if("What" %in% colnames(contract))
+    contract$What[contract$What=="Unlabeled"]<-NA
+
   #PSR_What
   if("PSR_What" %in% colnames(contract)){
     contract$PSR_What<-factor(paste(as.character(contract$PSR),
@@ -557,7 +559,7 @@ transform_contract<-function(
                       fy_var="StartFY"
     )
     #cln_Ceil
-    contract$cln_Ceil<-arm::rescale(contract$UnmodifiedCeiling_OMB20_GDP18)
+    contract$cln_Ceil<-arm::rescale(na_non_positive_log(contract$UnmodifiedCeiling_OMB20_GDP18))
 
     # lowroundedcutoffs<-c(15000,100000,1000000,30000000)
     highroundedcutoffs<-c(15000,100000,1000000,10000000,75000000)
@@ -1442,13 +1444,6 @@ transform_contract<-function(
     contract$cln_PSCrate<-arm::rescale(contract$l_CFTE)
   }
 
-
-
-
-
-
-  if("cln_Days" %in% colnames(contract))
-    contract$cln_Days<-arm::rescale(contract$l_Days)
 
   if("Action_Obligation" %in% colnames(contract)){
     contract$ObligationWT<-contract$Action_Obligation
