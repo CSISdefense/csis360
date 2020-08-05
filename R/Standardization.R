@@ -1010,11 +1010,12 @@ transform_contract<-function(
       # contract$OCO<-0
       # contract$OCO[contract$MaxOfDecisionTree=="OCO"]<-1
       contract$Crisis<-factor(contract$Crisis)
-      levels(contract$Crisis)[levels(contract$Crisis)=="Excluded"]<-"Other"
+           levels(contract$Crisis) <-
+          list( "Other"=c( "Other","Excluded"),
+                "ARRA"=c("ARRA"),
+                "Dis"=c("Dis","Disaster"),
+                "OCO"=c("OCO"))
       contract$Crisis[is.na(contract$Crisis)]<-"Other"
-      levels(contract$Crisis)[levels(contract$Crisis)=="Disaster"]<-"Dis"
-      contract$Crisis<-factor(contract$Crisis,c("Other","ARRA","Dis","OCO"))
-
   }
 
   #Calendar Year
@@ -1180,6 +1181,7 @@ transform_contract<-function(
     contract$ProductServiceOrRnDarea<-factor(contract$ProductServiceOrRnDarea)
     contract$ProductOrServiceArea<-factor(contract$ProductOrServiceArea)
     contract$HostNation3Category<-factor(contract$HostNation3Category)
+    contract$CrisisProductOrServiceArea<-gsub(" & ","+",contract$CrisisProductOrServiceArea) #Shortening slightly.
     contract$CrisisProductOrServiceArea<-factor(contract$CrisisProductOrServiceArea)
     contract$ProductOrServiceCodeText<-factor(contract$ProductOrServiceCodeText)
   }
@@ -1216,17 +1218,17 @@ transform_contract<-function(
         list( "US99-Dom"=c("US99-Just U.S."),
               "Mixed-Dom"=c("Mixed-Just U.S."),
               "Intl-Dom"=c("Intl-Just U.S."),
-              "US99-Intl"=c("US99-Any International"),
-              "Mixed-Intl"=c("Mixed-Any International"),
-              "Intl-Intl"=c("Intl-Any International"))
+              "US99-Intl"=c("US99-Any International","US99-Any Intl."),
+              "Mixed-Intl"=c("Mixed-Any International","Mixed-Any Intl."),
+              "Intl-Intl"=c("Intl-Any International","Intl-Any Intl."))
       contract$Reach<-contract$Reach6
 
       levels(contract$Reach) <-
         list( "US50-Dom"=c("US99-Just U.S.","Mixed-Just U.S."),
-              "Mixed-Dom"=c(),
-              "Intl-Dom"=c("Intl-Just U.S."),
-              "US50-Intl"=c("Mixed-Any International","US99-Any International"),
-              "Intl-Intl"=c("Intl-Any International"))
+            "Mixed-Dom"=c(),
+            "Intl-Dom"=c("Intl-Just U.S."),
+            "US50-Intl"=c("Mixed-Any International","Mixed-Any Intl.","US99-Any International","US99-Any Intl."),
+            "Intl-Intl"=c("Intl-Any International","Intl-Any Intl."))
     }
 
     if(file.exists(paste(local_semi_clean_path,"Office.sp_OfficeHistoryCapacityLaggedConst.txt",sep=""))){
