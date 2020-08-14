@@ -139,27 +139,31 @@ group_data_for_plot <-function(
   # the evaluation for dplyr::summarize_ was a pain in the ass to figure out;
   # see stack overflow at https://tinyurl.com/z82ywf3
 
+  agg_list<-c(breakout,x_var)
+  agg_list<-agg_list[!duplicated(agg_list)]
+
   if(aggregate=="sum"){
-    if(length(breakout) == 0){
+    if(length(agg_list) == 1){
       data <- data %>%
-        dplyr::group_by(!! as.name(x_var)) %>%
+        dplyr::group_by(!! as.name(agg_list)) %>%
         summarize_(
           agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
     } else {
+
       data <- data %>%
-        dplyr::group_by_(.dots = c(x_var, breakout)) %>%
+        dplyr::group_by_(.dots = c(agg_list)) %>%
         summarize_(
           agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
     }
   } else if (aggregate=="mean"){
-    if(length(breakout) == 0){
+    if(length(agg_list) == 1){
       data <- data %>%
-        dplyr::group_by(as.name(!! as.name(x_var))) %>%
+        dplyr::group_by(as.name(!! as.name(agg_list))) %>%
         summarize_(
           agg_val = lazyeval::interp(~mean(var, na.rm = TRUE), var = as.name(y_var)))
     } else {
       data <- data %>%
-        group_by_(.dots = c(x_var, breakout)) %>%
+        group_by_(.dots = c(agg_list)) %>%
         summarize_(
           agg_val = lazyeval::interp(~mean(var, na.rm = TRUE), var = as.name(y_var)))
     }
