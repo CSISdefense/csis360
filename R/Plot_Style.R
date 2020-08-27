@@ -131,7 +131,7 @@ build_plot <- function(
   chart_geom = "Line Chart",
   share = FALSE,
   x_var=NULL,
-  y_var, #Name of variable to plot on y-axis
+  y_var="None", #Name of variable to plot on y-axis
   color_var="None",       # name of coloration variable, as string
   facet_var="None",        # name of facet variable, as string
   second_var=NULL,        # name of facet variable, as string
@@ -155,6 +155,9 @@ build_plot <- function(
                                  second_var=second_var,
                                  labels_and_colors=labels_and_colors)
 
+  if(color_var!="None" & all(is.na(data[,color_var]))) stop("Missing color_var after formatting")
+  if(facet_var!="None" & all(is.na(data[,facet_var]))) stop("Missing facet_var after formatting")
+  if(all(is.na(data[,x_var]))) stop("Missing x_var after formatting")
 
   #Legacy bug fix. The sorting in some labels_and_colors is off  because display.order was a factor/character, not a number.
   if(!is.null(labels_and_colors) & !is.numeric(labels_and_colors$Display.Order)){
@@ -284,6 +287,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
 
     }
   }
+  else stop(paste("Unrecognized chart_geom",chart_geom))
 
 
   # add faceting if requested, and x-axis labeling

@@ -103,6 +103,21 @@ prepare_labels_and_colors<-function(data
     k<-as.character(column_key$coloration.key[v])
     #Check for any values in the current field that are not assigned a color.
     values<-unique(data.frame(data)[,c])
+
+
+    #Handle any case discrepencies.
+    case_mismatch<-    toupper(labels_category_data$variable) %in% toupper(values)&
+      !labels_category_data$variable %in% values
+    labels_category_data$variable[case_mismatch]
+    for(i in labels_category_data$variable[case_mismatch]){
+      labels_category_data$variable[labels_category_data$variable==i]<-
+        as.character(values[toupper(values)==toupper(labels_category_data$variable[labels_category_data$variable==i])])
+    }
+
+
+
+
+
     NA.labels<-values[!values %in% labels_category_data$variable]
 
 

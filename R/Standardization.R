@@ -341,6 +341,8 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
     if(is.factor(shown_data[,colnames(shown_data)==fy_var])|is.character(shown_data[,colnames(shown_data)==fy_var]) &
        fy_var %in% labels_and_colors$column &
        !fy_var %in% c(color_var,facet_var,second_var)){
+      if(length(subset(labels_and_colors,column==fy_var)$variable)==0)
+        stop(paste("label_and_colors is missing values for x_var:",fy_var))
       shown_data[,colnames(shown_data)==fy_var]<-
         ordered(shown_data[,colnames(shown_data)==fy_var],
                 levels=subset(labels_and_colors,column==fy_var)$variable,
