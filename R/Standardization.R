@@ -256,17 +256,18 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
 
 
       if(length(facet_list) == 1){
-        data <- data %>%
+        shown_data <- shown_data %>%
           dplyr::group_by(!! as.name(facet_list)) %>%
           mutate_(
             agg_val = lazyeval::interp(~var/sum(var, na.rm = TRUE), var = as.name(y_var)))
       } else {
 
-        data <- data %>%
+        shown_data <- shown_data %>%
           dplyr::group_by_(.dots = c(agg_list)) %>%
           mutate_(
             agg_val = lazyeval::interp(~var/sum(var, na.rm = TRUE), var = as.name(y_var)))
       }
+      shown_data<-shown_data[,colnames(shown_data)!=y_var]
 
       colnames(shown_data)[colnames(shown_data) == "agg_val"] <- y_var
 
