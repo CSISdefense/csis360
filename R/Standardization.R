@@ -255,16 +255,31 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
       facet_list <- facet_list[!facet_list %in% c("None",color_var)]
 
 
-      if(length(facet_list)==0)
-        share_vars <- c(-1)
-      else if (length(facet_list)==1)
-        share_vars <- c(-1,-2)
-      else
-        share_vars <- c(-1,-2, -3)
+      if(length(facet_list) == 1){
+        data <- data %>%
+          dplyr::group_by(!! as.name(facet_list)) %>%
+          mutate_(
+            agg_val = lazyeval::interp(~var/sum(var, na.rm = TRUE), var = as.name(y_var)))
+      } else {
+
+        data <- data %>%
+          dplyr::group_by_(.dots = c(agg_list)) %>%
+          mutate_(
+            agg_val = lazyeval::interp(~var/sum(var, na.rm = TRUE), var = as.name(y_var)))
+      }
+
+      colnames(shown_data)[colnames(shown_data) == "agg_val"] <- y_var
+
+      # if(length(facet_list)==0)
+      #   share_vars <- c(-1)
+      # else if (length(facet_list)==1)
+      #   share_vars <- c(-1,-2)
+      # else
+      #   share_vars <- c(-1,-2, -3)
 
       # spread the shares breakout variable across multiple columns
-      shown_data<-shown_data %>%
-        tidyr::spread(color_var, y_var)
+      # shown_data<-shown_data %>%
+      #   tidyr::spread(color_var, y_var)
 
       #
       # NOTE: NAs replaced with 0 here; potential data quality issue
@@ -274,20 +289,20 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
       # calculate a total for each row - i.e. the total for the shares breakout
       # variable for each fiscal year,
       # or for each [fiscal year x facet variable] combo
-      shown_data$total <- rowSums(shown_data[share_vars],na.rm=TRUE)
+      # shown_data$total <- rowSums(shown_data[share_vars],na.rm=TRUE)
 
       # divide each column by the total column, to get each column as shares
-      shown_data[share_vars] <-
-        sapply(shown_data[share_vars], function(x){x / shown_data$total})
-      shown_data <- shown_data %>% dplyr::select(-total)
+      # shown_data[share_vars] <-
+      #   sapply(shown_data[share_vars], function(x){x / shown_data$total})
+      # shown_data <- shown_data %>% dplyr::select(-total)
 
       # gather the data back to long form
-      shown_data <- gather_(
-        data = shown_data,
-        key_col = color_var,
-        value_col = y_var,
-        gather_cols = names(shown_data[share_vars])
-      )
+      # shown_data <- gather_(
+      #   data = shown_data,
+      #   key_col = color_var,
+      #   value_col = y_var,
+      #   gather_cols = names(shown_data[share_vars])
+      # )
     }
 
     # For the case where the user displays shares not broken out by any variable.
