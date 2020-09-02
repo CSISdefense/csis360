@@ -155,8 +155,11 @@ build_plot <- function(
                                  second_var=second_var,
                                  labels_and_colors=labels_and_colors)
 
-  if(color_var!="None" & all(is.na(data[,color_var]))) stop("Missing color_var after formatting")
-  if(facet_var!="None" & all(is.na(data[,facet_var]))) stop("Missing facet_var after formatting")
+  #Nested if because its evaluating the second statement even if the first is false.
+  if(color_var!="None")
+    if(all(is.na(data[,color_var]))) stop("Missing color_var after formatting")
+  if(facet_var!="None")
+    if(all(is.na(data[,facet_var]))) stop("Missing facet_var after formatting")
   if(all(is.na(data[,x_var]))) stop("Missing x_var after formatting")
 
   #Legacy bug fix. The sorting in some labels_and_colors is off  because display.order was a factor/character, not a number.
