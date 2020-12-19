@@ -9,7 +9,7 @@ build_plot(
   chart_geom = "Line Chart",
   share = FALSE,
   x_var = NULL,
-  y_var,
+  y_var = "None",
   color_var = "None",
   facet_var = "None",
   second_var = NULL,

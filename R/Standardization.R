@@ -1674,7 +1674,7 @@ check_derived<-function(x,key,derived_col,na.rm=FALSE){
 #'
 #' @export
 
-full_derived<-function(x,key,derived_col){
+fill_derived<-function(x,key,derived_col){
   if(!check_derived(x,key,derived_col,na.rm=TRUE)){
     stop("Inconsistent derived_col")
   }
