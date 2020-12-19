@@ -1685,5 +1685,5 @@ group_by_list<-function(x,key){
 get_base_folder<-function(folder){
   if(dir.exists(folder)) return(folder)
   else if(dir.exists(file.path("..",folder))) return(paste("..",folder,sep="/"))
-  else stop("Directory not found, is it present in repository base and areyou in a project?")
+  else stop("Directory not found, is it present in repository base and are you in a project?")
 }
