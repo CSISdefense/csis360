@@ -1629,6 +1629,7 @@ all_duplicate<-function(x,key=NULL){
 #' @param x the data frame to be checked
 #' @param key list of one or more column names that are suspected to be the key
 #' @param derived_col check whether this variable only varies with the primary key
+#' @param na.rm whether to ignore na derived columns
 #'
 #' @return True if the derived_col varies only with primary key.
 #'
@@ -1639,13 +1640,51 @@ all_duplicate<-function(x,key=NULL){
 #'
 #' @export
 
-check_derived<-function(x,key,derived_col){
+check_derived<-function(x,key,derived_col,na.rm=FALSE){
+  if(!all(key %in% colnames(x))){
+    stop(paste("key(s) missing from data frame: ",key[!key %in% colnames(x)],"\n"))
+  }
+  if(!all(derived_col %in% colnames(x))){
+    stop(paste("derived_col(s) missing from data frame: ",derived_col[!derived_col %in% colnames(x)],"\n"))
+  }
+
   if(all(is.na(x[,derived_col]))) stop("derived_col is all na")
   if(derived_col %in% key) stop("derived_col should not be part of key")
   x<-unique(x[,c(key,derived_col)])
+  if (na.rm)
+    x<-x[!is.na(x[,derived_col]),]
   return(check_key(x,key))
 }
 
+
+#***********************Fill Derived
+#' Fill Derived
+#'
+#' @param x the data frame to be checked
+#' @param key list of one or more column names that are suspected to be the key
+#' @param derived_col check whether this variable only varies with the primary key
+#'
+#' @return x with any na values filled in, if all non-na values are consistent.
+#'
+#' @details A derived column is one that could be consolidated only to the primary keys
+#' and the derived column (with any nas removed). If that criteria is met, this function
+#' then fills in the nas with those derived alues.
+#'
+#' @examples
+#'
+#' @export
+
+full_derived<-function(x,key,derived_col){
+  if(!check_derived(x,key,derived_col,na.rm=TRUE)){
+    stop("Inconsistent derived_col")
+  }
+
+  derived<-unique(x[!is.na(x[,derived_col]),c(key,derived_col)])
+  x<-x[,derived_col != colnames(x)]
+  x<-left_join(x,derived)
+
+  return(x)
+}
 
 #***********************Group By List
 #' Group By List
