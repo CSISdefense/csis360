@@ -110,7 +110,8 @@ get_plot_theme<-function(erase_legend_title=TRUE){
 #' @param caption If TRUE, includes a source caption
 #' @param labels_and_colors A csis360 lookup data.frame with factor information
 #' @param column_key A csis360 lookup data.frame with column information
-#'
+#' @param format If TRUE, summarize the data.frame
+#' @param ytextposition If TRUE, add ytextposition to allow for geom_text overlays.
 #'
 #'
 #'
@@ -139,7 +140,8 @@ build_plot <- function(
   caption=TRUE, #Include a source caption
   labels_and_colors=NULL,
   column_key=NULL,
-  format=FALSE
+  format=FALSE,
+  ytextposition=FALSE
 ){
   if(all(!is.null(second_var),facet_var==second_var | second_var=="None")) second_var<-NULL
   #To add, check for missing labels and colors
@@ -153,13 +155,15 @@ build_plot <- function(
                                  color_var=color_var,
                                  facet_var=facet_var,
                                  second_var=second_var,
-                                 labels_and_colors=labels_and_colors)
+                                 labels_and_colors=labels_and_colors,
+                                 add_ytextposition=ytextposition)
 
   #Nested if because its evaluating the second statement even if the first is false.
   if(color_var!="None")
     if(all(is.na(data[,color_var]))) stop("Missing color_var after formatting")
   if(facet_var!="None")
     if(all(is.na(data[,facet_var]))) stop("Missing facet_var after formatting")
+  if(ytextposition==TRUE & format==FALSE) stop("ytextposition requires format=TRUE")
   if(all(is.na(data[,x_var]))) stop("Missing x_var after formatting")
 
   #Legacy bug fix. The sorting in some labels_and_colors is off  because display.order was a factor/character, not a number.
@@ -391,6 +395,24 @@ if(is.null(x_var)) x_var<-names(data)[1]
     if(chart_geom=="Histogram") mainplot<-mainplot+ylab("Count") #No y_var in a histogram.
   }
 
+  # if(ytextposition){
+  #   mainplot <- mainplot +
+  #     geom_text(aes_string(label=y_var,
+  #                            as.formula(paste0("format(round(",
+  #                                           y_var,
+  #                                           "3),  scientific=FALSE, trim=TRUE, big.mark=",")")),
+  #                   x=x_var,
+  #                   #                     format(round(y.variable,3),  scientific=FALSE, trim=TRUE, big.mark=",")
+  #                   #                   format(y.variable, digits=1, drop0trailing=TRUE, trim=TRUE, big.mark=",")
+  #                   #apply(y.variable,VariableNumericalFormat)
+  #                   y="ytextposition"
+  #     ),
+  #     # size=geom.text.size,
+  #     hjust=0.5,
+  #     vjust=0.5
+  #     #,color=color.list This doesn't work yet
+  #     )
+  # }
 
   # add overall visual settings to the plot
   mainplot <- mainplot +  get_plot_theme()

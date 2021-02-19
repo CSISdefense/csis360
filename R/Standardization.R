@@ -93,7 +93,7 @@ standardize_variable_names<- function(data,
 #' @param data The data to format for the plot, as a tibble
 #' @param x_var x-axis
 #' @param y_var y-axis
-#' @param breakout TESTTESTTESTTESTTEST
+#' @param breakout the facets or other divisions that will be grouped by when summing
 #' @param aggregate aggregation function; defaults to sum
 #'
 #' @return A tibble of formatted data
@@ -167,9 +167,12 @@ group_data_for_plot <-function(
         summarize_(
           agg_val = lazyeval::interp(~mean(var, na.rm = TRUE), var = as.name(y_var)))
     }
-  } else (stop(paste,"group_data_for_plot does not know how to handle aggregate = ",aggregate))
+  } else (stop(paste("group_data_for_plot does not know how to handle aggregate = ",aggregate)))
+
+
 
   names(data)[which(names(data) == "agg_val")] <- y_var
+
   return(data)
 }
 
@@ -188,17 +191,23 @@ group_data_for_plot <-function(
 #' @param   labels_and_colors A csis360 lookup data.frame with factor information
 #' @param   group If TRUE aggregate
 #' @param   drop_missing_labels If TRUE, drop levels to avoid residual levels from labels_and_colors.
+#' @param add_ytextposition If TRUE, add a ytextposition numerical position to aid in adding text to a graph
 #'
 #' @return Returns a tibble of formatted data
 #'
 #' @export
-format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = NA, end_fy = NA,
+format_data_for_plot <- function(data, fy_var,
+                                 y_var,
+                                 share = FALSE,
+                                 start_fy = NA,
+                                 end_fy = NA,
                                  color_var="None",
                                  facet_var="None",
                                  second_var=NULL,
                                  labels_and_colors=NULL,
                                  group=TRUE,
-                                 drop_missing_labels=TRUE){
+                                 drop_missing_labels=TRUE,
+                                 add_ytextposition=FALSE){
 
   shown_data <- data
   if(all(!is.null(second_var),facet_var==second_var | second_var=="None")) second_var<-NULL
@@ -215,6 +224,8 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
       breakout
     )
   }
+
+
   shown_data<-as.data.frame(shown_data)
   if(!is.na(start_fy) & !is.na(end_fy)){
     # filter by year - see https://tinyurl.com/lm2u8xs
@@ -247,23 +258,21 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
     if (color_var != "None"){
 
       # share_vars indicates which columns are being used to calculate the shares.
-      # If there's only one breakout, it's set to -1:
-      # "everything except fiscal year."
-      # With two breakout, it's set to c(-1, -2):
-      # "everything except fiscal year and the facet variable."
-      facet_list <- c(facet_var,second_var)
-      facet_list <- facet_list[!facet_list %in% c("None",color_var)]
+      share_list <- c(facet_var,second_var)
+      if(color_var!="None") #For histograms or the like, fy_var (really x_var) should not be included in grouping
+        share_list <- c(share_list,fy_var)
 
+      share_list <- share_list[!share_list %in% c("None",color_var)]
 
-      if(length(facet_list) == 1){
+      if(length(share_list) == 1){
         shown_data <- shown_data %>%
-          dplyr::group_by(!! as.name(facet_list)) %>%
+          dplyr::group_by(!! as.name(share_list)) %>%
           mutate_(
             agg_val = lazyeval::interp(~var/sum(var, na.rm = TRUE), var = as.name(y_var)))
       } else {
 
         shown_data <- shown_data %>%
-          dplyr::group_by_(.dots = c(agg_list)) %>%
+          dplyr::group_by_(.dots = c(share_list)) %>%
           mutate_(
             agg_val = lazyeval::interp(~var/sum(var, na.rm = TRUE), var = as.name(y_var)))
       }
@@ -271,9 +280,9 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
 
       colnames(shown_data)[colnames(shown_data) == "agg_val"] <- y_var
 
-      # if(length(facet_list)==0)
+      # if(length(share_list)==0)
       #   share_vars <- c(-1)
-      # else if (length(facet_list)==1)
+      # else if (length(share_list)==1)
       #   share_vars <- c(-1,-2)
       # else
       #   share_vars <- c(-1,-2, -3)
@@ -307,7 +316,7 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
     }
 
     # For the case where the user displays shares not broken out by any variable.
-    # This is going to make a very boring chart of 100% shares,b
+    # This is going to make a very boring chart of 100% shares,
     # but it's handled here to avoid displaying an error.
     if(color_var == "None"){
       shown_data<-shown_data %>%
@@ -368,6 +377,31 @@ format_data_for_plot <- function(data, fy_var, y_var, share = FALSE, start_fy = 
     if(drop_missing_labels==TRUE)
       shown_data<-droplevels(shown_data)
   }
+
+
+
+  #Add numbers once everything is properly ordered.
+  if(add_ytextposition){
+    agg_list<-c(facet_var, second_var,fy_var)
+    agg_list <- agg_list[agg_list != "None"]
+    agg_list <- agg_list[!is.null(agg_list)]
+    agg_list<-agg_list[!duplicated(agg_list)]
+    if(length(agg_list) == 1){
+      shown_data<-shown_data %>%
+        dplyr::arrange(desc(!! as.name(color_var))) %>%
+        dplyr::group_by(as.name(!! as.name(agg_list))) %>%
+        mutate_(
+          ytextposition = lazyeval::interp(~cumsum(var)-0.5*var, var = as.name(y_var)))
+    } else {
+
+      shown_data <- shown_data %>%
+        dplyr::arrange(desc(!! as.name(color_var))) %>%
+        dplyr::group_by_(.dots = c(agg_list)) %>%
+        mutate_(
+          ytextposition = lazyeval::interp(~cumsum(var)-0.5*var, var = as.name(y_var)))
+    }
+  }
+
 
   # return the ggplot-ready data
   return(shown_data)

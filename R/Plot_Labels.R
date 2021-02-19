@@ -72,7 +72,7 @@ prepare_labels_and_colors<-function(data
 
   }
   else {
-    column_key<-subset(column_key, !is.na(coloration.key))
+    column_key<-subset(column_key, !is.na(coloration.key) & coloration.key!="Exclude")
   }
 
   if(nrow(column_key)==0) stop("No matching columns")
@@ -87,7 +87,7 @@ prepare_labels_and_colors<-function(data
     labels_category_data<-subset(coloration, coloration.key==
                                    column_key$coloration.key[v] )
 
-    if(nrow(labels_category_data)==0) stop("No matching levels.")
+    if(nrow(labels_category_data)==0) stop(paste("No matching levels for:",column_key$column[v]))
 
     #Error checking for duplicates in lookup_coloration.csv
     if(anyDuplicated(labels_category_data$variable)>0){
