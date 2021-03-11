@@ -65,10 +65,11 @@ standardize_variable_names<- function(data,
     paste(
       path,
       "Lookup_StandardizeVariableNames.csv",sep=""),
-    header=TRUE, sep=",", na.strings=c("NA","NULL"), dec=".", strip.white=TRUE,
+    header=TRUE, sep=",", na.strings=c("NA","NULL",""), dec=".", strip.white=TRUE,
     stringsAsFactors=FALSE
   )
-
+  if(any(is.na(NameList$Original))) stop("Blank row in Original column")
+  if(any(is.na(NameList$Replacement))) stop("Blank row in Replacement column")
 
   #     NameList<-subset(NameList,toupper(Original) %in% toupper(colnames(data)))
   for(x in 1:nrow(NameList)){
@@ -363,7 +364,7 @@ format_data_for_plot <- function(data, fy_var,
       }
     }
     #If x-axis variable is a factor
-    if(is.factor(shown_data[,colnames(shown_data)==fy_var])|is.character(shown_data[,colnames(shown_data)==fy_var]) &
+    if((is.factor(shown_data[,colnames(shown_data)==fy_var])|is.character(shown_data[,colnames(shown_data)==fy_var])) &
        fy_var %in% labels_and_colors$column &
        !fy_var %in% c(color_var,facet_var,second_var)){
       if(length(subset(labels_and_colors,column==fy_var)$variable)==0)
