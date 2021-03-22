@@ -106,6 +106,10 @@ prepare_labels_and_colors<-function(data
 
 
     #Handle any case discrepencies.
+    if(k=="Country"){
+      #Manual fix in case excel is breaking this.
+      labels_category_data$variable[labels_category_data$variable=="ÌÉland Islands"]<-"Åland Islands"
+    }
     case_mismatch<-    toupper(labels_category_data$variable) %in% toupper(values)&
       !labels_category_data$variable %in% values
     labels_category_data$variable[case_mismatch]
