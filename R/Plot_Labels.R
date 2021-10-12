@@ -55,7 +55,7 @@ prepare_labels_and_colors<-function(data
 
   #Translate the category name into the appropriate coloration.key
   #This is used because we have more category names than coloration.key
-  column_key<-get_column_key(data)
+  column_key<-get_column_key(data,path=path)
 
   #If a column has been passed
   if(!is.null(var)){
