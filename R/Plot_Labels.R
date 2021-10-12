@@ -105,7 +105,14 @@ prepare_labels_and_colors<-function(data
     values<-unique(data.frame(data)[,c])
 
 
-    #Handle any case discrepencies.
+    #Handle any case discrepancies.
+    #Certain type of quote.
+    # labels_category_data$variable<-gsub("\u0092","’",labels_category_data$variable)
+
+    if(k=="Country"){
+      #Manual fix in case excel is breaking this.
+      labels_category_data$variable[labels_category_data$variable=="ÌÉland Islands"]<-"Åland Islands"
+    }
     case_mismatch<-    toupper(labels_category_data$variable) %in% toupper(values)&
       !labels_category_data$variable %in% values
     labels_category_data$variable[case_mismatch]

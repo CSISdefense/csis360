@@ -842,7 +842,16 @@ get_column_key <- function(
 text_to_number<-function(x){
   if ((is.factor(x))||(is.character(x))){
     x<-gsub('\\$','',as.character( x))
-    x<-as.double(gsub('\\,','',as.character( x)))
+    #Remove commas
+    x<-gsub('\\,','',as.character( x))
+    #Switch to negative if handling Handle the ($XX,XXX) case
+    x<-gsub('\\(','-',as.character( x))
+    x<-gsub('\\)$','',as.character( x))
+    # if(length(grep("\\([0-9|\\,|\\.]+\\)", as.character(x)))==1){
+    #   x<-gsub('[\\(|\\)]','',as.character( x))
+    #   x<-as.double(as.character(x))*-1
+    # }
+    x<-as.double(as.character(x))
   }
   x
 }
