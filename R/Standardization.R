@@ -208,7 +208,9 @@ format_data_for_plot <- function(data, fy_var,
                                  labels_and_colors=NULL,
                                  group=TRUE,
                                  drop_missing_labels=TRUE,
-                                 add_ytextposition=FALSE){
+                                 add_ytextposition=FALSE
+                                #wide=FALSE #' @param wide If TRUE, pivot_wider using the fy_var and arrange for table output
+                                ){
 
   shown_data <- data
   if(all(!is.null(second_var),facet_var==second_var | second_var=="None")) second_var<-NULL
@@ -377,6 +379,10 @@ format_data_for_plot <- function(data, fy_var,
     }
     if(drop_missing_labels==TRUE)
       shown_data<-droplevels(shown_data)
+
+    # if(wide)
+    #   shown_data<-ordered(shown_data[,colnames(shown_data)]0
+    shown_data
   }
 
 

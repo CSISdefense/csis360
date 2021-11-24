@@ -243,7 +243,7 @@ add_preassigned_scales<-function(
     var_label<-subset(labels_and_colors,column==var & (Label %in% levels(plot$data[,var])|variable %in% levels(plot$data[,var])))
     var_label$Display.Order<-as.numeric(var_label$Display.Order)
     var_label<-var_label[order(var_label$Display.Order),]
-
+    if (any(duplicated(var_label$Label))) stop("Duplicated label")
     plot$data[,var]<-factor(plot$data[,var],levels=var_label$Label)
     plot<-plot+scale_color_manual(
       values = subset(labels_and_colors,column==var & (Label %in% levels(plot$data[,var])|variable %in% levels(plot$data[,var])))$RGB,
