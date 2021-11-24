@@ -395,7 +395,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
   mainplot<-add_preassigned_scales(
     mainplot,
     labels_and_colors,
-    var=color_var,
+    var=color_var
     # reverse_color = reverse_color
   )
 
