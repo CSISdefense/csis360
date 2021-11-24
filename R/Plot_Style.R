@@ -121,6 +121,7 @@ get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
 #' @param column_key A csis360 lookup data.frame with column information
 #' @param format If TRUE, summarize the data.frame
 #' @param ytextposition If TRUE, add ytextposition to allow for geom_text overlays.
+#' @param reverse_color If TRUE, the
 #'
 #'
 #'
@@ -150,7 +151,8 @@ build_plot <- function(
   labels_and_colors=NULL,
   column_key=NULL,
   format=FALSE,
-  ytextposition=FALSE
+  ytextposition=FALSE,
+  reverse_color=FALSE
 ){
   if(all(!is.null(second_var),facet_var==second_var | second_var=="None")) second_var<-NULL
   #To add, check for missing labels and colors
@@ -179,8 +181,14 @@ build_plot <- function(
   if(!is.null(labels_and_colors) & !is.numeric(labels_and_colors$Display.Order)){
     labels_and_colors$Display.Order<-as.numeric(as.character(labels_and_colors$Display.Order))
     labels_and_colors<-labels_and_colors[order(labels_and_colors$column,labels_and_colors$Display.Order),]
-  }
 
+  }
+  #Primarily for bar plots, sometimes we want the first in order on the bottom so it is easier to track movements.
+  if(reverse_color){
+    labels_and_colors$Display.Order[labels_and_colors$column==color_var]<-
+      -1*labels_and_colors$Display.Order[labels_and_colors$column==color_var]
+    labels_and_colors<-labels_and_colors[order(labels_and_colors$column,labels_and_colors$Display.Order),]
+  }
   data<-as.data.frame(data)
   mainplot <- ggplot(data = data)
   #Assume 1st row if no x_var provided.
@@ -387,8 +395,10 @@ if(is.null(x_var)) x_var<-names(data)[1]
   mainplot<-add_preassigned_scales(
     mainplot,
     labels_and_colors,
-    var=color_var
+    var=color_var,
+    # reverse_color = reverse_color
   )
+
   if(!is.null(column_key)){
     if(chart_geom=="Box and Whiskers")
       mainplot<-mainplot+labs(
