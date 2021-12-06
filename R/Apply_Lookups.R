@@ -878,3 +878,1231 @@ get_fiscal_year<-function(
 }
 
 
+#***********************Apply Lookups***********************
+apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/"){
+  df<-standardize_variable_names(df)
+
+#
+#   #***Join relevant variables to lookup tables
+#   if("ContractingAgencyID" %in%  names(df) &
+#      "ContractingOfficeID" %in%  names(df)  &
+#      "Fiscal.Year" %in%  names(df)  &
+#      !("ContractingOfficeName" %in%  names(df)|
+#        "MajorCommandID"  %in%  names(df))){
+#
+#     if("MajorCommandCode"%in% names(df)){
+#       df<-subset(df, select=-c(MajorCommandCode))
+#     }
+#
+#     if("MajorCommandName"%in% names(df)){
+#       df<-subset(df, select=-c(MajorCommandName))
+#     }
+#
+#     if("MajorCommandID"%in% names(df)){
+#       df<-subset(df, select=-c(MajorCommandCode))
+#     }
+#
+#
+#     df<-replace_nas_with_unlabeled(df,"ContractingOfficeID")
+#     df<-replace_nas_with_unlabeled(df,"ContractingAgencyID")
+#
+#     df<-read_and_join(df,
+#                           "Defense_Major_Command_Codes_and_Offices.csv",
+#                           by=c("Fiscal.Year",
+#                                "ContractingAgencyID",
+#                                "ContractingOfficeID"),
+#                           new_var_checked=FALSE)
+#
+#     NA.check.df<-subset(df, is.na(MajorCommandCode) &
+#                           ContractingAgencyID!="Uncategorized" &
+#                           ContractingAgencyID!="ContractingOfficeID" &
+#                           !is.na(Fiscal.Year),
+#                         select=c("Fiscal.Year",
+#                                  "ContractingOfficeID",
+#                                  "ContractingOfficeName",
+#                                  "MajorCommandID",
+#                                  "MajorCommandCode",
+#                                  "MajorCommandName"))
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in MajorCommandCode"))
+#     }
+#     #
+#     #     NA.check.df<-subset(df,is.na(SubCustomer.detail), select=c("Customer","SubCustomer"))
+#     #     if(nrow(NA.check.df)>0){
+#     #       print(unique(NA.check.df))
+#     #       stop(paste(nrow(NA.check.df),"rows of NAs generated in SubCustomer.detail"))
+#     #     }
+#     #
+#     #     NA.check.df<-subset(df,is.na(SubCustomer.detail), select=c("Customer","SubCustomer"))
+#     #     if(nrow(NA.check.df)>0){
+#     #       print(unique(NA.check.df))
+#     #       stop(paste(nrow(NA.check.df),"rows of NAs generated in SubCustomer.component"))
+#     #     }
+#     #
+#     #Rather than have one uncategorized per year, just manually assigning
+#     df<-replace_nas_with_unlabeled(df,"MajorCommandName","Uncategorized")
+#
+#
+#   }
+#   else if("MajorCommandID" %in%  names(df)){
+#
+#     if("MajorCommandCode"%in% names(df)){
+#       df<-subset(df, select=-c(MajorCommandCode))
+#     }
+#
+#     if("MajorCommandName"%in% names(df)){
+#       df<-subset(df, select=-c(MajorCommandName))
+#     }
+#
+#     # df<-replace_nas_with_unlabeled(df,"MajorCommandName","Uncategorized")
+#
+#     df<-read_and_join(df,
+#                           "Lookup_MajorCommandID.csv",
+#                           by="MajorCommandID",
+#                           skip_check_var=c("ContractingOfficeCode",
+#                                            "ContractingOfficeName"
+#                           ))
+#
+#     df<-replace_nas_with_unlabeled(df,"MajorCommandID","Uncategorized")
+#
+#
+#   }
+#
+#   else if("CSISofficeName" %in%  names(df)){
+#
+#     df<-replace_nas_with_unlabeled(df,"CSISofficeName","Uncategorized")
+#
+#     df<-read_and_join(df,
+#                           "LOOKUP_CSISofficeName.txt",
+#                           by="CSISofficeName")
+#
+#   }
+#
+#
+  if("Contracting.Agency.ID" %in% names(df))
+  {
+
+    if("Contracting.Department.ID" %in% names(df)){
+      df<-subset(df, select=-c(Contracting.Department.ID))
+    }
+    if("Contracting.Agency.Name"%in% names(df)){
+      df<-subset(df, select=-c(Contracting.Agency.Name))
+    }
+    if("Customer"%in% names(df)){
+      df<-subset(df, select=-c(Customer))
+    }
+    if("SubCustomer"%in% names(df)){
+      df<-subset(df, select=-c(SubCustomer))
+    }
+
+    df<-read_and_join_experiment(df,
+                                   path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                   "Agency_AgencyID.csv",
+                                   dir="",
+                                   by=c("Contracting.Agency.ID"="AgencyID"),
+                                   add_var=c("Customer","SubCustomer"),#Contracting.Agency.ID
+                                   skip_check_var=c("Platform","Customer","SubCustomer"),
+                                   guess_max=2000)
+  }
+#
+#
+#     df<-replace_nas_with_unlabeled(df,"Contracting.Agency.ID","Uncategorized")
+#
+#     df<-read_and_join_experiment(df,
+#                                      "Agency_AgencyID.csv",
+#                                      by=c("Contracting.Agency.ID"="AgencyID"),
+#                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+#                                      dir="")
+#
+#     # NA.check.df<-subset(df, is.na(Contracting.Agency.Name) , select=c("Contracting.Agency.ID"))
+#     # if(nrow(NA.check.df)>0){
+#     #   print(unique(NA.check.df))
+#     #   stop(paste(nrow(NA.check.df),"rows of NAs generated in Contracting.Agency.Name"))
+#     # }
+#
+#   }
+#   else if("Contracting.Department.ID" %in% names(df)){
+#
+#     if("Contracting.Agency.Name"%in% names(df)){
+#       df<-subset(df, select=-c(Contracting.Agency.Name))
+#     }
+#     if("Customer"%in% names(df)){
+#       df<-subset(df, select=-c(Customer))
+#     }
+#     if("SubCustomer"%in% names(df)){
+#       df<-subset(df, select=-c(SubCustomer))
+#     }
+#     names(df)[which(names(df)=="Contracting.Department.ID")]<-"Contracting.Agency.ID"
+#     #     stop("safety")
+#
+#     #     debug(read_and_join)
+#
+#     df<-read_and_join(df,
+#                           "LOOKUP_Contracting_Agencies.csv",
+#                           by=c("Contracting.Agency.ID"))
+#     # NA.check.df<-subset(df, is.na(Contracting.Agency.Name), select=c("Fiscal.Year","Contracting.Agency.ID"))
+#     # if(nrow(NA.check.df)>0){
+#     #   print(unique(NA.check.df))
+#     #   stop(paste(nrow(NA.check.df),"rows of NAs generated in Contracting.Agency.Name"))
+#     # }
+#   }
+#
+#
+#   if("Customer" %in% names(df) && "SubCustomer" %in% names(df)){
+#     if("SubCustomer.sum"%in% names(df)){
+#       df<-subset(df, select=-c(SubCustomer.sum))
+#     }
+#
+#
+#     df<-replace_nas_with_unlabeled(df,"SubCustomer","Uncategorized")
+#     df<-replace_nas_with_unlabeled(df,"Customer","Uncategorized")
+#
+#     #     debug(read_and_join)
+#     df<-read_and_join_experiment(df,
+#                                      "Lookup_SubCustomer.csv",
+#                                      by=c("Customer","SubCustomer")
+#     )
+#
+#   }
+#   else if ("SubCustomer" %in% names(df)){
+#     stop("Customer is missing from the table, SubCustomer does not stand alone.")
+#   }
+#   else if("Customer" %in% names(df)){
+#     df<-replace_nas_with_unlabeled(df,"Customer")
+#     df<-read_and_join(df,
+#                           "LOOKUP_Customer.csv",
+#                           by=c("Customer"))
+#     # NA.check.df<-subset(df,is.na(Customer.sum), select=c("Customer","Customer.sum"))
+#     # if(nrow(NA.check.df)>0){
+#     #   print(unique(NA.check.df))
+#     #   stop(paste(nrow(NA.check.df),"rows of NAs generated in Customer.sum"))
+#     # }
+#
+#   }
+#
+#
+#   if("Funder" %in% names(df) && "SubFunder" %in% names(df)){
+#
+#     if("SubFunder.Sum"%in% names(df)){
+#       df<-subset(df, select=-c(SubFunder.Sum))
+#     }
+#
+#     df<-read_and_join(df,
+#                           "LOOKUP_SubFunder.csv",
+#                           by=c("Funder","Subfunder"))
+#     # NA.check.df<-subset(df, is.na(SubFunder.Sum) & !is.na(Funder), select=c("Fiscal.Year","Funder","SubFunder"))
+#     # if(nrow(NA.check.df)>0){
+#     #   print(unique(NA.check.df))
+#     #   stop(paste(nrow(NA.check.df),"rows of NAs generated in SubFunder.Sum"))
+#     # }
+#   }
+#
+#
+#   df<-competition_vehicle_lookups(path,df)
+  if("Action_Obligation"%in% names(df))
+    df$Action_Obligation<-text_to_number(df$Action_Obligation)
+  if("Number.Of.Actions" %in% colnames(df))
+    df$Number.Of.Actions %<>% text_to_number()
+#
+#
+#   if("PoPstateCode" %in% names(df)){
+#
+#     if("StateText"%in% names(df)){
+#       df<-subset(df, select=-c(StateText))
+#     }
+#
+#     if("Census.Region"%in% names(df)){
+#       df<-subset(df, select=-c(Census.Region))
+#     }
+#
+#     if("BEA.Region"%in% names(df)){
+#       df<-subset(df, select=-c(BEA.Region))
+#     }
+#
+#     if("CSIS.Region"%in% names(df)){
+#       df<-subset(df, select=-c(CSIS.Region))
+#     }
+#
+#     df<-read_and_join(df,
+#                           "LOOKUP_State_Code.csv")
+#     NA.check.df<-subset(df, is.na(StateText) & !is.na(PoPstateCode), select=c("PoPstateCode","StateText"))
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in StateText"))
+#     }
+#   }
+#
+#
+#
+#
+#   if(("OMBagencyCode" %in% names(df))
+#      #     &"OMBagencyName" %in% names(df)
+#      &"OMBbureauCode" %in% names(df)
+#      #     &"OMBbureauname" %in% names(df)
+#   )
+#   {
+#     #
+#     if("OMBagencyName" %in% names(df)){
+#       df<-subset(df, select=-c(OMBagencyName))
+#     }
+#     if("OMBbureauname"%in% names(df)){
+#       df<-subset(df, select=-c(OMBbureauname))
+#     }
+#     #   if("Customer"%in% names(df)){
+#     #     df<-subset(df, select=-c(Customer))
+#     #   }
+#     #   if("SubCustomer"%in% names(df)){
+#     #     df<-subset(df, select=-c(SubCustomer))
+#     #   }
+#     #       debug(read_and_join)
+#     df<-read_and_join(df,
+#                           "LOOKUP_OMBagencyBureau.csv")
+#     NA.check.df<-subset(df
+#                         , is.na(CSISbureau) #& !is.na(OMBbureauCode)
+#                         , select=c("OMBagencyCode"
+#                                    ,"OMBagencyName"
+#                                    ,"OMBbureauCode"
+#                                    ,"OMBbureauname"
+#                                    ,"CSISbureau"
+#                         )
+#     )
+#
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in CSISbureau"))
+#     }
+#
+#   }
+#
+#   colnames(df)[colnames(df) %in% c("ProdServ","Product.or.Service.Code")]<-"ProductOrServiceCode"
+  if("ProductOrServiceCode" %in% names(df))
+  {
+    if(is.integer(df$ProductOrServiceCode)){
+      df$ProductOrServiceCode<-factor(df$ProductOrServiceCode)
+    }
+    df$ProductOrServiceCode[df$ProductOrServiceCode==""]<-NA
+
+    if("Product.or.Service.Description" %in% names(df)){
+      df<-subset(df, select=-c(Product.or.Service.Description))
+    }
+
+    #           debug(read_and_join)
+    df<-csis360::read_and_join_experiment(df,
+                                               "ProductOrServiceCodes.csv",
+                                               by=c("ProductOrServiceCode"="ProductOrServiceCode"),
+                                               add_var=c("CrisisProductOrServiceArea","Simple","ProductOrServiceArea","ProductServiceOrRnDarea"),
+                                               path=path,
+                                               skip_check_var = c("CrisisProductOrServiceArea","Simple"),
+                                               dir=""
+    )
+    # df<-read_and_join(df,
+    #                       "ProductOrServiceCodes.csv",
+    #                       path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+    #                       directory="",
+    #                       by="ProductOrServiceCode")
+    #         NA.check.df<-subset(df, is.na(ProductOrServiceArea), select=c("Product.or.Service.Code"))
+    #         if(nrow(NA.check.df)>0){
+    #             print(unique(NA.check.df))
+    #             stop(paste(nrow(NA.check.df),"rows of NAs generated in ProductOrServiceArea"))
+    #         }
+  }
+#   else if("ProductServiceOrRnDarea" %in% names(df))
+#   {
+#     df<-replace_nas_with_unlabeled(df,"ProductServiceOrRnDarea")
+#
+#     if("ServicesCategory.sum" %in% names(df)){
+#       df<-subset(df, select=-c(ServicesCategory.sum))
+#     }
+#     if("ProductOrServiceArea" %in% names(df)){
+#       df<-subset(df, select=-c(ProductOrServiceArea))
+#     }
+#     if("ServicesCategory.detail" %in% names(df)){
+#       df<-subset(df, select=-c(ServicesCategory.detail))
+#     }
+#     #     debug(read_and_join)
+#     df<-read_and_join(df,
+#                           "LOOKUP_Buckets.csv",
+#                           by="ProductServiceOrRnDarea")
+#     NA.check.df<-subset(df, is.na(ServicesCategory.sum), select=c("ProductServiceOrRnDarea"))
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in ProductServiceOrRnDarea"))
+#     }
+#
+#   }
+#   else if("ProductOrServiceArea" %in% names(df))
+#   {
+#     df<-replace_nas_with_unlabeled(df,"ProductOrServiceArea")
+#
+#     if("ServicesCategory.sum" %in% names(df)){
+#       df<-subset(df, select=-c(ServicesCategory.sum))
+#     }
+#     #     debug(read_and_join)
+#     colnames(df)[colnames(df)=="ProductOrServiceArea"]<-"ProductServiceOrRnDarea"
+#     df<-read_and_join(df,
+#                           "LOOKUP_Buckets.csv",by="ProductServiceOrRnDarea")
+#     colnames(df)[colnames(df)=="ProductServiceOrRnDarea"]<-"ProductServiceOrRnDarea"
+#
+#     NA.check.df<-subset(df, is.na(ServicesCategory.sum), select=c("ProductOrServiceArea"))
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in ProductOrServiceArea"))
+#     }
+#
+#     NA.check.df<-subset(df, is.na(ServicesCategory.detail), select=c("ProductOrServiceArea"))
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in ServicesCategory.detail"))
+#     }
+#
+#   }
+#
+#   else if("ServicesCategory.detail" %in% names(df))
+#   {
+#
+#     if("ServicesCategory.sum" %in% names(df)){
+#       df<-subset(df, select=-c(ServicesCategory.sum))
+#     }
+#
+#     #     debug(read_and_join)
+#     df<-read_and_join(df,
+#                           "LOOKUP_Buckets.csv")
+#     NA.check.df<-subset(df, is.na(ServicesCategory.sum), select=c("Fiscal.Year","ServicesCategory.detail"))
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in ServicesCategory.sum"))
+#     }
+#
+#   }
+#
+#
+#
+#   if("PlatformPortfolio" %in% names(df))
+#   {
+#
+#     if("PlatformPortfolio.sum" %in% names(df)){
+#       df<-subset(df, select=-c(PlatformPortfolio.sum))
+#     }
+#
+#     df<-replace_nas_with_unlabeled(df,"PlatformPortfolio")
+#
+#     df<-read_and_join(df,
+#                           "LOOKUP_PlatformPortfolio.csv")
+#     NA.check.df<-subset(df, is.na(PlatformPortfolio.sum), select=c("PlatformPortfolio"))
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in PlatformPortfolio.sum"))
+#     }
+#   }
+#
+#
+#
+#   if("Arms.Type" %in% names(df)){
+#     #     debug(read_and_join)
+#     df<-read_and_join(df,
+#                           "LOOKUP_ArmsType.csv")
+#
+#
+#     NA.check.df<-subset(df, is.na(Arms.Summary), select=c("Arms.Type","Arms.Summary")
+#     )
+#
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in Arms.Type"))
+#     }
+#
+#   }
+#
+#   if("Country" %in% names(df)){
+#     #     debug(read_and_join)
+#     df<-read_and_join(df,
+#                           "LOOKUP_Country.csv")
+#
+#
+#     NA.check.df<-subset(df, is.na(Country.Proper), select=c("Country","Country.Proper")
+#     )
+#
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in Countries"))
+#     }
+#
+#   }
+#   else if("Destination.Country" %in% names(df)){
+#     #     debug(read_and_join)
+#     df<-read_and_join(df,
+#                           "LOOKUP_Country.csv")
+#
+#
+#     NA.check.df<-subset(df, is.na(Country.Proper), select=c("Destination.Country","Country.Proper")
+#     )
+#
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in Countries"))
+#     }
+#   }
+#   #     browser()
+#   if("Pricing.Mechanism" %in% names(df)){
+#     df$Pricing.Mechanism[df$Pricing.Mechanism==""]<-NA
+#
+#     df<-replace_nas_with_unlabeled(df,"Pricing.Mechanism")
+#
+#     if("Pricing.Mechanism.sum" %in% names(df)){
+#       df<-subset(df, select=-c(Pricing.Mechanism.sum))
+#     }
+#
+#     if("Pricing.Mechanism.detail" %in% names(df)){
+#       df<-subset(df, select=-c(Pricing.Mechanism.detail))
+#     }
+#
+#     if("Pricing.Mechanism.Correlation" %in% names(df)){
+#       df<-subset(df, select=-c(Pricing.Mechanism.Correlation))
+#     }
+#
+#     if("Pricing.Mechanism.Graph" %in% names(df)){
+#       df<-subset(df, select=-c(Pricing.Mechanism.Graph))
+#     }
+#
+#     #     stop("hammertiime")
+#
+#
+#     df<-read_and_join(df,
+#                           "LOOKUP_Pricing_Mechanism.csv",
+#                           by=c("Pricing.Mechanism"),
+#                           skip_check_var=c("IsCostBased","Pricing.Mechanism.Code","IsFixedPrice",	"IsIncentive"),
+#                           replace_na_var=("Pricing.Mechanism")
+#     )
+#   }
+#   #   else if ("Pricing.Mechanism.Code" %in% names(df)){
+#   #     #Replace blank strings with Unlabeled
+#   # #     df$Pricing.Mechanism<-mapvalues(df$Pricing.Mechanism,from=c(""),to=c("Unlabeled"))
+#   # #
+#   # #     #Handle NA values if present
+#   # #     if(any(is.na(df$Pricing.Mechanism))){
+#   # #       #Make sure unlabeled is within the list of levels
+#   # #       if (!("Unlabeled" %in% levels(df$Pricing.Mechanism))){
+#   # #         df$Pricing.Mechanism=factor(df$Pricing.Mechanism,levels=c(unique(df$Pricing.Mechanism),"Unlabeled"))
+#   # #       }
+#   # #     }
+#   # #
+#   # #     #Replace NAs with Uncategorized
+#   # #     df$Pricing.Mechanism[is.na(df$Pricing.Mechanism)]<-"Unlabeled"
+#   # #
+#   #
+#   #
+#   #     if("IsCostBased" %in% names(df) && (!any(!is.na(df$IsCostBased)))){
+#   #       df<-subset(df, select=-c(IsCostBased))
+#   #     }
+#   #
+#   #     if("IsFixedPrice" %in% names(df) && all(is.na(df$IsFixedPrice))){
+#   #       df<-subset(df, select=-c(IsFixedPrice))
+#   #     }
+#   #
+#   #
+#   #     if("IsIncentive" %in% names(df) && (!any(!is.na(df$IsIncentive)))){
+#   #       df<-subset(df, select=-c(IsIncentive))
+#   #     }
+#   #
+#   #     if("Pricing.Mechanism.sum" %in% names(df)){
+#   #       df<-subset(df, select=-c(Pricing.Mechanism.sum))
+#   #     }
+#   #
+#   #     if("Pricing.Mechanism.detail" %in% names(df)){
+#   #       df<-subset(df, select=-c(Pricing.Mechanism.detail))
+#   #     }
+#   #
+#   #     if("Pricing.Mechanism.Correlation" %in% names(df)){
+#   #       df<-subset(df, select=-c(Pricing.Mechanism.Correlation))
+#   #     }
+#   #
+#   #     if("Pricing.Mechanism.Graph" %in% names(df)){
+#   #       df<-subset(df, select=-c(Pricing.Mechanism.Graph))
+#   #     }
+#   #
+#   #     #     stop("hammertiime")
+#   #
+#   #
+#   #
+#   #     df<-read_and_join(df,"LOOKUP_Pricing_Mechanism.csv")
+#   #
+#   #
+#   #     NA.check.df<-subset(df, !is.na(Pricing.Mechanism.Code) & is.na(Pricing.Mechanism.sum), select=c("Pricing.Mechanism"))
+#   #     if(nrow(NA.check.df)>0){
+#   #       print(unique(NA.check.df))
+#   #       stop(paste(nrow(NA.check.df),"rows of NAs generated in Pricing.Mechanism.sum"))
+#   #     }
+#   #
+#   #     NA.check.df<-subset(df, is.na(Pricing.Mechanism.detail), select=c("Pricing.Mechanism"))
+#   #     if(nrow(NA.check.df)>0){
+#   #       print(unique(NA.check.df))
+#   #       stop(paste(nrow(NA.check.df),"rows of NAs generated in Pricing.Mechanism.detail"))
+#   #     }
+#   #   }
+#
+#
+#   if("Contractor.Size" %in% names(df)){
+#     df<-read_and_join(df,"LOOKUP_Contractor_Size_named.csv")
+#
+#     NA.check.df<-subset(df, is.na(Contractor.Size.detail), select=c("Contractor.Size"))
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in Contractor.Size.detail"))
+#     }
+#
+#     NA.check.df<-subset(df, is.na(Contractor.Size.sum), select=c("Contractor.Size"))
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in Contractor.Size.sum"))
+#     }
+#
+#     NA.check.df<-subset(df, is.na(Contractor.Size.correlation), select=c("Contractor.Size"))
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in Contractor.Size.correlation"))
+#     }
+#
+#   }
+#
+#
+  if("Vendor.Size" %in% names(df)){
+    df<-replace_nas_with_unlabeled(df,"Vendor.Size")
+
+    df<-csis360::read_and_join(df,
+                                      "LOOKUP_Contractor_Size.csv",
+                                      by="Vendor.Size",
+                                      add_var="Shiny.VendorSize",
+                                      path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
+                                      dir="Lookups/"
+    )
+
+    # df<-read_and_join(df,"LOOKUP_Contractor_Size.csv")
+    #
+    # NA.check.df<-subset(df, is.na(Vendor.Size.detail), select=c("Vendor.Size"))
+    # if(nrow(NA.check.df)>0){
+    #   print(unique(NA.check.df))
+    #   stop(paste(nrow(NA.check.df),"rows of NAs generated in Vendor.Size.detail"))
+    # }
+    #
+    # NA.check.df<-subset(df, is.na(Vendor.Size.sum), select=c("Vendor.Size"))
+    # if(nrow(NA.check.df)>0){
+    #   print(unique(NA.check.df))
+    #   stop(paste(nrow(NA.check.df),"rows of NAs generated in Vendor.Size.sum"))
+    # }
+
+  }
+#
+#
+#   if("Contract.Size" %in% names(df)){
+#     df<-replace_nas_with_unlabeled(df,"Contract.Size")
+#
+#     df<-read_and_join(df,"LOOKUP_Contract_Size.csv")
+#
+#     NA.check.df<-subset(df, is.na(Contract.Size.detail), select=c("Contract.Size"))
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in Contract.Size.detail"))
+#     }
+#
+#     NA.check.df<-subset(df, is.na(Contract.Size.sum), select=c("Contract.Size"))
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in Contract.Size.sum"))
+#     }
+#
+#   }
+#
+#
+#   if("Extent.Competed" %in% names(df)){
+#     df<-read_and_join(df,"LOOKUP_Extent_Competed.csv")
+#
+#     NA.check.df<-subset(df, is.na(Extent.Competed.Sum), select=c("Extent.Competed.Sum"))
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in Extent.Competed.Sum"))
+#     }
+#   }
+#
+#   if("systemequipmentcode" %in% names(df)){
+#     df<-replace_nas_with_unlabeled(df,"systemequipmentcode")
+#
+#     df<-read_and_join(df,"LOOKUP_systemequipmentcode.csv")
+#
+#     NA.check.df<-subset(df, is.na(systemequipmentcode)|is.na(systemequipmentshorttext), select=c("systemequipmentcode","systemequipmentcodeText","systemequipmentshorttext"))
+#     if(nrow(NA.check.df)>0){
+#       print(unique(NA.check.df))
+#       stop(paste(nrow(NA.check.df),"rows of NAs generated in systemequipmentcodeText or systemequipmentshorttext"))
+#     }
+#   }
+#
+#
+  #Deflators
+  if("Fiscal.Year"%in% names(df)){
+    if("Action_Obligation"%in% names(df)){
+      df<-deflate(df,
+                  money_var = "Action_Obligation",
+                  fy_var="Fiscal.Year",
+                  deflator_var="OMB20_GDP20"
+      )
+    }
+  }
+
+#
+#   if("Fiscal.Year"%in% names(df)){
+#     df<-read_and_join(df,
+#                           "Lookup_Deflators.csv",
+#                           by="Fiscal.Year",
+#                           new_var_checked=FALSE,
+#                           path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+#                           directory="economic/")
+#     # NA.check.df<-subset(df,  is.na(Deflator.2014) & is.na(Deflator.2013) & !is.na(Fiscal.Year), select=c("Fiscal.Year","Deflator.2013","Deflator.2014"))
+#     # if(nrow(NA.check.df)>0){
+#     #   print(unique(NA.check.df))
+#     #   stop(paste(nrow(NA.check.df),"rows of NAs generated in value"))
+#     # }
+#
+#
+#     if("Action_Obligation"%in% names(df)){
+#       df$Action_Obligation<-text_to_number(df$Action_Obligation)
+#       if("Deflator.2013"%in% names(df)){
+#         df$Obligation.2013<-df$Action_Obligation/df$Deflator.2013/1000000000
+#       }
+#       if("Deflator.2014"%in% names(df)){
+#         df$Obligation.2014<-df$Action_Obligation/df$Deflator.2014/1000000000
+#       }
+#       if("Deflator.2015"%in% names(df)){
+#         df$Obligation.2015<-df$Action_Obligation/df$Deflator.2015/1000000000
+#       }
+#
+#       if("Deflator.2016"%in% names(df)){
+#         df$Obligation.2016<-df$Action_Obligation/df$Deflator.2016/1000000000
+#       }
+#     }
+#
+#
+#
+#     if("GBKdisbursements"%in% names(df)){
+#       df$GBKdisbursements<-text_to_number(df$GBKdisbursements)
+#       if("Deflator.2013"%in% names(df)){
+#         df$GBKdisbursements.ConstantB<-df$GBKdisbursements/df$Deflator.2013/1000000000
+#       }
+#     }
+#
+#     if("GBKobligations"%in% names(df)){
+#       df$SumOfObligations<-text_to_number(df$GBKobligations)
+#       if("Deflator.2013"%in% names(df)){
+#         df$GBKobligations.2013<-df$GBKobligations/df$Deflator.2013/1000000000
+#       }
+#     }
+#
+#     if("Outlay"%in% names(df)){
+#       df$Outlay<-text_to_number(df$Outlay)
+#       if("Deflator.2013"%in% names(df)){
+#         df$Outlay.2013<-df$Outlay/df$Deflator.2013/1000000000
+#       }
+#     }
+#
+#
+#     if("OutlayNoOffsetAccount"%in% names(df)){
+#       df$OutlayNoOffsetAccount<-text_to_number(df$OutlayNoOffsetAccount)
+#       if("Deflator.2013"%in% names(df)){
+#         df$OutlayNoOffsetAccount.2013<-df$OutlayNoOffsetAccount/df$Deflator.2013/1000000000
+#       }
+#     }
+#
+#     if("OutlayOffsetAccount"%in% names(df)){
+#       df$OutlayOffsetAccount<-text_to_number(df$OutlayOffsetAccount)
+#       if("Deflator.2013"%in% names(df)){
+#         df$OutlayOffsetAccount.2013<-df$OutlayOffsetAccount/df$Deflator.2013/1000000000
+#       }
+#     }
+#
+#
+#
+#     if("Fed_Grant_Funding_Amount"%in% names(df)){
+#       df$Fed_Grant_Funding_Amount	   <-text_to_number(df$Fed_Grant_Funding_Amount	   )
+#       if("Deflator.2013"%in% names(df)){
+#         df$Fed_Grant_Funding_Amount.2013<-df$Fed_Grant_Funding_Amount	   /df$Deflator.2013/1000000000
+#       }
+#     }
+#
+#
+#     if("ContractObligatedAmount"%in% names(df)){
+#       df$ContractObligatedAmount<-text_to_number(df$ContractObligatedAmount)
+#       if("Deflator.2013"%in% names(df)){
+#         df$ContractObligatedAmount.2013<-df$ContractObligatedAmount/df$Deflator.2013/1000000000
+#       }
+#     }
+#   }
+#   if("OutlayNoOffsetAccount.2013" %in% names(df)
+#      & "OutlayOffsetAccount.2013" %in% names(df)
+#      & "ContractObligatedAmount.2013" %in% names(df)
+#      #      & "Fed_Grant_Funding_Amount.2013" %in% names(df)
+#      & "Outlay.2013" %in% names(df)
+#   ){
+#
+#
+#     df$ResidualOutlay.2013<-ifelse(is.na(df$OutlayNoOffsetAccount.2013)
+#                                        ,0
+#                                        ,df$OutlayNoOffsetAccount.2013
+#     )
+#
+#     df$ResidualOutlay.2013<-df$ResidualOutlay.2013-ifelse(is.na(df$ContractObligatedAmount.2013)
+#                                                                   ,0
+#                                                                   ,df$ContractObligatedAmount.2013
+#     )
+#
+#
+#     Measurement.Vars.List=c("OutlayNoOffsetAccount.2013"
+#                             ,"OutlayOffsetAccount.2013"
+#                             ,"ContractObligatedAmount.2013"
+#                             #                             ,"Fed_Grant_Funding_Amount.2013"
+#                             ,"Outlay.2013"
+#                             ,"ResidualOutlay.2013"
+#     )
+#
+#     if("Fed_Grant_Funding_Amount.2013" %in% names(df))
+#     {
+#
+#       df$ResidualOutlay.2013<-df$ResidualOutlay.2013-ifelse(is.na(df$Fed_Grant_Funding_Amount.2013)
+#                                                                     ,0
+#                                                                     ,df$Fed_Grant_Funding_Amount.2013
+#       )
+#
+#       Measurement.Vars.List<-rbind(Measurement.Vars.List,"Fed_Grant_Funding_Amount.2013")
+#
+#
+#     }
+#
+#
+#
+#
+#     df<-melt(df,
+#                  #                        id=c("Fiscal.Year"
+#                  #                                                  ,"SubFunder.Detail")
+#                  measure.vars=Measurement.Vars.List,
+#                  variable.name="comparison.dollar.type")
+#
+#
+#
+#     df<-read_and_join(
+#       df,
+#       "LOOKUP_comparison_dollar_type.csv"
+#     )
+#
+#   }
+#
+#   if("SimpleArea" %in% names(df))
+#   {
+#     df$SimpleArea[df$SimpleArea==""]<-NA
+#     df$SimpleArea<-factor(df$SimpleArea
+#                               ,exclude=NULL
+#                               ,levels = c("Products"
+#                                           ,"Services"
+#                                           ,"R&D"
+#                                           ,NA)
+#                               ,labels = c("Products"
+#                                           ,"Services"
+#                                           ,"R&D"
+#                                           ,"Mixed or Unlabeled")
+#     )
+#   }
+#
+#   if("IsTerminated" %in% names(df))
+#   {
+#     levels(df$IsTerminated)<-list("Unterminated"=c("Unterminated","0",0),
+#                                       "Terminated"=c("Terminated","1",1)
+#     )
+#   }
+#
+#   if("IsClosed" %in% names(df))
+#   {
+#     levels(df$IsClosed)<-list("Unspecified"=c("Unspecified","0",0),
+#                                   "Closed"=c("Closed","1",1)
+#     )
+#
+#     #     addNA(df$IsClosed, ifany = TRUE)
+#   }
+#   if("numberofoffersreceived" %in% names(df)){
+#     df$numberofoffersreceived[df$numberofoffersreceived==0]<-NA
+#   }
+#
+#   if("UnmodifiedNumberOfOffersReceived" %in% names(df))
+#   {
+#     df$UnmodifiedNumberOfOffersReceived<-text_to_number(df$UnmodifiedNumberOfOffersReceived)
+#     df$UnmodifiedNumberOfOffersReceived[df$UnmodifiedNumberOfOffersReceived==0]<-NA
+#     if("numberofoffersreceived" %in% names(df)){
+#       df$UnmodifiedNumberOfOffersReceived[is.na(df$UnmodifiedNumberOfOffersReceived)]<-df$numberofoffersreceived[is.na(df$UnmodifiedNumberOfOffersReceived)]
+#     }
+#
+#     df$UnmodifiedNumberOfOffersSummary[is.na(df$UnmodifiedNumberOfOffersReceived)]<-NA
+#     df$UnmodifiedNumberOfOffersSummary[df$UnmodifiedNumberOfOffersReceived==1]<-1
+#     df$UnmodifiedNumberOfOffersSummary[df$UnmodifiedNumberOfOffersReceived==2]<-2
+#     df$UnmodifiedNumberOfOffersSummary[df$UnmodifiedNumberOfOffersReceived==3 | df$UnmodifiedNumberOfOffersReceived==4]<-3.5
+#     df$UnmodifiedNumberOfOffersSummary[df$UnmodifiedNumberOfOffersReceived>=5]<-5
+#
+#
+#     df$UnmodifiedNumberOfOffersSummary<-factor(df$UnmodifiedNumberOfOffersSummary,
+#                                                    levels = c(NA,1,2,3.5,5),
+#                                                    labels = c("Unlabeled", "1\nOffer","2\noffers","3-4\noffers","5+\noffers"),
+#                                                    exclude=NULL
+#     )
+#
+#
+#   }
+#
+#
+#
+#   if("MaxOfisChangeOrder" %in% names(df))
+#   {
+#     levels(df$MaxOfisChangeOrder)<-list("No Change Order"=c("No Change Order","0",0),
+#                                             "Closed"=c("Change Order(s)","1",1)
+#     )
+#
+#     addNA(df$MaxOfisChangeOrder, ifany = TRUE)
+#   }
+#
+#   if("IsFixedPrice" %in% names(df))
+#   {
+#     levels(df$IsFixedPrice)<-list("Other"=c("Other","0",0),
+#                                       "Fixed Price"=c("Fixed Price","1",1),
+#                                       "Combination \nor Unlabeled"=c("Combination \nor Unlabeled",NA)
+#     )
+#
+#     # df$IsFixedPrice<-factor(df$IsFixedPrice,
+#     #                             exclude=NULL,
+#     #                             levels = c(1,0,NA),
+#     #                             labels = c("Fixed Price", "Other","Combination \nor Unlabeled")
+#     # )
+#     if (!("Combination \nor Unlabeled" %in% levels(df$IsFixedPrice))){
+#       df$IsFixedPrice<-addNA(df$IsFixedPrice,ifany=TRUE)
+#       levels(df$IsFixedPrice)[is.na(levels(df$IsFixedPrice))] <- "Combination \nor Unlabeled"
+#     }
+#   }
+#
+#
+#   if("Action_Obligation" %in% names(df)){
+#     df$LogOfAction_Obligation<-log10(df$Action_Obligation)
+#     df$LogOfAction_Obligation[is.infinite(df$LogOfAction_Obligation)]<-0
+#
+#     if("NewWorkObligatedAmount" %in% names(df)){
+#       df$pNewWorkVsContractObligatedAmount<-df$NewWorkObligatedAmount/df$Action_Obligation
+#       df$pNewWorkVsContractObligatedAmount[is.infinite(df$pNewWorkVsContractObligatedAmount)]<-NA
+#       df$pNewWorkVsContractObligatedAmount[abs(df$pNewWorkVsContractObligatedAmount)>100]<-NA
+#     }
+#     if("ChangeOrderObligatedAmount" %in% names(df)){
+#       df$pChangeOrderVsContractObligatedAmount<-df$ChangeOrderObligatedAmount/df$Action_Obligation
+#       df$pChangeOrderVsContractObligatedAmount[is.infinite(df$pChangeOrderVsContractObligatedAmount)]<-NA
+#       df$pChangeOrderVsContractObligatedAmount[abs(df$pChangeOrderVsContractObligatedAmount)>100]<-NA
+#     }
+#   }
+#   if("ContractBaseAndAllOptionsValue" %in% names(df)){
+#     df$ContractBaseAndAllOptionsValue<-text_to_number(df$ContractBaseAndAllOptionsValue)
+#     df$LogOfContractBaseAndAllOptionsValue<-log10(df$ContractBaseAndAllOptionsValue)
+#     df$LogOfContractBaseAndAllOptionsValue[is.infinite(df$LogOfContractBaseAndAllOptionsValue)]<-0
+#
+#     if("NewWorkBaseAndAllOptionsValue" %in% names(df)){
+#       df$pNewWorkVsContractBaseAndAllOptionsValue<-df$NewWorkBaseAndAllOptionsValue/df$ContractBaseAndAllOptionsValue
+#       df$pNewWorkVsContractBaseAndAllOptionsValue[is.infinite(df$pNewWorkVsContractBaseAndAllOptionsValue)]<-NA
+#       df$pNewWorkVsContractBaseAndAllOptionsValue[abs(df$pNewWorkVsContractBaseAndAllOptionsValue)>100]<-NA
+#     }
+#     if("ChangeOrderBaseAndAllOptionsValue" %in% names(df)){
+#       df$pChangeOrderVsContractBaseAndAllOptionsValue<-df$ChangeOrderBaseAndAllOptionsValue/df$ContractBaseAndAllOptionsValue
+#       df$pChangeOrderVsContractBaseAndAllOptionsValue[is.infinite(df$pChangeOrderVsContractBaseAndAllOptionsValue)]<-NA
+#       df$pChangeOrderVsContractBaseAndAllOptionsValue[abs(df$pChangeOrderVsContractBaseAndAllOptionsValue)>100]<-NA
+#     }
+#   }
+#   if("ContractBaseAndExercisedOptionsValue" %in% names(df)){
+#     df$ContractBaseAndExercisedOptionsValue<-text_to_number(df$ContractBaseAndExercisedOptionsValue)
+#     df$LogOfContractBaseAndExercisedOptionsValue<-log10(df$ContractBaseAndExercisedOptionsValue)
+#     df$LogOfContractBaseAndExercisedOptionsValue[is.infinite(df$LogOfContractBaseAndExercisedOptionsValue)]<-0
+#
+#     if("NewWorkBaseAndExercisedOptionsValue" %in% names(df)){
+#       df$pNewWorkVsContractBaseAndExercised<-df$NewWorkBaseAndExercisedOptionsValue/df$ContractBaseAndExercisedOptionsValue
+#       df$pNewWorkVsContractBaseAndExercised[is.infinite(df$pNewWorkVsContractBaseAndExercised)]<-NA
+#       df$pNewWorkVsContractBaseAndExercised[abs(df$pNewWorkVsContractBaseAndExercised)>100]<-NA
+#     }
+#     if("ChangeOrderBaseAndExercisedOptionsValue" %in% names(df)){
+#       df$pChangeOrderVsContractBaseAndExercised<-df$ChangeOrderBaseAndExercisedOptionsValue/df$ContractBaseAndExercisedOptionsValue
+#       df$pChangeOrderVsContractBaseAndExercised[is.infinite(df$pChangeOrderVsContractBaseAndExercised)]<-NA
+#       df$pChangeOrderVsContractBaseAndExercised[abs(df$pChangeOrderVsContractBaseAndExercised)>100]<-NA
+#     }
+#   }
+#   if("UnmodifiedContractObligatedAmount" %in% names(df)){
+#     df$UnmodifiedContractObligatedAmount<-text_to_number(df$UnmodifiedContractObligatedAmount)
+#     df$LogOfUnmodifiedContractObligatedAmount<-log10(df$UnmodifiedContractObligatedAmount)
+#     df$LogOfUnmodifiedContractObligatedAmount[is.infinite(df$LogOfUnmodifiedContractObligatedAmount)]<-0
+#     if("Action_Obligation" %in% names(df)){
+#       df$pUnmodifiedContractObligated<-df$UnmodifiedContractObligatedAmount/df$Action_Obligation
+#     }
+#     if("NewWorkObligatedAmount" %in% names(df)){
+#       df$pNewWorkVsUnmodifiedObligatedAmount<-df$NewWorkObligatedAmount/df$UnmodifiedContractObligatedAmount
+#       df$pNewWorkVsUnmodifiedObligatedAmount[is.infinite(df$pNewWorkVsUnmodifiedObligatedAmount)]<-NA
+#       df$pNewWorkVsUnmodifiedObligatedAmount[abs(df$pNewWorkVsUnmodifiedObligatedAmount)>100]<-NA
+#     }
+#     if("ChangeOrderObligatedAmount" %in% names(df)){
+#       df$pChangeOrderVsUnmodifiedObligatedAmount<-df$ChangeOrderObligatedAmount/df$UnmodifiedContractObligatedAmount
+#       df$pChangeOrderVsUnmodifiedObligatedAmount[is.infinite(df$pChangeOrderVsUnmodifiedObligatedAmount)]<-NA
+#       df$pChangeOrderVsUnmodifiedObligatedAmount[abs(df$pChangeOrderVsUnmodifiedObligatedAmount)>100]<-NA
+#     }
+#   }
+#   if("UnmodifiedContractBaseAndAllOptionsValue" %in% names(df)){
+#     df$UnmodifiedContractBaseAndAllOptionsValue<-text_to_number(df$UnmodifiedContractBaseAndAllOptionsValue)
+#     df$LogOfUnmodifiedContractBaseAndAllOptionsValue<-log10(df$UnmodifiedContractBaseAndAllOptionsValue)
+#     df$LogOfUnmodifiedContractBaseAndAllOptionsValue[is.infinite(df$LogOfUnmodifiedContractBaseAndAllOptionsValue)]<-0
+#
+#     df$SizeOfUnmodifiedContractBaseAndAll<-CreateSize(df$UnmodifiedContractBaseAndAllOptionsValue)
+#
+#     if("ContractBaseAndAllOptionsValue" %in% names(df)){
+#       df$pUnmodifiedContractBaseAndAll<-df$UnmodifiedContractBaseAndAllOptionsValue/df$ContractBaseAndAllOptionsValue
+#     }
+#     if("NewWorkBaseAndAllOptionsValue" %in% names(df)){
+#       df$pNewWorkVsUnmodifiedBaseAndAll<-df$NewWorkBaseAndAllOptionsValue/df$UnmodifiedContractBaseAndAllOptionsValue
+#       df$pNewWorkVsUnmodifiedBaseAndAll[is.infinite(df$pNewWorkVsUnmodifiedBaseAndAll)]<-NA
+#       df$pNewWorkVsUnmodifiedBaseAndAll[abs(df$pNewWorkVsUnmodifiedBaseAndAll)>100]<-NA
+#     }
+#     if("ChangeOrderBaseAndAllOptionsValue" %in% names(df)){
+#       df$pChangeOrderVsUnmodifiedBaseAndAll<-df$ChangeOrderBaseAndAllOptionsValue/df$UnmodifiedContractBaseAndAllOptionsValue
+#       df$pChangeOrderVsUnmodifiedBaseAndAll[is.infinite(df$pChangeOrderVsUnmodifiedBaseAndAll)]<-NA
+#       df$pChangeOrderVsUnmodifiedBaseAndAll[abs(df$pChangeOrderVsUnmodifiedBaseAndAll)>100]<-NA
+#     }
+#   }
+#   if("UnmodifiedContractBaseAndExercisedOptionsValue" %in% names(df)){
+#     df$UnmodifiedContractBaseAndExercisedOptionsValue<-text_to_number(df$UnmodifiedContractBaseAndExercisedOptionsValue)
+#     df$LogOfUnmodifiedContractBaseAndExercisedOptionsValue<-log10(df$UnmodifiedContractBaseAndExercisedOptionsValue)
+#     df$LogOfUnmodifiedContractBaseAndExercisedOptionsValue[is.infinite(df$LogOfUnmodifiedContractBaseAndExercisedOptionsValue)]<-0
+#     if("ContractBaseAndExercisedOptionsValue" %in% names(df)){
+#       df$pUnmodifiedContractBaseAndExercised<-df$UnmodifiedContractBaseAndExercisedOptionsValue/df$ContractBaseAndExercisedOptionsValue
+#     }
+#     if("NewWorkBaseAndExercisedOptionsValue" %in% names(df)){
+#       df$pNewWorkVsUnmodifiedBaseAndExercised<-df$NewWorkBaseAndExercisedOptionsValue/df$UnmodifiedContractBaseAndExercisedOptionsValue
+#       df$pNewWorkVsUnmodifiedBaseAndExercised[is.infinite(df$pNewWorkVsUnmodifiedBaseAndExercised)]<-NA
+#       df$pNewWorkVsUnmodifiedBaseAndExercised[abs(df$pNewWorkVsUnmodifiedBaseAndExercised)>100]<-NA
+#     }
+#     if("ChangeOrderBaseAndExercisedOptionsValue" %in% names(df)){
+#       df$pChangeOrderVsUnmodifiedBaseAndExercised<-df$ChangeOrderBaseAndExercisedOptionsValue/df$UnmodifiedContractBaseAndExercisedOptionsValue
+#       df$pChangeOrderVsUnmodifiedBaseAndExercised[is.infinite(df$pChangeOrderVsUnmodifiedBaseAndExercised)]<-NA
+#       df$pChangeOrderVsUnmodifiedBaseAndExercised[abs(df$pChangeOrderVsUnmodifiedBaseAndExercised)>100]<-NA
+#     }
+#   }
+#
+#   #
+#   # ChangeOrderObligatedAmount
+#   # ChangeOrderBaseAndExercisedOptionsValue
+#   # ChangeOrderBaseAndAllOptionsValue
+#   # NewWorkObligatedAmount
+#   # NewWorkBaseAndExercisedOptionsValue
+#   # NewWorkBaseAndAllOptionsValue
+#
+#
+#
+  if("Fiscal.Year"%in% names(df)){
+
+    df$Fiscal.Year <- as.numeric(df$Fiscal.Year)
+    df$dFYear<-as.Date(paste("1/1/",as.character(df$Fiscal.Year),sep=""),"%m/%d/%Y")
+    # df$Fiscal.Year <-as.Date(paste("1/1/",as.character(df$Fiscal.Year),sep=""),"%m/%d/%Y")
+    # df$Fiscal.Year.End <-as.Date(paste("9/30/",as.character(year(df$Fiscal.Year)),sep=""),"%m/%d/%Y")
+    # df$Fiscal.Year.Start <-as.Date(paste("10/1/",as.character(year(df$Fiscal.Year)-1),sep=""),"%m/%d/%Y")
+  }
+#
+#   if("Date.Signed"%in% names(df)){
+#
+#     if(max(nchar(as.character(df$Date.Signed)))==10){
+#       #         if((max(substring(as.character(df$Date.Signed),7,8))=="99" |
+#       #                max(substring(as.character(df$Date.Signed),7,8))<"20") &
+#       #                !max(substring(as.character(df$Date.Signed),1,2))>"12"){
+#       df$Date.Signed <-as.Date(as.character(df$Date.Signed),"%m/%d/%Y")
+#     }
+#     else{
+#       df$Date.Signed <-as.Date(as.character(df$Date.Signed),"%y/%m/%d")
+#     }
+#   }
+#
+#   if("SignedMonth"%in% names(df)){
+#     df$SignedMonth <-as.Date(as.character(df$SignedMonth),"%Y-%m-%d")
+#   }
+#
+#
+#   if("YEAR"%in% names(df)){
+#     df$YEAR <-as.Date(paste("12/31/",as.character(df$YEAR),sep=""),"%m/%d/%Y")
+#   }
+#
+#   if(!("Graph" %in% names(df))){
+#     df$Graph<-TRUE
+#   }
+#   if("ProductOrServiceArea.Graph"%in% names(df)){
+#     df$Graph<-df$Graph&&df$ProductOrServiceArea.Graph
+#     df<-subset(df, select=-c(ProductOrServiceArea.Graph))
+#   }
+#   if("Contract.Size.Graph"%in% names(df)){
+#     df$Graph<-df$Graph&&df$Contract.Size.Graph
+#     df<-subset(df, select=-c(Contract.Size.Graph))
+#   }
+#
+#   if("Competition.Graph"%in% names(df)){
+#     df$Graph<-df$Graph&&df$Competition.Graph
+#     df<-subset(df, select=-c(Competition.Graph))
+#   }
+#   if("Vehicle.Graph"%in% names(df)){
+#     df$Graph<-df$Graph&&df$Vehicle.Graph
+#     df<-subset(df, select=-c(Vehicle.Graph))
+#   }
+#   if("Pricing.Mechanism.Graph"%in% names(df)){
+#     df$Graph<-df$Graph&&df$Pricing.Mechanism.Graph
+#     df<-subset(df, select=-c(Pricing.Mechanism.Graph))
+#   }
+#   if("Customer.Graph"%in% names(df)){
+#     df$Graph<-df$Graph&&df$Customer.Graph
+#     df<-subset(df, select=-c(Customer.Graph))
+#   }
+#   if("LastCurrentCompletionDate"%in% names(df)&"MinOfEffectiveDate"%in% names(df)){
+#
+#     df$CurrentMonths<-as.numeric(difftime(strptime(df$LastCurrentCompletionDate,"%Y-%m-%d")
+#                                               , strptime(df$MinOfEffectiveDate,"%Y-%m-%d")
+#                                               , unit="weeks"
+#     ))
+#     df$CategoryOfCurrentMonths<-CreateDuration(df$CurrentMonths)
+#     df$CurrentMonths<-ceiling(df$CurrentMonths/4)
+#   }
+#
+#
+#   if("UnmodifiedCurrentCompletionDate"%in% names(df)&"MinOfEffectiveDate"%in% names(df)){
+#
+#     df$UnmodifiedMonths<-as.numeric(difftime(strptime(df$UnmodifiedCurrentCompletionDate,"%Y-%m-%d")
+#                                                  , strptime(df$MinOfEffectiveDate,"%Y-%m-%d")
+#                                                  , unit="weeks"
+#     ))
+#     df$CategoryOfUnmodifiedMonths<-CreateDuration(df$UnmodifiedMonths)
+#     df$UnmodifiedMonths<-ceiling(df$UnmodifiedMonths/4)
+#
+#   }
+#
+#   if("UnmodifiedIsSomeCompetition" %in% names(df))
+#   {
+#     levels(df$UnmodifiedIsSomeCompetition)<-list("No Comp."=c("No Comp.","0",0),
+#                                                      "Comp."=c("Comp.","1",1),
+#                                                      "Unlabeled"=c("Unlabeled",NA)
+#     )
+#
+#     # df$UnmodifiedIsSomeCompetition<-factor(df$UnmodifiedIsSomeCompetition,
+#     #                                            exclude=NULL,
+#     #                                            levels = c(1,0,NA),
+#     #                                            labels = c("Comp.", "No Comp.","Unlabeled")
+#     # )
+#   }
+#
+#   if("IsSomeCompetition" %in% names(df))
+#   {
+#
+#
+#
+#     if ("IsFullAndOpen" %in% names(df)&
+#         "IsOnlyOneSource" %in% names(df)){
+#       df$UnmodifiedCompetition[df$IsFullAndOpen==1]<-1
+#       df$UnmodifiedCompetition[df$IsSomeCompetition==1
+#                                    &is.na(df$UnmodifiedCompetition)]<-2
+#       df$UnmodifiedCompetition[df$IsOnlyOneSource==1
+#                                    &is.na(df$UnmodifiedCompetition)]<-3
+#       df$UnmodifiedCompetition[df$IsOnlyOneSource==0
+#                                    &is.na(df$UnmodifiedCompetition)]<-4
+#       df$UnmodifiedCompetition<-factor(df$UnmodifiedCompetition
+#                                            ,exclude=NULL
+#                                            ,levels=c(1,2,3,4,NA)
+#                                            ,labels=c("Full and Open"
+#                                                      ,"Some Comp."
+#                                                      ,"No Comp.\n1 Source"
+#                                                      ,"No Comp.\nOther"
+#                                                      ,"Unlabeled"
+#                                            )
+#       )
+#
+#     }
+#     levels(df$IsSomeCompetition)<-list("No Comp."=c("No Comp.","0",0),
+#                                            "Comp."=c("Comp.","1",1),
+#                                            "Mixed or \nUnlabeled"=c("Mixed or \nUnlabeled",NA)
+#     )
+#
+#
+#     df$IsSomeCompetition<-factor(df$IsSomeCompetition,
+#                                      exclude=NULL,
+#                                      levels = c(1,0,NA),
+#                                      labels = c("Comp.", "No Comp.","Mixed or \nUnlabeled")
+#     )
+#
+#     if("IsFullAndOpen" %in% names(df))
+#     {
+#       df$IsFullAndOpen<-factor(df$IsFullAndOpen,
+#                                    exclude=NULL,
+#                                    levels = c(1,0,NA),
+#                                    labels = c("Full & Open", "Not Full \n& Open","Mixed or \nUnlabeled")
+#       )
+#     }
+#
+#
+#
+#     if("UnmodifiedIsFullAndOpen" %in% names(df))
+#     {
+#       df$UnmodifiedIsFullAndOpen<-factor(df$UnmodifiedIsFullAndOpen,
+#                                              exclude=NULL,
+#                                              levels = c(1,0,NA),
+#                                              labels = c("Full & Open", "Not Full \n& Open","Unlabeled")
+#       )
+#     }
+#     if("IsOnlyOneSource" %in% names(df))
+#     {
+#       df$IsOnlyOneSource<-factor(df$IsOnlyOneSource,
+#                                      exclude=NULL,
+#                                      levels = c(1,0,NA),
+#                                      labels = c("Only One Source", "Not Only Once Source","Unlabeled")
+#       )
+#     }
+#
+#
+#
+#
+#     if ("IsIDV" %in% names(df)&
+#         "multipleorsingleawardidc" %in% names(df)&
+#         "AwardOrIDVcontractactiontype" %in% names(df)
+#     ){
+#       df$UnmodifiedVehicle[is.na(df$IsIDV)]<-NA
+#       df$UnmodifiedVehicle[df$AwardOrIDVcontractactiontype %in% c("Definitive Contract")
+#                                &is.na(df$UnmodifiedVehicle)]<-1
+#       df$UnmodifiedVehicle[df$AwardOrIDVcontractactiontype %in% c("Purchase Order")
+#                                &is.na(df$UnmodifiedVehicle)]<-2
+#       df$UnmodifiedVehicle[df$AwardOrIDVcontractactiontype %in% c("Blanket Purchase Agreement"
+#                                                                           ,"Federal Supply Schedule"
+#                                                                           ,"Government Wide Acquisition Contract"
+#                                                                           ,"Basic Ordering Agreement")
+#                                &is.na(df$UnmodifiedVehicle)]<-5
+#
+#       df$UnmodifiedVehicle[df$multipleorsingleawardidc=="MULTIPLE AWARD"
+#                                &is.na(df$UnmodifiedVehicle)]<-4
+#       df$UnmodifiedVehicle[df$multipleorsingleawardidc=="SINGLE AWARD"
+#                                &is.na(df$UnmodifiedVehicle)]<-3
+#       df$UnmodifiedVehicle[is.na(df$UnmodifiedVehicle)]<-6
+#       df$UnmodifiedVehicle<-factor(df$UnmodifiedVehicle
+#                                        ,exclude=NULL
+#                                        ,levels=c(1
+#                                                  ,2
+#                                                  ,3
+#                                                  ,4
+#                                                  ,5
+#                                                  ,6
+#                                                  ,NA)
+#                                        ,labels=c("Definitive"
+#                                                  ,"Purchase\nOrder"
+#                                                  ,"Single-Award\nIDC"
+#                                                  ,"Multi-Award\nIDC"
+#                                                  ,"Other IDC"
+#                                                  ,"Unlabeled\nIDC"
+#                                                  ,"Unlabeled"
+#                                        )
+#       )
+#
+#     }
+#
+#   }
+
+  df
+}
