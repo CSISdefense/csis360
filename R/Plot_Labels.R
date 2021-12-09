@@ -356,6 +356,6 @@ get_legend<-function(a.gplot){
 #' @export
 get_caption<-function(
 ){
-  c<-labs(caption="Source: FPDS; CSIS analysis")
+  c<-labs(caption="Source: FPDS; CSIS analysis.")
   return(c)
 }
