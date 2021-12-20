@@ -359,3 +359,21 @@ get_caption<-function(
   c<-labs(caption="Source: FPDS; CSIS analysis.")
   return(c)
 }
+
+#' Add line breaks to a string
+#'
+#' @param string A string
+#' @param nwrap The number of characters between returns
+#'
+#' @return String with carriage breaks
+#'
+#' @export
+# Helper function for string wrapping.
+# Default 20 character target width.
+string_wrap <- function(string, nwrap=20) {
+  # https://stackoverflow.com/questions/37174316/how-to-fit-long-text-into-ggplot2-facet-titles
+
+  paste(strwrap(string, width=nwrap), collapse="\n")
+}
+string_wrap <- Vectorize(string_wrap)
+

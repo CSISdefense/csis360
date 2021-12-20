@@ -980,7 +980,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #   }
 #
 #
-  if("Contracting.Agency.ID" %in% names(df))
+
+  if("Contracting_Agency_ID" %in% names(df))
   {
 
     if("Contracting.Department.ID" %in% names(df)){
@@ -1000,10 +1001,50 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                    path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
                                    "Agency_AgencyID.csv",
                                    dir="",
-                                   by=c("Contracting.Agency.ID"="AgencyID"),
-                                   add_var=c("Customer","SubCustomer"),#Contracting.Agency.ID
-                                   skip_check_var=c("Platform","Customer","SubCustomer"),
+                                   by=c("Contracting_Agency_ID"="AgencyID"),
+                                   add_var=c("Customer","SubCustomer","AgencyIDtext"),#Contracting.Agency.ID
+                                   skip_check_var=c("Platform","Customer","SubCustomer","AgencyIDtext"),
                                    guess_max=2000)
+  }
+
+
+  # classify competition
+  if("CompetitionClassification" %in% names(df) & "ClassifyNumberOfOffers" %in% names(df) )
+  {
+    df<-csis360::read_and_join(df,
+                                      "Lookup_SQL_CompetitionClassification.csv",
+                                      by=c("CompetitionClassification","ClassifyNumberOfOffers"),
+                                      replace_na_var="ClassifyNumberOfOffers",
+                                      add_var=c("Competition.sum",
+                                                "Competition.multisum",
+                                                "Competition.effective.only",
+                                                "No.Competition.sum"),
+                                      path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
+                                      dir="Lookups/"
+    )
+  }
+  if("Vehicle" %in% names(df) & "ClassifyNumberOfOffers" %in% names(df) ){
+    df<-csis360::read_and_join_experiment(df,
+                                                 "Vehicle.csv",
+                                                 by=c("Vehicle"="Vehicle.detail"),
+                                                 add_var=c("Vehicle.sum","Vehicle.AwardTask"),
+                                                 path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                                 # path="K:/Users/Greg/Repositories/Lookup-Tables/",
+                                                 dir="contract/"
+    )
+  }
+
+  if("PricingUCA" %in% names(df) & !"PricingUCA.sum" %in% names(df) ){
+
+    df$PricingUCA.sum<-factor(df$PricingUCA)
+    df<-replace_nas_with_unlabeled(df,"PricingUCA.sum")
+    levels(df$PricingUCA.sum)<-
+      list("FFP"="FFP",
+           "Less Common"=c("Other FP","T&M/LH/FPLOE"),
+           "Incentive"="Incentive",
+           "Other CB"="Other CB",
+           "UCA"="UCA",
+           "Unclear"=c("Combination/Other","Unlabeled"))
   }
 #
 #
@@ -1186,12 +1227,16 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     if("Product.or.Service.Description" %in% names(df)){
       df<-subset(df, select=-c(Product.or.Service.Description))
     }
+    if("SimpleArea" %in% names(df)){
+      df<-subset(df, select=-c(SimpleArea))
+    }
 
     #           debug(read_and_join)
     df<-csis360::read_and_join_experiment(df,
                                                "ProductOrServiceCodes.csv",
                                                by=c("ProductOrServiceCode"="ProductOrServiceCode"),
-                                               add_var=c("CrisisProductOrServiceArea","Simple","ProductOrServiceArea","ProductServiceOrRnDarea"),
+                                               add_var=c("CrisisProductOrServiceArea","Simple","ProductOrServiceArea","ProductServiceOrRnDarea",
+                                                         "ProductOrServiceCodeText"),
                                                path=path,
                                                skip_check_var = c("CrisisProductOrServiceArea","Simple"),
                                                dir=""
@@ -1977,7 +2022,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #     df$UnmodifiedMonths<-ceiling(df$UnmodifiedMonths/4)
 #
 #   }
-#
+
+
 #   if("UnmodifiedIsSomeCompetition" %in% names(df))
 #   {
 #     levels(df$UnmodifiedIsSomeCompetition)<-list("No Comp."=c("No Comp.","0",0),
