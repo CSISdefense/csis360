@@ -1005,6 +1005,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                    add_var=c("Customer","SubCustomer","AgencyIDtext"),#Contracting.Agency.ID
                                    skip_check_var=c("Platform","Customer","SubCustomer","AgencyIDtext"),
                                    guess_max=2000)
+    colnames(df)[colnames(df)=="AgencyIDtext"]<-"ContractingAgencyName"
   }
 
 
@@ -1023,7 +1024,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                       dir="Lookups/"
     )
   }
-  if("Vehicle" %in% names(df) & "ClassifyNumberOfOffers" %in% names(df) ){
+  if("Vehicle" %in% names(df) ){
     df<-csis360::read_and_join_experiment(df,
                                                  "Vehicle.csv",
                                                  by=c("Vehicle"="Vehicle.detail"),
@@ -1045,6 +1046,18 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
            "Other CB"="Other CB",
            "UCA"="UCA",
            "Unclear"=c("Combination/Other","Unlabeled"))
+  }
+
+  if("informationtechnologycommercialitemcategory" %in% names(df)){
+    df<-read_and_join_experiment(data=df
+                                       ,"InformationTechnologyCommercialItemCategory.csv"
+                                       ,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/"
+                                       ,dir="productorservice/"
+                                       ,by=c("informationtechnologycommercialitemcategory"="informationtechnologycommercialitemcategory")
+                                       # ,new_var_checked=FALSE
+                                       # ,create_lookup_rdata=TRUE
+                                       # ,col_types="dddddddddccc"
+    )
   }
 #
 #
@@ -2150,5 +2163,5 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #
 #   }
 
-  df
+  standardize_variable_names(df)
 }

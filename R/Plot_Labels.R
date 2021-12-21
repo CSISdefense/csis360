@@ -360,7 +360,7 @@ get_caption<-function(
   return(c)
 }
 
-#' Add line breaks to a string
+#' Add line breaks to a string in a factor
 #'
 #' @param string A string
 #' @param nwrap The number of characters between returns
@@ -370,10 +370,16 @@ get_caption<-function(
 #' @export
 # Helper function for string wrapping.
 # Default 20 character target width.
-string_wrap <- function(string, nwrap=20) {
+factor_wrap <- function(f, nwrap=20) {
   # https://stackoverflow.com/questions/37174316/how-to-fit-long-text-into-ggplot2-facet-titles
-
-  paste(strwrap(string, width=nwrap), collapse="\n")
+  string_wrap<- function(string, nwrap=20) {
+    paste(strwrap(string, width=nwrap), collapse="\n")
+  }
+  string_wrap <- Vectorize(string_wrap)
+  if(!is.factor(f))
+    warning("Converting f to a factor")
+  levels(f)<-string_wrap(levels(f))
+  f
 }
-string_wrap <- Vectorize(string_wrap)
+
 
