@@ -68,8 +68,14 @@ standardize_variable_names<- function(data,
     header=TRUE, sep=",", na.strings=c("NA","NULL",""), dec=".", strip.white=TRUE,
     stringsAsFactors=FALSE
   )
-  if(any(is.na(NameList$Original))) stop("Blank row in Original column")
-  if(any(is.na(NameList$Replacement))) stop("Blank row in Replacement column")
+  if(any(is.na(NameList$Original))){
+    paste(NameList$Repalcement[is.na(NameList$Original)])
+    stop("Blank row in Original column")
+  }
+  if(any(is.na(NameList$Replacement))){
+    paste(NameList$Original[is.na(NameList$Replacement)])
+    stop("Blank row in Replacement column")
+  }
 
   #     NameList<-subset(NameList,toupper(Original) %in% toupper(colnames(data)))
   for(x in 1:nrow(NameList)){
@@ -1300,7 +1306,7 @@ transform_contract<-function(
                                           path="",
                                           directory=local_semi_clean_path,
                                           by=c("Office"="ContractingOfficeCode",
-                                               "StartFY"="fiscal_year"),
+                                               "StartFY"="Fiscal_Year"),
                                           add_var=c("office_obligatedamount_1year",
                                                     "office_numberofactions_1year",
                                                     "office_PBSCobligated_1year",
@@ -1345,7 +1351,7 @@ transform_contract<-function(
                                           path="",
                                           directory=local_semi_clean_path,
                                           by=c("Office"="ContractingOfficeCode",
-                                               "StartFY"="fiscal_year",
+                                               "StartFY"="Fiscal_Year",
                                                "ProdServ"="ProductOrServiceCode"),
                                           add_var=c("office_psc_obligatedamount_7year"),
                                           new_var_checked=FALSE,
@@ -1382,7 +1388,7 @@ transform_contract<-function(
                                           directory=local_semi_clean_path,
                                           by=c("EntityID"="EntityID",
                                                "Office"="ContractingOfficeCode",
-                                               "StartFY"="fiscal_year"),
+                                               "StartFY"="Fiscal_Year"),
                                           add_var=c("office_entity_paircount_7year","office_entity_numberofactions_1year",
                                                     "office_entity_obligatedamount_7year"),
                                           new_var_checked=FALSE,
@@ -1497,7 +1503,7 @@ transform_contract<-function(
                              "ProductOrServiceCode.ProdServHistoryCFTEcoalesceLaggedConst.txt",
                              path="",
                              directory=local_semi_clean_path,
-                             by=c("StartFY"="fiscal_year",
+                             by=c("StartFY"="Fiscal_Year",
                                   "OCO_GF"="OCO_GF",
                                   "ProdServ"="ProductOrServiceCode"),
                              add_var=c("CFTE_Rate_1year"),

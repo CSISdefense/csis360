@@ -697,7 +697,7 @@ read_and_join_experiment<-function(
 #' @param money_var The quoted name of the dollar-value variable
 #' @param fy_var The quoted name of the fiscal year variable
 #' @param deflator_file The quoted file name of the deflators to use;
-#' must be a CSV with the column "fiscal.year."
+#' must be a CSV with the column "Fiscal_Year."
 #' @param deflator_var The quoted name of the defalator variable variable,
 #' by default "deflator.2017"
 #' @param path The path or url for the deflator_file CSV.  By default, checks
@@ -731,7 +731,8 @@ deflate <- function(
   data<-as.data.frame(data)
 
   if(!fy_var %in% colnames(data)){
-    if(fy_var == "Fiscal_Year" & "Fiscal.Year" %in% colnames(data)) fy_var<-"Fiscal.Year"
+    if(fy_var == "Fiscal.Year" & "Fiscal_Year" %in% colnames(data)) fy_var<-"Fiscal_Year"
+    if(fy_var == "fiscal_year" & "Fiscal_Year" %in% colnames(data)) fy_var<-"Fiscal_Year"
     else stop(paste(fy_var," is not present in data."))
   }
 
@@ -886,7 +887,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #   #***Join relevant variables to lookup tables
 #   if("ContractingAgencyID" %in%  names(df) &
 #      "ContractingOfficeID" %in%  names(df)  &
-#      "Fiscal.Year" %in%  names(df)  &
+#      "Fiscal_Year" %in%  names(df)  &
 #      !("ContractingOfficeName" %in%  names(df)|
 #        "MajorCommandID"  %in%  names(df))){
 #
@@ -908,7 +909,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #
 #     df<-read_and_join(df,
 #                           "Defense_Major_Command_Codes_and_Offices.csv",
-#                           by=c("Fiscal.Year",
+#                           by=c("Fiscal_Year",
 #                                "ContractingAgencyID",
 #                                "ContractingOfficeID"),
 #                           new_var_checked=FALSE)
@@ -916,8 +917,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #     NA.check.df<-subset(df, is.na(MajorCommandCode) &
 #                           ContractingAgencyID!="Uncategorized" &
 #                           ContractingAgencyID!="ContractingOfficeID" &
-#                           !is.na(Fiscal.Year),
-#                         select=c("Fiscal.Year",
+#                           !is.na(Fiscal_Year),
+#                         select=c("Fiscal_Year",
 #                                  "ContractingOfficeID",
 #                                  "ContractingOfficeName",
 #                                  "MajorCommandID",
@@ -980,7 +981,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #   }
 #
 #
-
+#**** Organization ***************
   if("Contracting_Agency_ID" %in% names(df))
   {
 
@@ -998,15 +999,57 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     }
 
     df<-read_and_join_experiment(df,
-                                   path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
-                                   "Agency_AgencyID.csv",
-                                   dir="",
-                                   by=c("Contracting_Agency_ID"="AgencyID"),
-                                   add_var=c("Customer","SubCustomer","AgencyIDtext"),#Contracting.Agency.ID
-                                   skip_check_var=c("Platform","Customer","SubCustomer","AgencyIDtext"),
-                                   guess_max=2000)
+                                 path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                 "Agency_AgencyID.csv",
+                                 dir="",
+                                 by=c("Contracting_Agency_ID"="AgencyID"),
+                                 add_var=c("Customer","SubCustomer","AgencyIDtext"),#Contracting.Agency.ID
+                                 skip_check_var=c("Platform","Customer","SubCustomer","AgencyIDtext"),
+                                 guess_max=2000)
     colnames(df)[colnames(df)=="AgencyIDtext"]<-"ContractingAgencyName"
   }
+  if("Customer" %in% names(df) && "SubCustomer" %in% names(df)){
+    if("SubCustomer.sum"%in% names(df)){
+      df<-subset(df, select=-c(SubCustomer.sum))
+    }
+
+
+    df<-replace_nas_with_unlabeled(df,"SubCustomer","Uncategorized")
+    df<-replace_nas_with_unlabeled(df,"Customer","Uncategorized")
+
+    #     debug(read_and_join)
+    df<-csis360::read_and_join_experiment(df,
+                                          "SubCustomer.csv",
+                                          by=c("Customer"="Customer","SubCustomer"="SubCustomer"),
+                                          add_var=c("SubCustomer.platform","SubCustomer.sum"),
+                                          path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                          dir="office/"
+    )
+  }
+  else if ("ContractingCustomer" %in% names(df) && "ContractingSubCustomer" %in% names(df)){
+    df<-replace_nas_with_unlabeled(df,"ContractingSubCustomer","Uncategorized")
+    df<-csis360::read_and_join_experiment(df,
+                                          "SubCustomer.csv",
+                                          by=c("ContractingCustomer"="Customer","ContractingSubCustomer"="SubCustomer"),
+                                          add_var=c("SubCustomer.platform","SubCustomer.sum"),
+                                          path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                          dir="office/")
+  }
+    # else if ("SubCustomer" %in% names(df)){
+    #   stop("Customer is missing from the table, SubCustomer does not stand alone.")
+    # }
+    # else if("Customer" %in% names(df)){
+    #   df<-replace_nas_with_unlabeled(df,"Customer")
+    #   df<-read_and_join(df,
+    #                         "LOOKUP_Customer.csv",
+    #                         by=c("Customer"))
+    #   # NA.check.df<-subset(df,is.na(Customer.sum), select=c("Customer","Customer.sum"))
+    #   # if(nrow(NA.check.df)>0){
+    #   #   print(unique(NA.check.df))
+    #   #   stop(paste(nrow(NA.check.df),"rows of NAs generated in Customer.sum"))
+    #   # }
+    #
+    # }
 
 
   # classify competition
@@ -1028,7 +1071,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df<-csis360::read_and_join_experiment(df,
                                                  "Vehicle.csv",
                                                  by=c("Vehicle"="Vehicle.detail"),
-                                                 add_var=c("Vehicle.sum","Vehicle.AwardTask"),
+                                                 add_var=c("Vehicle.sum","Vehicle.sum7","Vehicle.AwardTask"),
                                                  path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
                                                  # path="K:/Users/Greg/Repositories/Lookup-Tables/",
                                                  dir="contract/"
@@ -1095,7 +1138,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #     df<-read_and_join(df,
 #                           "LOOKUP_Contracting_Agencies.csv",
 #                           by=c("Contracting.Agency.ID"))
-#     # NA.check.df<-subset(df, is.na(Contracting.Agency.Name), select=c("Fiscal.Year","Contracting.Agency.ID"))
+#     # NA.check.df<-subset(df, is.na(Contracting.Agency.Name), select=c("Fiscal_Year","Contracting.Agency.ID"))
 #     # if(nrow(NA.check.df)>0){
 #     #   print(unique(NA.check.df))
 #     #   stop(paste(nrow(NA.check.df),"rows of NAs generated in Contracting.Agency.Name"))
@@ -1103,37 +1146,6 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #   }
 #
 #
-#   if("Customer" %in% names(df) && "SubCustomer" %in% names(df)){
-#     if("SubCustomer.sum"%in% names(df)){
-#       df<-subset(df, select=-c(SubCustomer.sum))
-#     }
-#
-#
-#     df<-replace_nas_with_unlabeled(df,"SubCustomer","Uncategorized")
-#     df<-replace_nas_with_unlabeled(df,"Customer","Uncategorized")
-#
-#     #     debug(read_and_join)
-#     df<-read_and_join_experiment(df,
-#                                      "Lookup_SubCustomer.csv",
-#                                      by=c("Customer","SubCustomer")
-#     )
-#
-#   }
-#   else if ("SubCustomer" %in% names(df)){
-#     stop("Customer is missing from the table, SubCustomer does not stand alone.")
-#   }
-#   else if("Customer" %in% names(df)){
-#     df<-replace_nas_with_unlabeled(df,"Customer")
-#     df<-read_and_join(df,
-#                           "LOOKUP_Customer.csv",
-#                           by=c("Customer"))
-#     # NA.check.df<-subset(df,is.na(Customer.sum), select=c("Customer","Customer.sum"))
-#     # if(nrow(NA.check.df)>0){
-#     #   print(unique(NA.check.df))
-#     #   stop(paste(nrow(NA.check.df),"rows of NAs generated in Customer.sum"))
-#     # }
-#
-#   }
 #
 #
 #   if("Funder" %in% names(df) && "SubFunder" %in% names(df)){
@@ -1145,7 +1157,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #     df<-read_and_join(df,
 #                           "LOOKUP_SubFunder.csv",
 #                           by=c("Funder","Subfunder"))
-#     # NA.check.df<-subset(df, is.na(SubFunder.Sum) & !is.na(Funder), select=c("Fiscal.Year","Funder","SubFunder"))
+#     # NA.check.df<-subset(df, is.na(SubFunder.Sum) & !is.na(Funder), select=c("Fiscal_Year","Funder","SubFunder"))
 #     # if(nrow(NA.check.df)>0){
 #     #   print(unique(NA.check.df))
 #     #   stop(paste(nrow(NA.check.df),"rows of NAs generated in SubFunder.Sum"))
@@ -1265,30 +1277,45 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     #             stop(paste(nrow(NA.check.df),"rows of NAs generated in ProductOrServiceArea"))
     #         }
   }
-#   else if("ProductServiceOrRnDarea" %in% names(df))
-#   {
-#     df<-replace_nas_with_unlabeled(df,"ProductServiceOrRnDarea")
-#
-#     if("ServicesCategory.sum" %in% names(df)){
-#       df<-subset(df, select=-c(ServicesCategory.sum))
-#     }
-#     if("ProductOrServiceArea" %in% names(df)){
-#       df<-subset(df, select=-c(ProductOrServiceArea))
-#     }
-#     if("ServicesCategory.detail" %in% names(df)){
-#       df<-subset(df, select=-c(ServicesCategory.detail))
-#     }
-#     #     debug(read_and_join)
-#     df<-read_and_join(df,
-#                           "LOOKUP_Buckets.csv",
-#                           by="ProductServiceOrRnDarea")
-#     NA.check.df<-subset(df, is.na(ServicesCategory.sum), select=c("ProductServiceOrRnDarea"))
-#     if(nrow(NA.check.df)>0){
-#       print(unique(NA.check.df))
-#       stop(paste(nrow(NA.check.df),"rows of NAs generated in ProductServiceOrRnDarea"))
-#     }
-#
-#   }
+  else if("ProductServiceOrRnDarea" %in% names(df))
+  {
+    df<-replace_nas_with_unlabeled(df,"ProductServiceOrRnDarea")
+
+    if("ProductServiceOrRnDarea.sum" %in% names(df)){
+      df<-subset(df, select=-c(ProductServiceOrRnDarea.sum))
+    }
+    # if("ServicesCategory.sum" %in% names(df)){
+    #   df<-subset(df, select=-c(ServicesCategory.sum))
+    # }
+    # if("ProductOrServiceArea" %in% names(df)){
+    #   df<-subset(df, select=-c(ProductOrServiceArea))
+    # }
+    # if("ServicesCategory.detail" %in% names(df)){
+    #   df<-subset(df, select=-c(ServicesCategory.detail))
+    # }
+    #     debug(read_and_join)
+    df<-read_and_join(df,
+                          "LOOKUP_Buckets.csv",
+                          by="ProductServiceOrRnDarea")
+    #Classify Product or Service Codes
+    df<-csis360::read_and_join(df,
+                                      "LOOKUP_Buckets.csv",
+                                      # by="ProductOrServiceArea",
+                                      by="ProductServiceOrRnDarea",
+                                      replace_na_var="ProductServiceOrRnDarea",
+                                      add_var="ProductServiceOrRnDarea.sum",
+                                      path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
+                                      dir="Lookups/"
+    )
+
+
+    NA.check.df<-subset(df, is.na(ServicesCategory.sum), select=c("ProductServiceOrRnDarea"))
+    if(nrow(NA.check.df)>0){
+      print(unique(NA.check.df))
+      stop(paste(nrow(NA.check.df),"rows of NAs generated in ProductServiceOrRnDarea"))
+    }
+
+  }
 #   else if("ProductOrServiceArea" %in% names(df))
 #   {
 #     df<-replace_nas_with_unlabeled(df,"ProductOrServiceArea")
@@ -1326,7 +1353,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #     #     debug(read_and_join)
 #     df<-read_and_join(df,
 #                           "LOOKUP_Buckets.csv")
-#     NA.check.df<-subset(df, is.na(ServicesCategory.sum), select=c("Fiscal.Year","ServicesCategory.detail"))
+#     NA.check.df<-subset(df, is.na(ServicesCategory.sum), select=c("Fiscal_Year","ServicesCategory.detail"))
 #     if(nrow(NA.check.df)>0){
 #       print(unique(NA.check.df))
 #       stop(paste(nrow(NA.check.df),"rows of NAs generated in ServicesCategory.sum"))
@@ -1596,25 +1623,25 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #
 #
   #Deflators
-  if("Fiscal.Year"%in% names(df)){
+  if("Fiscal_Year"%in% names(df)){
     if("Action_Obligation"%in% names(df)){
       df<-deflate(df,
                   money_var = "Action_Obligation",
-                  fy_var="Fiscal.Year",
+                  fy_var="Fiscal_Year",
                   deflator_var="OMB20_GDP20"
       )
     }
   }
 
 #
-#   if("Fiscal.Year"%in% names(df)){
+#   if("Fiscal_Year"%in% names(df)){
 #     df<-read_and_join(df,
 #                           "Lookup_Deflators.csv",
-#                           by="Fiscal.Year",
+#                           by="Fiscal_Year",
 #                           new_var_checked=FALSE,
 #                           path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
 #                           directory="economic/")
-#     # NA.check.df<-subset(df,  is.na(Deflator.2014) & is.na(Deflator.2013) & !is.na(Fiscal.Year), select=c("Fiscal.Year","Deflator.2013","Deflator.2014"))
+#     # NA.check.df<-subset(df,  is.na(Deflator.2014) & is.na(Deflator.2013) & !is.na(Fiscal_Year), select=c("Fiscal_Year","Deflator.2013","Deflator.2014"))
 #     # if(nrow(NA.check.df)>0){
 #     #   print(unique(NA.check.df))
 #     #   stop(paste(nrow(NA.check.df),"rows of NAs generated in value"))
@@ -1737,7 +1764,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #
 #
 #     df<-melt(df,
-#                  #                        id=c("Fiscal.Year"
+#                  #                        id=c("Fiscal_Year"
 #                  #                                                  ,"SubFunder.Detail")
 #                  measure.vars=Measurement.Vars.List,
 #                  variable.name="comparison.dollar.type")
@@ -1955,13 +1982,13 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #
 #
 #
-  if("Fiscal.Year"%in% names(df)){
+  if("Fiscal_Year"%in% names(df)){
 
-    df$Fiscal.Year <- as.numeric(df$Fiscal.Year)
-    df$dFYear<-as.Date(paste("1/1/",as.character(df$Fiscal.Year),sep=""),"%m/%d/%Y")
-    # df$Fiscal.Year <-as.Date(paste("1/1/",as.character(df$Fiscal.Year),sep=""),"%m/%d/%Y")
-    # df$Fiscal.Year.End <-as.Date(paste("9/30/",as.character(year(df$Fiscal.Year)),sep=""),"%m/%d/%Y")
-    # df$Fiscal.Year.Start <-as.Date(paste("10/1/",as.character(year(df$Fiscal.Year)-1),sep=""),"%m/%d/%Y")
+    df$Fiscal_Year <- as.numeric(df$Fiscal_Year)
+    df$dFYear<-as.Date(paste("1/1/",as.character(df$Fiscal_Year),sep=""),"%m/%d/%Y")
+    # df$Fiscal_Year <-as.Date(paste("1/1/",as.character(df$Fiscal_Year),sep=""),"%m/%d/%Y")
+    # df$Fiscal_Year.End <-as.Date(paste("9/30/",as.character(year(df$Fiscal_Year)),sep=""),"%m/%d/%Y")
+    # df$Fiscal_Year.Start <-as.Date(paste("10/1/",as.character(year(df$Fiscal_Year)-1),sep=""),"%m/%d/%Y")
   }
 #
 #   if("Date.Signed"%in% names(df)){
