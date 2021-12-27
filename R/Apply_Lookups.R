@@ -1564,12 +1564,12 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #   }
 #
 #
-  if("Vendor.Size" %in% names(df)){
-    df<-replace_nas_with_unlabeled(df,"Vendor.Size")
+  if("VendorSize" %in% names(df)){
+    df<-replace_nas_with_unlabeled(df,"VendorSize")
 
-    df<-csis360::read_and_join(df,
+    df<-csis360::read_and_join_experiment(df,
                                       "LOOKUP_Contractor_Size.csv",
-                                      by="Vendor.Size",
+                                      by=c("VendorSize"="Vendor.Size"),
                                       add_var="Shiny.VendorSize",
                                       path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
                                       dir="Lookups/"
