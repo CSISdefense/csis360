@@ -13,7 +13,7 @@ get_column_key(
 \item{data}{A data frame}
 
 \item{path}{The path or url for the column key.  By default, checks
-the CSISdefense Github lookups repository at CSISdefense/csis360/master/style/}
+the CSISdefense Github lookups repository at CSISdefense/Lookup-Tables/master/style/}
 }
 \value{
 A data frame of the column names from data joined up to the column key

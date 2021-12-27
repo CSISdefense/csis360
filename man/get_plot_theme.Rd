@@ -4,7 +4,7 @@
 \alias{get_plot_theme}
 \title{Get Plot Theme}
 \usage{
-get_plot_theme(erase_legend_title = TRUE)
+get_plot_theme(erase_legend_title = TRUE, blank_x_lines = TRUE)
 }
 \value{
 Thematic elements that can be added to a plot.

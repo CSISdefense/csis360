@@ -17,7 +17,9 @@ build_plot(
   caption = TRUE,
   labels_and_colors = NULL,
   column_key = NULL,
-  format = FALSE
+  format = FALSE,
+  ytextposition = FALSE,
+  reverse_color = FALSE
 )
 }
 \arguments{
@@ -44,6 +46,12 @@ build_plot(
 \item{labels_and_colors}{A csis360 lookup data.frame with factor information}
 
 \item{column_key}{A csis360 lookup data.frame with column information}
+
+\item{format}{If TRUE, summarize the data.frame}
+
+\item{ytextposition}{If TRUE, add ytextposition to allow for geom_text overlays.}
+
+\item{reverse_color}{If TRUE, the}
 }
 \value{
 A ggplot object including user-specified geom layer

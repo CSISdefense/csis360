@@ -16,7 +16,8 @@ format_data_for_plot(
   second_var = NULL,
   labels_and_colors = NULL,
   group = TRUE,
-  drop_missing_labels = TRUE
+  drop_missing_labels = TRUE,
+  add_ytextposition = FALSE
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ format_data_for_plot(
 \item{group}{If TRUE aggregate}
 
 \item{drop_missing_labels}{If TRUE, drop levels to avoid residual levels from labels_and_colors.}
+
+\item{add_ytextposition}{If TRUE, add a ytextposition numerical position to aid in adding text to a graph}
 }
 \value{
 Returns a tibble of formatted data

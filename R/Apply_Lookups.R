@@ -785,7 +785,7 @@ deflate <- function(
 #'
 #' @param data A data frame
 #' @param path The path or url for the column key.  By default, checks
-#' the CSISdefense Github lookups repository at CSISdefense/csis360/master/style/
+#' the CSISdefense Github lookups repository at CSISdefense/Lookup-Tables/master/style/
 #'
 #' @return A data frame of the column names from data joined up to the column key
 #'
@@ -879,7 +879,20 @@ get_fiscal_year<-function(
 }
 
 
-#***********************Apply Lookups***********************
+#' Add column variants, including summaries, and deflated dollars, to a contract dataset.
+#'
+#' @param df A data frame.
+#' @param path The path or url for the column key.  By default, checks
+#' the CSISdefense Github lookups repository at CSISdefense/Lookup/master/
+#'
+#' @return The fiscal year of the date.
+#'
+#' @details Add column variants, including summaries, and deflated dollars,
+#' to a contract dataset.
+#' @examples
+#'
+#'
+#' @export
 apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/"){
   df<-standardize_variable_names(df)
 

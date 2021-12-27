@@ -23,7 +23,7 @@ deflate(
 \item{fy_var}{The quoted name of the fiscal year variable}
 
 \item{deflator_file}{The quoted file name of the deflators to use;
-must be a CSV with the column "fiscal.year."}
+must be a CSV with the column "Fiscal_Year."}
 
 \item{deflator_var}{The quoted name of the defalator variable variable,
 by default "deflator.2017"}

@@ -13,7 +13,7 @@ group_data_for_plot(data, x_var, y_var, breakout, aggregate = "sum")
 
 \item{y_var}{y-axis}
 
-\item{breakout}{TESTTESTTESTTESTTEST}
+\item{breakout}{the facets or other divisions that will be grouped by when summing}
 
 \item{aggregate}{aggregation function; defaults to sum}
 }
