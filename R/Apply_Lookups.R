@@ -894,7 +894,9 @@ get_fiscal_year<-function(
 #'
 #' @export
 apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/"){
+
   df<-standardize_variable_names(df)
+
 
 #
 #   #***Join relevant variables to lookup tables
@@ -1039,7 +1041,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           dir="office/"
     )
   }
-  else if ("ContractingCustomer" %in% names(df) && "ContractingSubCustomer" %in% names(df)){
+  else if ("ContractingCustomer" %in% names(df) & "ContractingSubCustomer" %in% names(df)){
     df<-replace_nas_with_unlabeled(df,"ContractingSubCustomer","Uncategorized")
     df<-csis360::read_and_join_experiment(df,
                                           "SubCustomer.csv",
@@ -1047,6 +1049,12 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           add_var=c("SubCustomer.platform","SubCustomer.sum"),
                                           path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
                                           dir="office/")
+  }
+  if ("SubCustomer.platform" %in% names(df) & "ProjectName" %in% names(df)){
+    df$SubCustomer.JPO<-as.character(df$SubCustomer.platform)
+    df$SubCustomer.JPO[df$ProjectName %in% c("JSF (F-35) ","JSF (F-35)") & !is.na(df$ProjectName)&df$SubCustomer.platform=="Navy"]<-"F-35 JPO"
+    df$SubCustomer.JPO<-factor(df$SubCustomer.JPO)
+
   }
     # else if ("SubCustomer" %in% names(df)){
     #   stop("Customer is missing from the table, SubCustomer does not stand alone.")
@@ -1181,8 +1189,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #   df<-competition_vehicle_lookups(path,df)
   if("Action_Obligation"%in% names(df))
     df$Action_Obligation<-text_to_number(df$Action_Obligation)
-  if("Number.Of.Actions" %in% colnames(df))
-    df$Number.Of.Actions %<>% text_to_number()
+  if("NumberOfActions" %in% colnames(df))
+    df$NumberOfActions <- text_to_number(df$NumberOfActions)
 #
 #
 #   if("PoPstateCode" %in% names(df)){
@@ -1297,6 +1305,12 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     if("ProductServiceOrRnDarea.sum" %in% names(df)){
       df<-subset(df, select=-c(ProductServiceOrRnDarea.sum))
     }
+    if("SimpleArea" %in% names(df)){
+      df<-subset(df, select=-c(SimpleArea))
+    }
+    if("Simple" %in% names(df)){
+      df<-subset(df, select=-c(Simple))
+    }
     # if("ServicesCategory.sum" %in% names(df)){
     #   df<-subset(df, select=-c(ServicesCategory.sum))
     # }
@@ -1316,7 +1330,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                       # by="ProductOrServiceArea",
                                       by="ProductServiceOrRnDarea",
                                       replace_na_var="ProductServiceOrRnDarea",
-                                      add_var="ProductServiceOrRnDarea.sum",
+                                      add_var=c("ProductServiceOrRnDarea.sum","ServicesCategory.detail"),
                                       path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
                                       dir="Lookups/"
     )
@@ -1376,14 +1390,14 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #
 #
 #
-#   if("PlatformPortfolio" %in% names(df))
+  if("PlatformPortfolio" %in% names(df)){
 #   {
 #
 #     if("PlatformPortfolio.sum" %in% names(df)){
 #       df<-subset(df, select=-c(PlatformPortfolio.sum))
 #     }
 #
-#     df<-replace_nas_with_unlabeled(df,"PlatformPortfolio")
+    df<-replace_nas_with_unlabeled(df,"PlatformPortfolio")
 #
 #     df<-read_and_join(df,
 #                           "LOOKUP_PlatformPortfolio.csv")
@@ -1392,7 +1406,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #       print(unique(NA.check.df))
 #       stop(paste(nrow(NA.check.df),"rows of NAs generated in PlatformPortfolio.sum"))
 #     }
-#   }
+  }
 #
 #
 #
@@ -1645,6 +1659,60 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       )
     }
   }
+  if("foreign_funding_description" %in% colnames(df) &
+     "IsFMSml" %in% colnames(df) &
+     "IsFMSmac" %in% colnames(df)){
+    df$IsFMS<-NA
+    df$IsFMS[df$foreign_funding_description %in% c("Foreign Funds FMS")]<-1
+    df$IsFMS[df$foreign_funding_description %in% c("Foreign Funds non-FMS", "Not Applicable")]<-0
+    df$IsFMS[is.na(df$IsFMS)]<-df$IsFMSml[is.na(df$IsFMS)]
+    df$IsFMS[is.na(df$IsFMS) & df$IsFMSmac==1]<-1
+    df$IsFMS[is.na(df$IsFMS) & df$IsFMSmac==0]<-0
+    if("mainaccountcode" %in% colnames(df) & "treasuryagencycode" %in% colnames(df)){
+      df$IsUnlabeledMAC<-is.na(df$mainaccountcode) | is.na(df$treasuryagencycode)
+      df$IsFMS[is.na(df$IsFMS) & df$IsUnlabeledMAC==0]<-0
+    }
+  }
+
+  if("PlaceOfManufacture" %in% colnames(df)){
+    #Place of manufacture
+    df<-csis360::read_and_join_experiment(df,
+                                          "Location_PlaceOfManufacture.csv",
+                                          by="PlaceOfManufacture",
+                                          add_var=c("PlaceOfManufactureText","PlaceOfManufacture_Sum"),
+                                          skip_check_var = c("PlaceOfManufactureText","PlaceOfManufacture_Sum"),
+                                          path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                          dir="location/",
+                                          case_sensitive = FALSE
+    )
+  }
+
+
+
+  if("PlaceISOalpha3" %in% colnames(df)){
+    if("PlaceIsForeign" %in% colnames(df))
+      df<-subset(df,select=-c(PlaceIsForeign))
+    df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
+                                             path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",dir="location/",
+                                             add_var = c("isforeign"),#"USAID region",
+                                             by=c("PlaceISOalpha3"="alpha-3"),
+                                             # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                             missing_file="missing_DSCA_iso.csv")
+    colnames(df)[colnames(df)=="isforeign"]<-"PlaceIsForeign"
+  }
+
+  if("VendorISOalpha3" %in% colnames(df)){
+    if("VendorIsForeign" %in% colnames(df))
+      df<-subset(df,select=-c(VendorIsForeign))
+    df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
+                                             path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",dir="location/",
+                                             add_var = c("isforeign"),#"USAID region",
+                                             by=c("VendorISOalpha3"="alpha-3"),
+                                             # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                             missing_file="missing_DSCA_iso.csv")
+    colnames(df)[colnames(df)=="isforeign"]<-"VendorIsForeign"
+  }
+
 
 #
 #   if("Fiscal_Year"%in% names(df)){
@@ -1997,7 +2065,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #
   if("Fiscal_Year"%in% names(df)){
 
-    df$Fiscal_Year <- as.numeric(df$Fiscal_Year)
+    df$Fiscal_Year <- text_to_number(df$Fiscal_Year)
     df$dFYear<-as.Date(paste("1/1/",as.character(df$Fiscal_Year),sep=""),"%m/%d/%Y")
     # df$Fiscal_Year <-as.Date(paste("1/1/",as.character(df$Fiscal_Year),sep=""),"%m/%d/%Y")
     # df$Fiscal_Year.End <-as.Date(paste("9/30/",as.character(year(df$Fiscal_Year)),sep=""),"%m/%d/%Y")
