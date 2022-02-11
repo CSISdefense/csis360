@@ -342,7 +342,8 @@ format_data_for_plot <- function(data, fy_var,
   shown_data<-as.data.frame(shown_data)
   if(!is.null(labels_and_colors)){
     if(color_var!="None"){
-      if(!color_var %in% labels_and_colors$column) stop("color_var missing from labels_and_colors")
+      if(!color_var %in% labels_and_colors$column) warning("color_var missing from labels_and_colors")
+      else{
       if(!all(unlist(unique(shown_data[,color_var])) %in%
         c(subset(labels_and_colors,column==color_var)$variable,"Unlabeled"))){
         print(unlist(unique(shown_data[,color_var]))[
@@ -354,6 +355,7 @@ format_data_for_plot <- function(data, fy_var,
         ordered(shown_data[,colnames(shown_data)==color_var],
                 levels=subset(labels_and_colors,column==color_var)$variable,
                 labels=subset(labels_and_colors,column==color_var)$Label)
+      }
     }
     if(facet_var!="None" & color_var != facet_var){
       if(!facet_var %in% labels_and_colors$column) warning("facet_var missing from labels_and_colors")
