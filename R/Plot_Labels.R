@@ -205,44 +205,7 @@ add_preassigned_scales<-function(
   var="None"
   # reverse_color=FALSE #' @param reverse_color If True reverse the order of the factor
 ){
-  #Drawing from the color blind palette from
-  #http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
-  cbPalette <- c( "#e58846", "#66c6cb", "#4c9361",
-                  "#eec260", "#0054A4", "#BB4243", "#9eadd8","#999999")
 
-  BarPalette <- scale_fill_manual(
-    values =  c( "#e58846", "#66c6cb", "#4c9361",
-                 "#eec260", "#0054A4", "#BB4243",
-                 "#9eadd8","#999999"))
-      # c(
-      # "#004165",
-      # "#0065a4",
-      # "#0095AB",
-      # "#66c6cb",
-      # "#75c596",
-      # "#0faa91",
-      # "#51746d",
-      # "#607a81",
-      # "#252d3a",
-      # "#353535",
-      # "#797979"))
-
-  LinePalette <- scale_color_manual(
-    values =  c( "#e58846", "#66c6cb", "#4c9361",
-                 "#eec260", "#0054A4", "#BB4243",
-                 "#9eadd8","#999999"))
-    # values = c(
-    #   "#004165",
-    #   "#75c596",
-    #   "#b24f94",
-    #   "#0095ab",
-    #   "#0a8672",
-    #   "#e22129",
-    #   "#66c6cb",
-    #   "#51746d",
-    #   "#797979",
-    #   "#788ca8",
-    #   "#353535"))
   #If a column name is passed and it is in labels_and_colors
   if(var!="None" & any(labels_and_colors$column==var)){
     if(is.character(plot$data[,var])) plot$data[,var]<-factor(plot$data[,var])
@@ -267,14 +230,71 @@ add_preassigned_scales<-function(
     )
   }
   else{
-    #This doesn't work yet
+    #Drawing from the color blind palette from
+    #http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/
+    cbPalette <- c( "#e58846", "#66c6cb", "#4c9361",
+                    "#eec260", "#0054A4", "#BB4243", "#9eadd8","#999999")
+
+    # BarPalette <- scale_fill_manual(
+    #   values =  c( "#e58846", "#66c6cb", "#4c9361",
+    #                "#eec260", "#0054A4", "#BB4243",
+    #                "#9eadd8","#999999"))
+    # c(
+    # "#004165",
+    # "#0065a4",
+    # "#0095AB",
+    # "#66c6cb",
+    # "#75c596",
+    # "#0faa91",
+    # "#51746d",
+    # "#607a81",
+    # "#252d3a",
+    # "#353535",
+    # "#797979"))
+
+
+    # LinePalette <- scale_color_manual(
+    #   values =  c( "#e58846", "#66c6cb", "#4c9361",
+    #                "#eec260", "#0054A4", "#BB4243",
+    #                "#9eadd8","#999999"))
+
+    #Palettte for 12 colors http://mkweb.bcgsc.ca/colorblind/palettes/12.color.blindness.palette.txt
+    cbPalette12 <- scale_color_manual(
+      values =  c( "#9F0162", "#009F81", "#FF5AAF ",
+                   "#00FCCF", "#8400CD","#008DF9   ",
+                   "#00C2F9","#FFB2FD ","#A40122 ",
+                   "#E20134 ","#FF6E3A","#FFC33B"))
+
+    # values = c(
+    #   "#004165",
+    #   "#75c596",
+    #   "#b24f94",
+    #   "#0095ab",
+    #   "#0a8672",
+    #   "#e22129",
+    #   "#66c6cb",
+    #   "#51746d",
+    #   "#797979",
+    #   "#788ca8",
+    #   "#353535"))
+
     if(var!="None")
       warning(paste(var,"not found in labels_and_colors"))
-    plot<-plot+scale_color_manual(
-      values = cbPalette
-     )+scale_fill_manual(
-      values = cbPalette
-    )
+    if(length(levels(factor(plot$data[,var])))<=8)
+      plot<-plot+scale_color_manual(
+        values = cbPalette
+      )+scale_fill_manual(
+        values = cbPalette
+      )
+    # else if(length(levels(factor(plot$data[,var])))<=12){
+    #   plot<-plot+scale_color_manual(
+    #     values = cbPalette12
+    #   )+scale_fill_manual(
+    #     values = cbPalette12
+    #   )
+    #   warning("Too many levels to apply DIIG color blind palette")
+    # }
+    else(warning("Too many levels to apply color blind palette"))
   }
   return(plot)
 }
