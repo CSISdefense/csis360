@@ -722,7 +722,7 @@ deflate <- function(
   money_var = "Amount",
   fy_var = "Fiscal_Year",
   deflator_file = "Lookup_Deflators.csv",
-  deflator_var="OMB20_GDP18",
+  deflator_var="OMB23_GDP21",
   path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
   directory="economic/",
   deflator_dropped=TRUE
@@ -996,6 +996,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #   }
 #
 #
+
 #**** Organization ***************
   if("Contracting_Agency_ID" %in% names(df))
   {
@@ -1050,12 +1051,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
                                           dir="office/")
   }
-  if ("SubCustomer.platform" %in% names(df) & "ProjectName" %in% names(df)){
-    df$SubCustomer.JPO<-as.character(df$SubCustomer.platform)
-    df$SubCustomer.JPO[df$ProjectName %in% c("JSF (F-35) ","JSF (F-35)") & !is.na(df$ProjectName)&df$SubCustomer.platform=="Navy"]<-"F-35 JPO"
-    df$SubCustomer.JPO<-factor(df$SubCustomer.JPO)
 
-  }
     # else if ("SubCustomer" %in% names(df)){
     #   stop("Customer is missing from the table, SubCustomer does not stand alone.")
     # }
@@ -1407,6 +1403,26 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #       stop(paste(nrow(NA.check.df),"rows of NAs generated in PlatformPortfolio.sum"))
 #     }
   }
+
+
+  #**** ProjectID *******
+  if("ProjectID" %in% names(df)){
+    read_and_join_experiment(lookup_file="ProjectID.txt",
+                             path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",dir="project/",
+                             add_var = c("ProjectName","IsUnknown"),
+                             by=c("ProjectID")#,
+                             # missing_file="missing_iso.csv",
+                             # skip_check_var = c("ProjectName","IsUnidentified	")
+    )
+
+    if ("SubCustomer.platform" %in% names(df) & "ProjectName" %in% names(df)){
+      df$SubCustomer.JPO<-as.character(df$SubCustomer.platform)
+      df$SubCustomer.JPO[df$ProjectName %in% c("JSF (F-35) ","JSF (F-35)") & !is.na(df$ProjectName)&df$SubCustomer.platform=="Navy"]<-"F-35 JPO"
+      df$SubCustomer.JPO<-factor(df$SubCustomer.JPO)
+
+    }
+  }
+
 #
 #
 #
@@ -1655,7 +1671,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df<-deflate(df,
                   money_var = "Action_Obligation",
                   fy_var="Fiscal_Year",
-                  deflator_var="OMB20_GDP20"
+                  deflator_var="OMB23_GDP21"
       )
     }
   }
