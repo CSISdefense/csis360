@@ -727,7 +727,8 @@ deflate <- function(
   directory="economic/",
   deflator_dropped=TRUE
 ){
-  #Tiblbes run into trouble with the [[]] new variable specifying.
+  if(is.null(deflator_var)) deflator_var<-"OMB23_GDP21"
+  #Tibbles run into trouble with the [[]] new variable specifying.
   data<-as.data.frame(data)
 
   if(!fy_var %in% colnames(data)){
@@ -893,7 +894,8 @@ get_fiscal_year<-function(
 #'
 #'
 #' @export
-apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/"){
+apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                  deflator_var=NULL){
 
   df<-standardize_variable_names(df)
 
@@ -1671,7 +1673,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df<-deflate(df,
                   money_var = "Action_Obligation",
                   fy_var="Fiscal_Year",
-                  deflator_var="OMB23_GDP21"
+                  deflator_var=deflator_var
       )
     }
   }
