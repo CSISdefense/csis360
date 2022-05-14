@@ -727,9 +727,18 @@ deflate <- function(
   directory="economic/",
   deflator_dropped=TRUE
 ){
+  #Default deflator if none passed.
   if(is.null(deflator_var)) deflator_var<-"OMB23_GDP21"
+
   #Tibbles run into trouble with the [[]] new variable specifying.
   data<-as.data.frame(data)
+
+
+  #If the money_var already has _Then_Year, remove it so it can be added again
+  if(substr(money_var,nchar(money_var)-9,nchar(money_var))=="_Then_Year"){
+    colnames(data)[colnames(data)==money_var]<-substr(money_var,1,nchar(money_var)-10)
+    money_var<-substr(money_var,1,nchar(money_var)-10)
+  }
 
   if(!fy_var %in% colnames(data)){
     if(fy_var == "Fiscal.Year" & "Fiscal_Year" %in% colnames(data)) fy_var<-"Fiscal_Year"
