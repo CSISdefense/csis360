@@ -1024,7 +1024,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     if("SubCustomer"%in% names(df)){
       df<-subset(df, select=-c(SubCustomer))
     }
-
+    if(is.numeric(df$Contracting_Agency_ID))
+      df$Contracting_Agency_ID<-as.character(df$Contracting_Agency_ID)
     df<-read_and_join_experiment(df,
                                  path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
                                  "Agency_AgencyID.csv",
@@ -1418,7 +1419,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
   #**** ProjectID *******
   if("ProjectID" %in% names(df)){
-    read_and_join_experiment(lookup_file="ProjectID.txt",
+
+    df<-read_and_join_experiment(df,
+                             lookup_file="ProjectID.txt",
                              path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",dir="project/",
                              add_var = c("ProjectName","IsUnknown"),
                              by=c("ProjectID")#,
