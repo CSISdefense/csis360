@@ -849,7 +849,7 @@ if (caption==TRUE)
 #'
 #' @import ggplot2
 #' @export
-ggsave600dpi<-function(filename,gg,width,height,units="in",size=60,lineheight=0.13){
+ggsave600dpi<-function(filename,gg,width,height,units="in",size=60,lineheight=0.13,...){
   ggsave(filename, gg+
          theme(text=element_text(size=size,lineheight=lineheight),
                legend.spacing.x = unit(0.1, 'cm'),
@@ -859,7 +859,7 @@ ggsave600dpi<-function(filename,gg,width,height,units="in",size=60,lineheight=0.
                  # font("xy.text", size = 45) +
                  # font("legend.text", size = 45) +
                  # theme(text = element_text(size = 45+
-                width=width, height= height, units=units,dpi=600)
+                width=width, height= height, units=units,dpi=600,...)
 }
 
 
