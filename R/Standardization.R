@@ -128,7 +128,7 @@ group_data_for_plot <-function(
   # note that this doesn't test for whether quotes already exist
 
   if(!y_var %in% colnames(data)) stop(paste("y_var: ",y_var,"is missing from data."))
-  if(is.na(breakout)) breakout<-NULL
+  if(all(is.na(breakout))) breakout<-NULL
   if(grepl(" ", x_var)) x_var <- paste0("`", x_var, "`")
   if(!x_var %in% colnames(data)) stop(paste("x_var: ",x_var,"is missing from data."))
   if(length(breakout) >= 1){
