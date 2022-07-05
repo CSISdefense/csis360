@@ -1679,6 +1679,28 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #   }
 #
 #
+  if("EntitySizeCode" %in% names(df)){
+
+    # EntitySizeText.detail = EntitySizeText,
+    # EntitySizeText = fct_recode(
+    #   EntitySizeText,
+    #   Small = "Always Small Vendor",
+    #   Small = "Sometimes Small Vendor",
+    #   Medium = "Medium Vendor",
+    #   "Large+" = "Big Five",
+    #   "Large+" = "Large Vendor",
+    #   "Large+" = "Large: Big 5 JV"))%>%
+
+    df<-csis360::read_and_join_experiment(df,
+                                          "EntitySizeCode.csv",
+                                          by=c("EntitySizeCode"="EntitySizeCode"),
+                                          add_var=c("EntitySizeText","EntitySmall","EntitySizeSum"),
+                                          path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                          dir="vendor/")
+  }
+  df<-replace_nas_with_unlabeled(df,"EntitySizeText")
+
+
   #Deflators
   if("Fiscal_Year"%in% names(df)){
     if("Action_Obligation"%in% names(df)){
