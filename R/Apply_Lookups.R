@@ -1694,11 +1694,14 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df<-csis360::read_and_join_experiment(df,
                                           "EntitySizeCode.csv",
                                           by=c("EntitySizeCode"="EntitySizeCode"),
-                                          add_var=c("EntitySizeText","EntitySmall","EntitySizeSum"),
+                                          add_var=c("EntitySizeText","EntitySmall","EntitySizeText.sum"),
                                           path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
                                           dir="vendor/")
+    df<-replace_nas_with_unlabeled(df,"EntitySizeText",replacement="Unlabeled Vendor")
+    df<-replace_nas_with_unlabeled(df,"EntitySizeText.sum",replacement="Unlabeled Vendor")
+    df<-replace_nas_with_unlabeled(df,"EntitySmall",replacement="Unlabeled Vendor")
   }
-  df<-replace_nas_with_unlabeled(df,"EntitySizeText")
+
 
 
   #Deflators
