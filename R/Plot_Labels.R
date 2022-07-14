@@ -278,14 +278,15 @@ add_preassigned_scales<-function(
     #   "#788ca8",
     #   "#353535"))
 
-    if(var!="None")
+    if(var!="None"){
       warning(paste(var,"not found in labels_and_colors"))
-    if(length(levels(factor(plot$data[,var])))<=8)
-      plot<-plot+scale_color_manual(
-        values = cbPalette
-      )+scale_fill_manual(
-        values = cbPalette
-      )
+      if(length(levels(factor(plot$data[,var])))<=8)
+        plot<-plot+scale_color_manual(
+          values = cbPalette
+        )+scale_fill_manual(
+          values = cbPalette
+        )
+    }
     # else if(length(levels(factor(plot$data[,var])))<=12){
     #   plot<-plot+scale_color_manual(
     #     values = cbPalette12
