@@ -41,7 +41,7 @@ standardize_variable_names<- function(data,
 ){
   #If there are two blank rows because of SQL server messages, remove them.
   if(all(is.na(data[(nrow(data)-1):nrow(data),])))
-    data<-full_data[1:(nrow(data)-2),]
+    data<-data[1:(nrow(data)-2),]
 
   if(replace_special==TRUE)
     colnames(data)<-gsub("[ ()&*/-]|\r\n",".",colnames(data))

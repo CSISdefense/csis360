@@ -358,7 +358,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
     # }
   }
   # add x-axis labeling
-  if(class(data[,x_var])=="Date"){
+  if(any(class(data[,x_var])=="Date")){
     mainplot<-mainplot+scale_x_date(
       breaks=scales::date_breaks("2 years"),
       #                 c(seq(
