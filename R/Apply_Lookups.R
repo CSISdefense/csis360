@@ -1414,6 +1414,10 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #       print(unique(NA.check.df))
 #       stop(paste(nrow(NA.check.df),"rows of NAs generated in PlatformPortfolio.sum"))
 #     }
+    if("IsRemotelyOperated" %in% names(df)){
+      df$PlatformPortfolioUAV<-as.character(df$PlatformPortfolio)
+      df$PlatformPortfolioUAV[df$IsRemotelyOperated==1& !is.na(df$IsRemotelyOperated)]<-"Remotely Crewed"
+    }
   }
 
 
