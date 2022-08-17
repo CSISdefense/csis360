@@ -392,12 +392,14 @@ if(is.null(x_var)) x_var<-names(data)[1]
     )
   }
 
-  mainplot<-add_preassigned_scales(
-    mainplot,
-    labels_and_colors,
-    var=color_var
-    # reverse_color = reverse_color
-  )
+  if(color_var!="None"){
+    mainplot<-add_preassigned_scales(
+      mainplot,
+      labels_and_colors,
+      var=color_var
+      # reverse_color = reverse_color
+    )
+  }
 
   if(!is.null(column_key)){
     if(chart_geom=="Box and Whiskers")
