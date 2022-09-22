@@ -1397,24 +1397,37 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #   }
 #
 #
-#
+  #
   if("PlatformPortfolio" %in% names(df)){
-#   {
-#
-#     if("PlatformPortfolio.sum" %in% names(df)){
-#       df<-subset(df, select=-c(PlatformPortfolio.sum))
-#     }
-#
+    #   {
+    #
+    #     if("PlatformPortfolio.sum" %in% names(df)){
+    #       df<-subset(df, select=-c(PlatformPortfolio.sum))
+    #     }
+    #
     df<-replace_nas_with_unlabeled(df,"PlatformPortfolio")
-#
-#     df<-read_and_join(df,
-#                           "LOOKUP_PlatformPortfolio.csv")
-#     NA.check.df<-subset(df, is.na(PlatformPortfolio.sum), select=c("PlatformPortfolio"))
-#     if(nrow(NA.check.df)>0){
-#       print(unique(NA.check.df))
-#       stop(paste(nrow(NA.check.df),"rows of NAs generated in PlatformPortfolio.sum"))
-#     }
+    #
+    #     df<-read_and_join(df,
+    #                           "LOOKUP_PlatformPortfolio.csv")
+    #     NA.check.df<-subset(df, is.na(PlatformPortfolio.sum), select=c("PlatformPortfolio"))
+    #     if(nrow(NA.check.df)>0){
+    #       print(unique(NA.check.df))
+    #       stop(paste(nrow(NA.check.df),"rows of NAs generated in PlatformPortfolio.sum"))
+    #     }
     if("IsRemotelyOperated" %in% names(df)){
+      df$PlatformPortfolioUAV<-as.character(df$PlatformPortfolio)
+      df$PlatformPortfolioUAV[df$IsRemotelyOperated==1& !is.na(df$IsRemotelyOperated)]<-"Remotely Crewed"
+    }
+    else if ("ProductOrServiceCode" %in% names(df) & "ProjectID" %in% names(df)){
+
+      df<-read_and_join_experiment(df,
+                                   lookup_file="ProjectID.txt",
+                                   path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",dir="project/",
+                                   add_var = c("IsRemotelyOperated"),
+                                   by=c("ProjectID"),
+                                   # missing_file="missing_iso.csv",
+                                   skip_check_var = c("IsRemotelyOperated"))
+      df$IsRemotelyOperated[df$ProductOrServiceCode==1550]<-1
       df$PlatformPortfolioUAV<-as.character(df$PlatformPortfolio)
       df$PlatformPortfolioUAV[df$IsRemotelyOperated==1& !is.na(df$IsRemotelyOperated)]<-"Remotely Crewed"
     }
