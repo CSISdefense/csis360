@@ -1427,10 +1427,10 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df<-read_and_join_experiment(df,
                              lookup_file="ProjectID.txt",
                              path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",dir="project/",
-                             add_var = c("ProjectName","IsUnknown"),
-                             by=c("ProjectID")#,
+                             add_var = c("ProjectName","IsUnknown","IsRemotelyOperated"),
+                             by=c("ProjectID"),
                              # missing_file="missing_iso.csv",
-                             # skip_check_var = c("ProjectName","IsUnidentified	")
+                             skip_check_var = c("IsRemotelyOperated")
     )
 
     if ("SubCustomer.platform" %in% names(df) & "ProjectName" %in% names(df)){
