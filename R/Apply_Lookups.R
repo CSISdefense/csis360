@@ -1027,7 +1027,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     if(is.numeric(df$Contracting_Agency_ID))
       df$Contracting_Agency_ID<-as.character(df$Contracting_Agency_ID)
     df<-read_and_join_experiment(df,
-                                 path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                 path=path,
                                  "Agency_AgencyID.csv",
                                  dir="",
                                  by=c("Contracting_Agency_ID"="AgencyID"),
@@ -1050,7 +1050,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           "SubCustomer.csv",
                                           by=c("Customer"="Customer","SubCustomer"="SubCustomer"),
                                           add_var=c("SubCustomer.platform","SubCustomer.sum"),
-                                          path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                          path=path,
                                           dir="office/"
     )
   }
@@ -1060,7 +1060,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           "SubCustomer.csv",
                                           by=c("ContractingCustomer"="Customer","ContractingSubCustomer"="SubCustomer"),
                                           add_var=c("SubCustomer.platform","SubCustomer.sum"),
-                                          path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                          path=path,
                                           dir="office/")
   }
 
@@ -1101,7 +1101,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                                  "Vehicle.csv",
                                                  by=c("Vehicle"="Vehicle.detail"),
                                                  add_var=c("Vehicle.sum","Vehicle.sum7","Vehicle.AwardTask"),
-                                                 path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                                 path=path,
                                                  # path="K:/Users/Greg/Repositories/Lookup-Tables/",
                                                  dir="contract/"
     )
@@ -1123,7 +1123,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   if("informationtechnologycommercialitemcategory" %in% names(df)){
     df<-read_and_join_experiment(data=df
                                        ,"InformationTechnologyCommercialItemCategory.csv"
-                                       ,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/"
+                                       ,path=path
                                        ,dir="productorservice/"
                                        ,by=c("informationtechnologycommercialitemcategory"="informationtechnologycommercialitemcategory")
                                        # ,new_var_checked=FALSE
@@ -1138,7 +1138,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #     df<-read_and_join_experiment(df,
 #                                      "Agency_AgencyID.csv",
 #                                      by=c("Contracting.Agency.ID"="AgencyID"),
-#                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+#                                      path=path,
 #                                      dir="")
 #
 #     # NA.check.df<-subset(df, is.na(Contracting.Agency.Name) , select=c("Contracting.Agency.ID"))
@@ -1297,7 +1297,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
     # df<-read_and_join(df,
     #                       "ProductOrServiceCodes.csv",
-    #                       path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+    #                       path=path,
     #                       directory="",
     #                       by="ProductOrServiceCode")
     #         NA.check.df<-subset(df, is.na(ProductOrServiceArea), select=c("Product.or.Service.Code"))
@@ -1426,7 +1426,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
     df<-read_and_join_experiment(df,
                              lookup_file="ProjectID.txt",
-                             path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",dir="project/",
+                             path=path,dir="project/",
                              add_var = c("ProjectName","IsUnknown"),
                              by=c("ProjectID")#,
                              # missing_file="missing_iso.csv",
@@ -1699,7 +1699,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           "EntitySizeCode.csv",
                                           by=c("EntitySizeCode"="EntitySizeCode"),
                                           add_var=c("EntitySizeText","EntitySmall","EntitySizeText.sum"),
-                                          path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                          path=path,
                                           dir="vendor/")
     df<-replace_nas_with_unlabeled(df,"EntitySizeText",replacement="Unlabeled Vendor")
     df<-replace_nas_with_unlabeled(df,"EntitySizeText.sum",replacement="Unlabeled Vendor")
@@ -1740,7 +1740,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           by="PlaceOfManufacture",
                                           add_var=c("PlaceOfManufactureText","PlaceOfManufacture_Sum"),
                                           skip_check_var = c("PlaceOfManufactureText","PlaceOfManufacture_Sum"),
-                                          path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+                                          path=path,
                                           dir="location/",
                                           case_sensitive = FALSE
     )
@@ -1752,7 +1752,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     if("PlaceIsForeign" %in% colnames(df))
       df<-subset(df,select=-c(PlaceIsForeign))
     df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
-                                             path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",dir="location/",
+                                             path=path,dir="location/",
                                              add_var = c("isforeign"),#"USAID region",
                                              by=c("PlaceISOalpha3"="alpha-3"),
                                              # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
@@ -1764,7 +1764,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     if("VendorIsForeign" %in% colnames(df))
       df<-subset(df,select=-c(VendorIsForeign))
     df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
-                                             path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",dir="location/",
+                                             path=path,dir="location/",
                                              add_var = c("isforeign"),#"USAID region",
                                              by=c("VendorISOalpha3"="alpha-3"),
                                              # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
@@ -1779,7 +1779,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #                           "Lookup_Deflators.csv",
 #                           by="Fiscal_Year",
 #                           new_var_checked=FALSE,
-#                           path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+#                           path=path,
 #                           directory="economic/")
 #     # NA.check.df<-subset(df,  is.na(Deflator.2014) & is.na(Deflator.2013) & !is.na(Fiscal_Year), select=c("Fiscal_Year","Deflator.2013","Deflator.2014"))
 #     # if(nrow(NA.check.df)>0){
