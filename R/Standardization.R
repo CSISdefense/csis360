@@ -39,13 +39,17 @@ standardize_variable_names<- function(data,
                                       var = NULL,
                                       replace_special = FALSE
 ){
+  #Take out spaces
   #If there are two blank rows because of SQL server messages, remove them.
   if(all(is.na(data[(nrow(data)-1):nrow(data),])))
     data<-data[1:(nrow(data)-2),]
 
-  if(replace_special==TRUE)
-    colnames(data)<-gsub("[ ()&*/-]|\r\n",".",colnames(data))
-
+  if(replace_special==TRUE){
+      #First cover any special character names we always have parsed.
+      standardize_variable_names(data,path,var,replace_special = FALSE)
+    colnames(data)<-make.names(colnames(data))
+    # colnames(data)<-gsub("[ ()&*/-]|\r\n",".",colnames(data))
+  }
 
   if(!is.null(var) & any(!var %in% colnames(data)))
     stop(paste(var," is not present in colnames(data)."))
