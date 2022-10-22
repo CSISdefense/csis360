@@ -444,7 +444,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
 
   if(caption==TRUE)
     #+labs(y="",
-    mainplot<-mainplot+labs(caption = "Source: FPDS; CSIS analysis."
+    mainplot<-mainplot+labs(caption = "Source: FPDS and CSIS analysis."
     )
 
 
