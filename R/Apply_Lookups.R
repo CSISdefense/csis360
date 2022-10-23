@@ -1134,7 +1134,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  guess_max=2000)
     colnames(df)[colnames(df)=="AgencyIDtext"]<-"ContractingAgencyName"
 
-    if("contractingofficeid" %in% names(df) & !"MajorCommandID" %in% names(df)){
+    if("ContractingOfficeID" %in% names(df) & !"MajorCommandID" %in% names(df)){
 
       df<-read_and_join_experiment(df,
                                                  path=path,
@@ -1142,7 +1142,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                                  lookup_file = "MajComID.csv",
                                                  by =c("Fiscal_Year"="Fiscal_Year",
                                                        "Contracting_Agency_ID"="Contracting_Agency_ID",
-                                                       "contractingofficeid"="ContractingOfficeID"),
+                                                       "ContractingOfficeID"="ContractingOfficeID"),
                                                  skip_check_var = "MajorCommandID")
 
       df<-read_and_join_experiment(df,
