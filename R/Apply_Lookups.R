@@ -1008,13 +1008,111 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #
 #
 
-#**** Organization ***************
+#**** Organization Funder ***************
+
+
+
+
+  if("fundingrequestingagencyid" %in% names(df))
+  {
+
+    if("Funding.Department.ID" %in% names(df)){
+      df<-subset(df, select=-c(Funding.Department.ID))
+    }
+    if("Funding.Agency.Name"%in% names(df)){
+      df<-subset(df, select=-c(Funding.Agency.Name))
+    }
+
+    if("FundingAgencyName"%in% names(df)){
+      df<-subset(df, select=-c(FundingAgencyName))
+    }
+    if("Funder"%in% names(df)){
+      df<-subset(df, select=-c(Funder))
+    }
+    if("SubFunder"%in% names(df)){
+      df<-subset(df, select=-c(SubFunder))
+    }
+    if(is.numeric(df$fundingrequestingagencyid))
+      df$fundingrequestingagencyid<-as.character(df$fundingrequestingagencyid)
+    df<-read_and_join_experiment(df,
+                                 path=path,
+                                 "Agency_AgencyID.csv",
+                                 dir="",
+                                 by=c("fundingrequestingagencyid"="AgencyID"),
+                                 add_var=c("Customer","SubCustomer","AgencyIDtext"),#Funding.Agency.ID
+                                 skip_check_var=c("Platform","Customer","SubCustomer","AgencyIDtext"),
+                                 guess_max=2000)
+    colnames(df)[colnames(df)=="AgencyIDtext"]<-"FundingAgencyName"
+
+    if("fundingrequestingofficeid" %in% names(df) & !"FundingMajorCommandID" %in% names(df)){
+
+      colnames(df)[colnames(df)=="MajorCommandID"]<-"ContractingMajorCommandID"
+      colnames(df)[colnames(df)=="MajorCommandCode"]<-"ContractingMajorCommandCode"
+      colnames(df)[colnames(df)=="MajorCommandName"]<-"ContractingMajorCommandName"
+
+      df<-read_and_join_experiment(df,
+                                   path=path,
+                                   dir="office\\",
+                                   lookup_file = "MajComID.csv",
+                                   by =c("Fiscal_Year"="Fiscal_Year",
+                                         "fundingrequestingagencyid"="Contracting_Agency_ID",
+                                         "fundingrequestingofficeid"="ContractingOfficeID"),
+                                   skip_check_var = "MajorCommandID")
+
+      df<-read_and_join_experiment(df,
+                                   path=path,
+                                   dir="office\\",
+                                   lookup_file = "MajComSum.csv")
+
+      colnames(df)[colnames(df)=="MajorCommandID"]<-"FundingMajorCommandID"
+      colnames(df)[colnames(df)=="MajorCommandCode"]<-"FundingMajorCommandCode"
+      colnames(df)[colnames(df)=="MajorCommandName"]<-"FundingMajorCommandName"
+
+
+      colnames(df)[colnames(df)=="ContractingMajorCommandID"]<-"MajorCommandID"
+      colnames(df)[colnames(df)=="ContractingMajorCommandCode"]<-"MajorCommandCode"
+      colnames(df)[colnames(df)=="ContractingMajorCommandName"]<-"MajorCommandName"
+    }
+  }
+  # if("Customer" %in% names(df) && "SubCustomer" %in% names(df)){
+  #   if("SubCustomer.sum"%in% names(df)){
+  #     df<-subset(df, select=-c(SubCustomer.sum))
+  #   }
+  #
+  #
+  #   df<-replace_nas_with_unlabeled(df,"SubCustomer","Uncategorized")
+  #   df<-replace_nas_with_unlabeled(df,"Customer","Uncategorized")
+  #
+  #   #     debug(read_and_join)
+  #   df<-csis360::read_and_join_experiment(df,
+  #                                         "SubCustomer.csv",
+  #                                         by=c("Customer"="Customer","SubCustomer"="SubCustomer"),
+  #                                         add_var=c("SubCustomer.platform","SubCustomer.sum"),
+  #                                         path=path,
+  #                                         dir="office/"
+  #   )
+  # }
+  # else if ("FundingCustomer" %in% names(df) & "FundingSubCustomer" %in% names(df)){
+  #   df<-replace_nas_with_unlabeled(df,"FundingSubCustomer","Uncategorized")
+  #   df<-csis360::read_and_join_experiment(df,
+  #                                         "SubCustomer.csv",
+  #                                         by=c("FundingCustomer"="Customer","FundingSubCustomer"="SubCustomer"),
+  #                                         add_var=c("SubCustomer.platform","SubCustomer.sum"),
+  #                                         path=path,
+  #                                         dir="office/")
+  # }
+
+  #**** Organization Contracting ***************
   if("Contracting_Agency_ID" %in% names(df))
   {
 
     if("Contracting.Department.ID" %in% names(df)){
       df<-subset(df, select=-c(Contracting.Department.ID))
     }
+    if("ContractingAgencyName"%in% names(df)){
+      df<-subset(df, select=-c(ContractingAgencyName))
+    }
+
     if("Contracting.Agency.Name"%in% names(df)){
       df<-subset(df, select=-c(Contracting.Agency.Name))
     }
@@ -1035,6 +1133,25 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  skip_check_var=c("Platform","Customer","SubCustomer","AgencyIDtext"),
                                  guess_max=2000)
     colnames(df)[colnames(df)=="AgencyIDtext"]<-"ContractingAgencyName"
+
+    if("ContractingOfficeID" %in% names(df) & !"MajorCommandID" %in% names(df)){
+
+      df<-read_and_join_experiment(df,
+                                                 path=path,
+                                                 dir="office\\",
+                                                 lookup_file = "MajComID.csv",
+                                                 by =c("Fiscal_Year"="Fiscal_Year",
+                                                       "Contracting_Agency_ID"="Contracting_Agency_ID",
+                                                       "ContractingOfficeID"="ContractingOfficeID"),
+                                                 skip_check_var = "MajorCommandID")
+
+      df<-read_and_join_experiment(df,
+                                                 path=path,
+                                                 dir="office\\",
+                                                 lookup_file = "MajComSum.csv")
+
+
+    }
   }
   if("Customer" %in% names(df) && "SubCustomer" %in% names(df)){
     if("SubCustomer.sum"%in% names(df)){
@@ -1105,6 +1222,24 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                                  # path="K:/Users/Greg/Repositories/Lookup-Tables/",
                                                  dir="contract/"
     )
+  }
+
+
+  if("TypeOfContractPricing" %in% names(df) ){
+
+    df<-read_and_join_experiment(data=df
+                                 ,"contract.TypeOfContractPricing.csv"
+                                 ,path=path
+                                 ,dir="contract/"
+                                 ,add_var = c("PricingInflation","TypeOfContractPricingText")
+                                 ,skip_check_var = c("PricingInflation","TypeOfContractPricingText")
+                                 # ,by=c("informationtechnologycommercialitemcategory"="informationtechnologycommercialitemcategory")
+                                 # ,new_var_checked=FALSE
+                                 # ,create_lookup_rdata=TRUE
+                                 # ,col_types="dddddddddccc"
+    )
+    df$PricingInflation<-factor(df$PricingInflation)
+    df$TypeOfContractPricingText<-factor(df$TypeOfContractPricingText)
   }
 
   if("PricingUCA" %in% names(df) & !"PricingUCA.sum" %in% names(df) ){
@@ -1436,6 +1571,11 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
   #**** ProjectID *******
   if("ProjectID" %in% names(df)){
+
+
+    if("Project.Name" %in% names(df)){
+      df<-subset(df, select=-c(Project.Name))
+    }
 
     df<-read_and_join_experiment(df,
                              lookup_file="ProjectID.txt",
@@ -1783,6 +1923,47 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                              # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
                                              missing_file="missing_DSCA_iso.csv")
     colnames(df)[colnames(df)=="isforeign"]<-"VendorIsForeign"
+  }
+
+
+
+
+
+#### Duration ####
+  if("CurrentDurationCategory" %in% colnames(df)){
+    df$CurrentDurationIsYear<-factor(df$CurrentDurationCategory)
+    levels(df$CurrentDurationIsYear)<-list(
+      "<=1 year" =c("<=2 Months", ">2-7 Months"  ,">7-12 Months"),
+      ">1 year"=c(">1-2 Years",   ">2-4 Years",  ">4 years")
+    )
+    if("PricingInflation" %in% colnames(df)){
+      df$PricingInflation.1year<-as.character(df$PricingInflation)
+      df$PricingInflation.1year[df$CurrentDurationIsYear=="<=1 year"]<-"<=1 Year (All Types)"
+      if("PricingUCA.sum" %in% colnames(df)){
+        df$PricingInflation.1yearUCA<-as.character(df$PricingInflation.1year)
+        df$PricingInflation.1yearUCA[df$PricingUCA.sum=="UCA"]<-"UCA"
+      }
+    }
+
+    if("PricingInflationUCA" %in% colnames(df)){
+      df$PricingInflation.1yearUCA<-as.character(df$PricingInflationUCA)
+      df$PricingInflation.1yearUCA[df$CurrentDurationIsYear=="<=1 year"]<-"<=1 Year (All Types)"
+    }
+
+
+    if("PricingUCA.sum" %in% colnames(df)){
+      df$PricingUCA.1year<-as.character(df$PricingUCA.sum)
+      df$PricingUCA.1year[df$CurrentDurationIsYear=="<=1 year"]<-"<=1 Year (All Types)"
+    }
+  }
+
+
+  if("UnmodifiedUltimateDurationCategory" %in% colnames(df)){
+    df$UnmodifiedUltimateDurationIsYear<-factor(df$UnmodifiedUltimateDurationCategory)
+    levels(df$UnmodifiedUltimateDurationIsYear)<-list(
+      "<=1 year" =c("<=2 Months", ">2-7 Months"  ,">7-12 Months"),
+      ">1 year"=c(">1-2 Years",   ">2-4 Years",  ">4 years")
+    )
   }
 
 
