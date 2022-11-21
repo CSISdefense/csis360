@@ -1224,6 +1224,24 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
   }
 
+
+  if("TypeOfContractPricing" %in% names(df) ){
+
+    df<-read_and_join_experiment(data=df
+                                 ,"contract.TypeOfContractPricing.csv"
+                                 ,path=path
+                                 ,dir="contract/"
+                                 ,add_var = c("PricingInflation","TypeOfContractPricingText")
+                                 ,skip_check_var = c("PricingInflation","TypeOfContractPricingText")
+                                 # ,by=c("informationtechnologycommercialitemcategory"="informationtechnologycommercialitemcategory")
+                                 # ,new_var_checked=FALSE
+                                 # ,create_lookup_rdata=TRUE
+                                 # ,col_types="dddddddddccc"
+    )
+    df$PricingInflation<-factor(df$PricingInflation)
+    df$TypeOfContractPricingText<-factor(df$TypeOfContractPricingText)
+  }
+
   if("PricingUCA" %in% names(df) & !"PricingUCA.sum" %in% names(df) ){
 
     df$PricingUCA.sum<-factor(df$PricingUCA)
@@ -1905,6 +1923,39 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                              # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
                                              missing_file="missing_DSCA_iso.csv")
     colnames(df)[colnames(df)=="isforeign"]<-"VendorIsForeign"
+  }
+
+
+
+
+
+#### Duration ####
+  if("CurrentDurationCategory" %in% colnames(df)){
+    df$CurrentDurationIsYear<-factor(df$CurrentDurationCategory)
+    levels(df$CurrentDurationIsYear)<-list(
+      "<=1 year" =c("<=2 Months", ">2-7 Months"  ,">7-12 Months"),
+      ">1 year"=c(">1-2 Years",   ">2-4 Years",  ">4 years")
+    )
+    if("PricingInflation" %in% colnames(df)){
+      df$PricingInflation.1year<-as.character(df$PricingInflation)
+      df$PricingInflation.1year[df$CurrentDurationIsYear=="<=1 year"]<-"<=1 Year (All Types)"
+      df$PricingInflation.1yearUCA<-as.character(df$PricingInflation.1year)
+      df$PricingInflation.1yearUCA[df$PricingUCA.sum=="UCA"]<-"UCA"
+    }
+
+    if("PricingUCA.sum" %in% colnames(df)){
+      df$PricingUCA.1year<-as.character(df$PricingUCA.sum)
+      df$PricingUCA.1year[df$CurrentDurationIsYear=="<=1 year"]<-"<=1 Year (All Types)"
+    }
+  }
+
+
+  if("UnmodifiedUltimateDurationCategory" %in% colnames(df)){
+    df$UnmodifiedUltimateDurationIsYear<-factor(df$UnmodifiedUltimateDurationCategory)
+    levels(df$UnmodifiedUltimateDurationIsYear)<-list(
+      "<=1 year" =c("<=2 Months", ">2-7 Months"  ,">7-12 Months"),
+      ">1 year"=c(">1-2 Years",   ">2-4 Years",  ">4 years")
+    )
   }
 
 
