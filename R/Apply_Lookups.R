@@ -1422,7 +1422,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
       df<-read_and_join_experiment(df,
                                    lookup_file="ProjectID.txt",
-                                   path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",dir="project/",
+                                   path=path,dir="project/",
                                    add_var = c("IsRemotelyOperated"),
                                    by=c("ProjectID"),
                                    # missing_file="missing_iso.csv",
