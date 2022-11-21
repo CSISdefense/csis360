@@ -1939,9 +1939,17 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     if("PricingInflation" %in% colnames(df)){
       df$PricingInflation.1year<-as.character(df$PricingInflation)
       df$PricingInflation.1year[df$CurrentDurationIsYear=="<=1 year"]<-"<=1 Year (All Types)"
-      df$PricingInflation.1yearUCA<-as.character(df$PricingInflation.1year)
-      df$PricingInflation.1yearUCA[df$PricingUCA.sum=="UCA"]<-"UCA"
+      if("PricingUCA.sum" %in% colnames(df)){
+        df$PricingInflation.1yearUCA<-as.character(df$PricingInflation.1year)
+        df$PricingInflation.1yearUCA[df$PricingUCA.sum=="UCA"]<-"UCA"
+      }
     }
+
+    if("PricingInflationUCA" %in% colnames(df)){
+      df$PricingInflation.1yearUCA<-as.character(df$PricingInflationUCA)
+      df$PricingInflation.1yearUCA[df$CurrentDurationIsYear=="<=1 year"]<-"<=1 Year (All Types)"
+    }
+
 
     if("PricingUCA.sum" %in% colnames(df)){
       df$PricingUCA.1year<-as.character(df$PricingUCA.sum)
