@@ -1008,7 +1008,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 #
 #
 
-#**** Organization Funder ***************
+# Organization Funder ####
 
 
 
@@ -1102,7 +1102,19 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #                                         dir="office/")
   # }
 
-  #**** Organization Contracting ***************
+  # Organization Contracting ####
+  if("agencyid" %in% names(df) &
+     "PIID" %in% names(df) &
+     "idvagencyid" %in% names(df) &
+     "idvpiid" %in% names(df)
+     )
+  {
+
+    df<-df%>% mutate(derived_link=paste("https://www.usaspending.gov/award/CONT_AWD_",PIID,"_",agencyid,"_",
+                            ifelse(is.na(idvpiid)|idvpiid=="","-NONE-",idvpiid),"_",
+                            ifelse(is.na(idvagencyid)|idvagencyid=="","-NONE-",idvagencyid),"/",sep=""))
+  }
+
   if("Contracting_Agency_ID" %in% names(df))
   {
 
@@ -1149,6 +1161,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                                  path=path,
                                                  dir="office\\",
                                                  lookup_file = "MajComSum.csv")
+
+
 
 
     }
