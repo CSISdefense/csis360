@@ -722,13 +722,13 @@ deflate <- function(
   money_var = "Amount",
   fy_var = "Fiscal_Year",
   deflator_file = "Lookup_Deflators.csv",
-  deflator_var="OMB23_GDP21",
+  deflator_var="OMB24_GDP22",
   path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
   directory="economic/",
   deflator_dropped=TRUE
 ){
   #Default deflator if none passed.
-  if(is.null(deflator_var)) deflator_var<-"OMB23_GDP21"
+  if(is.null(deflator_var)) deflator_var<-"OMB24_GDP22"
 
   #Tibbles run into trouble with the [[]] new variable specifying.
   data<-as.data.frame(data)
@@ -907,6 +907,15 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                   deflator_var=NULL){
 
   df<-standardize_variable_names(df)
+
+  #Clear out blank/admin/error message rows at the end of the input file.
+  if(substring(df$Fiscal_Year[nrow(df)],1,15) %in% c(
+    "Completion time",
+    "An error occurr"))#ed while executing batch. Error message is: One or more errors occurred
+    df<-df[-nrow(df),]
+  #Empty rows
+  if((df[nrow(df),1]=="" | is.na(df[nrow(df),1]))  & is.na(df$Fiscal_Year[nrow(df)]))
+    df<-df[-nrow(df),]
 
 
 #
@@ -1604,8 +1613,12 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df$SubCustomer.JPO<-as.character(df$SubCustomer.platform)
       df$SubCustomer.JPO[df$ProjectName %in% c("JSF (F-35) ","JSF (F-35)") & !is.na(df$ProjectName)&df$SubCustomer.platform=="Navy"]<-"F-35 JPO"
       df$SubCustomer.JPO<-factor(df$SubCustomer.JPO)
-
     }
+
+  } else if ("SubCustomer.platform" %in% names(df) & "IsF35" %in% names(df)){
+    df$SubCustomer.JPO<-as.character(df$SubCustomer.platform)
+    df$SubCustomer.JPO[df$IsF35==1 & !is.na(df$IsF35==1)&df$SubCustomer.platform=="Navy"]<-"F-35 JPO"
+    df$SubCustomer.JPO<-factor(df$SubCustomer.JPO)
   }
 
 #
@@ -1885,6 +1898,18 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       )
     }
   }
+
+  if("fundedbyforeignentity" %in% colnames(df) &
+     !"foreign_funding_description" %in% colnames(df))
+    df$fundedbyforeignentity[df$fundedbyforeignentity==""]<-NA
+    df %<>% read_and_join_experiment(lookup_file="Budget_FundedByForeignEntity.csv",
+                                            path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",dir="budget/",
+                                            add_var = c("foreign_funding_description"),
+                                            by=c("fundedbyforeignentity")
+                                            # missing_file="missing_iso.csv",
+                                            # skip_check_var = "territory_capital"
+    )
+
   if("foreign_funding_description" %in% colnames(df) &
      "IsFMSml" %in% colnames(df) &
      "IsFMSmac" %in% colnames(df)){
@@ -1980,7 +2005,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
   }
 
-
+  if("recoveredmaterialclauses" %in% colnames(df)){
+    df$recoveredmaterialclauses[df$recoveredmaterialclauses==""]<-"Unlabeled"
+  }
 #
 #   if("Fiscal_Year"%in% names(df)){
 #     df<-read_and_join(df,
