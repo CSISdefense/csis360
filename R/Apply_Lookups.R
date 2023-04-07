@@ -354,15 +354,13 @@ read_and_join<-function(
   if(is.null(by)){
     data<- dplyr::left_join(
       data,
-      lookup,
-      match="first"
+      lookup
     )
   }
   else{
     data<- dplyr::left_join(
       data,
       lookup,
-      match="first",
       by=by
     )
   }
@@ -626,8 +624,7 @@ read_and_join_experiment<-function(
 
     data<- dplyr::left_join(
       data,
-      lookup,
-      match="first"
+      lookup
     )
   }
   else{
@@ -650,7 +647,6 @@ read_and_join_experiment<-function(
     data<- dplyr::left_join(
       data,
       lookup,
-      match="first",
       by=by
     )
 
