@@ -182,6 +182,11 @@ prepare_labels_and_colors<-function(data
 }
 
 
+date_x_year_breaks<-function(start,stop,by,fiscal_year=TRUE){
+  return(scale_x_date(breaks = as.Date(paste(seq(start,stop, by=by),"04","01",sep="-")),
+              date_labels = "'%y"))
+}
+
 #' Take existing data frame and associate colors with values
 #'
 #' @param plot The existing ggplot, needed to add more than one scale
