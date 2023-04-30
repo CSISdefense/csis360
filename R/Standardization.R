@@ -41,6 +41,8 @@ standardize_variable_names<- function(data,
 ){
   #Take out spaces
   #If there are two blank rows because of SQL server messages, remove them.
+  if(nrow(data)==0) stop("No rows of data.")
+
   if(all(is.na(data[(nrow(data)-1):nrow(data),])))
     data<-data[1:(nrow(data)-2),]
 

@@ -44,7 +44,8 @@ get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
     strip.background = element_rect(fill ="#E0E0E0"),
     plot.background = element_rect(fill = "white", color="white"),
     panel.grid.major.y = element_line(size=.1, color="gray"),
-    panel.grid.minor.y = element_line(size=.1, color="lightgray")
+    panel.grid.minor.y = element_line(size=.1, color="lightgray"),
+    plot.margin = margin(t=0,r=0.1,b=0.1,l=0.1,"inches")
     )
   if(blank_x_lines==TRUE){
   t<-t+theme(
@@ -63,7 +64,7 @@ get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
     family = "Open Sans",
     color = "#554449",
     face="bold",
-    margin=margin(20,0,20,0),
+    margin=margin(0.1,0,0.1,0,"inch"),
     hjust = 0.5))
   t<-t+theme(axis.text.x = element_text(
     family = "Open Sans",
