@@ -44,6 +44,36 @@ swap_in_zip<-function(filename,path,directory=""){
   input
 }
 
+#' A kludge, tests a variety of local paths to find the lookup-tables reposistory
+#'
+#' @return The path, if a known one exists. Otherwise it will throw an error.
+#'
+#' @details The lookup-table repository is a public one and can be found online.
+#' However, when updating lookup files, it can be faster to use the local version
+#' rather than wait for github to full parse the pushed files. In addition a
+#' local path can enable working offline.
+#'
+#' examples sget_local_lookup_path()
+#'
+get_local_lookup_path<-function(){
+  local_path<-"C:\\Users\\Present\\Documents\\Repositories\\Lookup-Tables\\"
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-"K:\\Users\\Greg\\Repositories\\Lookup-Tables\\"
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-"F:\\Users\\Greg\\Repositories\\Lookup-Tables\\"
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-"D:\\Repositories\\Lookup-Tables\\style\\"
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-"F:\\Users\\gsanders\\Documents\\Repositories\\Lookup-Tables\\"
+  if(file.exists(local_path))
+    return(local_path)
+  stop("Could not find local path. Update the list in Apply_Lookups.R")
+}
+
 #' Turn a factor  into a number
 #'
 #' @param x The factor or character string
@@ -1221,15 +1251,15 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   if("CompetitionClassification" %in% names(df) & "ClassifyNumberOfOffers" %in% names(df) )
   {
     df<-csis360::read_and_join(df,
-                               "Lookup_SQL_CompetitionClassification.csv",
+                               "CompetitionClassification.csv",
                                by=c("CompetitionClassification","ClassifyNumberOfOffers"),
                                replace_na_var="ClassifyNumberOfOffers",
                                add_var=c("Competition.sum",
                                          "Competition.multisum",
                                          "Competition.effective.only",
                                          "No.Competition.sum"),
-                               path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
-                               dir="Lookups/"
+                               path=path,
+                               dir="contract/"
     )
   }
   if("Vehicle" %in% names(df) ){
