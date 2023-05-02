@@ -457,7 +457,7 @@ read_and_join<-function(
 read_and_join_experiment<-function(
     data,
     lookup_file,
-    path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
+    path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
     directory="Lookups/",
     by=NULL,
     replace_na_var=NULL,
@@ -968,7 +968,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #     df<-replace_nas_with_unlabeled(df,"ContractingOfficeID")
   #     df<-replace_nas_with_unlabeled(df,"ContractingAgencyID")
   #
-  #     df<-read_and_join(df,
+  #     df<-read_and_join_experiment(df,
   #                           "Defense_Major_Command_Codes_and_Offices.csv",
   #                           by=c("Fiscal_Year",
   #                                "ContractingAgencyID",
@@ -1019,7 +1019,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #     # df<-replace_nas_with_unlabeled(df,"MajorCommandName","Uncategorized")
   #
-  #     df<-read_and_join(df,
+  #     df<-read_and_join_experiment(df,
   #                           "Lookup_MajorCommandID.csv",
   #                           by="MajorCommandID",
   #                           skip_check_var=c("ContractingOfficeCode",
@@ -1035,7 +1035,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #     df<-replace_nas_with_unlabeled(df,"CSISofficeName","Uncategorized")
   #
-  #     df<-read_and_join(df,
+  #     df<-read_and_join_experiment(df,
   #                           "LOOKUP_CSISofficeName.txt",
   #                           by="CSISofficeName")
   #
@@ -1118,7 +1118,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #   df<-replace_nas_with_unlabeled(df,"SubCustomer","Uncategorized")
   #   df<-replace_nas_with_unlabeled(df,"Customer","Uncategorized")
   #
-  #   #     debug(read_and_join)
+  #   #     debug(read_and_join_experiment)
   #   df<-csis360::read_and_join_experiment(df,
   #                                         "SubCustomer.csv",
   #                                         by=c("Customer"="Customer","SubCustomer"="SubCustomer"),
@@ -1211,7 +1211,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df<-replace_nas_with_unlabeled(df,"SubCustomer","Uncategorized")
     df<-replace_nas_with_unlabeled(df,"Customer","Uncategorized")
 
-    #     debug(read_and_join)
+    #     debug(read_and_join_experiment)
     df<-csis360::read_and_join_experiment(df,
                                           "SubCustomer.csv",
                                           by=c("Customer"="Customer","SubCustomer"="SubCustomer"),
@@ -1235,7 +1235,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   # }
   # else if("Customer" %in% names(df)){
   #   df<-replace_nas_with_unlabeled(df,"Customer")
-  #   df<-read_and_join(df,
+  #   df<-read_and_join_experiment(df,
   #                         "LOOKUP_Customer.csv",
   #                         by=c("Customer"))
   #   # NA.check.df<-subset(df,is.na(Customer.sum), select=c("Customer","Customer.sum"))
@@ -1250,7 +1250,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   # classify competition
   if("CompetitionClassification" %in% names(df) & "ClassifyNumberOfOffers" %in% names(df) )
   {
-    df<-csis360::read_and_join(df,
+    df<-csis360::read_and_join_experiment(df,
                                "CompetitionClassification.csv",
                                by=c("CompetitionClassification","ClassifyNumberOfOffers"),
                                replace_na_var="ClassifyNumberOfOffers",
@@ -1346,9 +1346,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #     names(df)[which(names(df)=="Contracting.Department.ID")]<-"Contracting.Agency.ID"
   #     #     stop("safety")
   #
-  #     #     debug(read_and_join)
+  #     #     debug(read_and_join_experiment)
   #
-  #     df<-read_and_join(df,
+  #     df<-read_and_join_experiment(df,
   #                           "LOOKUP_Contracting_Agencies.csv",
   #                           by=c("Contracting.Agency.ID"))
   #     # NA.check.df<-subset(df, is.na(Contracting.Agency.Name), select=c("Fiscal_Year","Contracting.Agency.ID"))
@@ -1367,7 +1367,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #       df<-subset(df, select=-c(SubFunder.Sum))
   #     }
   #
-  #     df<-read_and_join(df,
+  #     df<-read_and_join_experiment(df,
   #                           "LOOKUP_SubFunder.csv",
   #                           by=c("Funder","Subfunder"))
   #     # NA.check.df<-subset(df, is.na(SubFunder.Sum) & !is.na(Funder), select=c("Fiscal_Year","Funder","SubFunder"))
@@ -1403,7 +1403,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #       df<-subset(df, select=-c(CSIS.Region))
   #     }
   #
-  #     df<-read_and_join(df,
+  #     df<-read_and_join_experiment(df,
   #                           "LOOKUP_State_Code.csv")
   #     NA.check.df<-subset(df, is.na(StateText) & !is.na(PoPstateCode), select=c("PoPstateCode","StateText"))
   #     if(nrow(NA.check.df)>0){
@@ -1434,8 +1434,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #     #   if("SubCustomer"%in% names(df)){
   #     #     df<-subset(df, select=-c(SubCustomer))
   #     #   }
-  #     #       debug(read_and_join)
-  #     df<-read_and_join(df,
+  #     #       debug(read_and_join_experiment)
+  #     df<-read_and_join_experiment(df,
   #                           "LOOKUP_OMBagencyBureau.csv")
   #     NA.check.df<-subset(df
   #                         , is.na(CSISbureau) #& !is.na(OMBbureauCode)
@@ -1469,7 +1469,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df<-subset(df, select=-c(SimpleArea))
     }
 
-    #           debug(read_and_join)
+    #           debug(read_and_join_experiment)
     df<-csis360::read_and_join_experiment(df,
                                           "ProductOrServiceCodes.csv",
                                           by=c("ProductOrServiceCode"="ProductOrServiceCode"),
@@ -1479,7 +1479,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           skip_check_var = c("CrisisProductOrServiceArea","Simple"),
                                           dir=""
     )
-    # df<-read_and_join(df,
+    # df<-read_and_join_experiment(df,
     #                       "ProductOrServiceCodes.csv",
     #                       path=path,
     #                       directory="",
@@ -1512,19 +1512,17 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     # if("ServicesCategory.detail" %in% names(df)){
     #   df<-subset(df, select=-c(ServicesCategory.detail))
     # }
-    #     debug(read_and_join)
-    df<-read_and_join(df,
-                      "LOOKUP_Buckets.csv",
-                      by="ProductServiceOrRnDarea")
+    #     debug(read_and_join_experiment)
+
     #Classify Product or Service Codes
-    df<-csis360::read_and_join(df,
-                               "LOOKUP_Buckets.csv",
+    df<-csis360::read_and_join_experiment(df,
+                               "ProductServiceOrRnDarea.csv",
                                # by="ProductOrServiceArea",
                                by="ProductServiceOrRnDarea",
                                replace_na_var="ProductServiceOrRnDarea",
-                               add_var=c("ProductServiceOrRnDarea.sum","ServicesCategory.detail"),
-                               path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
-                               dir="Lookups/"
+                               add_var=c("ProductServiceOrRnDarea.sum","ServicesCategory.detail","ServicesCategory.sum"),
+                               path=path,
+                               dir="productorservice/"
     )
 
 
@@ -1542,9 +1540,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #     if("ServicesCategory.sum" %in% names(df)){
   #       df<-subset(df, select=-c(ServicesCategory.sum))
   #     }
-  #     #     debug(read_and_join)
+  #     #     debug(read_and_join_experiment)
   #     colnames(df)[colnames(df)=="ProductOrServiceArea"]<-"ProductServiceOrRnDarea"
-  #     df<-read_and_join(df,
+  #     df<-read_and_join_experiment(df,
   #                           "LOOKUP_Buckets.csv",by="ProductServiceOrRnDarea")
   #     colnames(df)[colnames(df)=="ProductServiceOrRnDarea"]<-"ProductServiceOrRnDarea"
   #
@@ -1569,8 +1567,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #       df<-subset(df, select=-c(ServicesCategory.sum))
   #     }
   #
-  #     #     debug(read_and_join)
-  #     df<-read_and_join(df,
+  #     #     debug(read_and_join_experiment)
+  #     df<-read_and_join_experiment(df,
   #                           "LOOKUP_Buckets.csv")
   #     NA.check.df<-subset(df, is.na(ServicesCategory.sum), select=c("Fiscal_Year","ServicesCategory.detail"))
   #     if(nrow(NA.check.df)>0){
@@ -1591,7 +1589,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     #
     df<-replace_nas_with_unlabeled(df,"PlatformPortfolio")
     #
-    #     df<-read_and_join(df,
+    #     df<-read_and_join_experiment(df,
     #                           "LOOKUP_PlatformPortfolio.csv")
     #     NA.check.df<-subset(df, is.na(PlatformPortfolio.sum), select=c("PlatformPortfolio"))
     #     if(nrow(NA.check.df)>0){
@@ -1651,8 +1649,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #
   #   if("Arms.Type" %in% names(df)){
-  #     #     debug(read_and_join)
-  #     df<-read_and_join(df,
+  #     #     debug(read_and_join_experiment)
+  #     df<-read_and_join_experiment(df,
   #                           "LOOKUP_ArmsType.csv")
   #
   #
@@ -1667,8 +1665,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #   }
   #
   #   if("Country" %in% names(df)){
-  #     #     debug(read_and_join)
-  #     df<-read_and_join(df,
+  #     #     debug(read_and_join_experiment)
+  #     df<-read_and_join_experiment(df,
   #                           "LOOKUP_Country.csv")
   #
   #
@@ -1682,8 +1680,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #   }
   #   else if("Destination.Country" %in% names(df)){
-  #     #     debug(read_and_join)
-  #     df<-read_and_join(df,
+  #     #     debug(read_and_join_experiment)
+  #     df<-read_and_join_experiment(df,
   #                           "LOOKUP_Country.csv")
   #
   #
@@ -1720,7 +1718,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #     #     stop("hammertiime")
   #
   #
-  #     df<-read_and_join(df,
+  #     df<-read_and_join_experiment(df,
   #                           "LOOKUP_Pricing_Mechanism.csv",
   #                           by=c("Pricing.Mechanism"),
   #                           skip_check_var=c("IsCostBased","Pricing.Mechanism.Code","IsFixedPrice",	"IsIncentive"),
@@ -1777,7 +1775,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #   #
   #   #
   #   #
-  #   #     df<-read_and_join(df,"LOOKUP_Pricing_Mechanism.csv")
+  #   #     df<-read_and_join_experiment(df,"LOOKUP_Pricing_Mechanism.csv")
   #   #
   #   #
   #   #     NA.check.df<-subset(df, !is.na(Pricing.Mechanism.Code) & is.na(Pricing.Mechanism.sum), select=c("Pricing.Mechanism"))
@@ -1795,7 +1793,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #
   #   if("Contractor.Size" %in% names(df)){
-  #     df<-read_and_join(df,"LOOKUP_Contractor_Size_named.csv")
+  #     df<-read_and_join_experiment(df,"LOOKUP_Contractor_Size_named.csv")
   #
   #     NA.check.df<-subset(df, is.na(Contractor.Size.detail), select=c("Contractor.Size"))
   #     if(nrow(NA.check.df)>0){
@@ -1822,14 +1820,14 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df<-replace_nas_with_unlabeled(df,"VendorSize")
 
     df<-csis360::read_and_join_experiment(df,
-                                          "LOOKUP_Contractor_Size.csv",
-                                          by=c("VendorSize"="Vendor.Size"),
+                                          "VendorSize.csv",
+                                          by=c("VendorSize"="VendorSize"),
                                           add_var="Shiny.VendorSize",
-                                          path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
-                                          dir="Lookups/"
+                                          path=path,
+                                          dir="vendor/"
     )
 
-    # df<-read_and_join(df,"LOOKUP_Contractor_Size.csv")
+    # df<-read_and_join_experiment(df,"LOOKUP_Contractor_Size.csv")
     #
     # NA.check.df<-subset(df, is.na(Vendor.Size.detail), select=c("Vendor.Size"))
     # if(nrow(NA.check.df)>0){
@@ -1850,7 +1848,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #   if("Contract.Size" %in% names(df)){
   #     df<-replace_nas_with_unlabeled(df,"Contract.Size")
   #
-  #     df<-read_and_join(df,"LOOKUP_Contract_Size.csv")
+  #     df<-read_and_join_experiment(df,"LOOKUP_Contract_Size.csv")
   #
   #     NA.check.df<-subset(df, is.na(Contract.Size.detail), select=c("Contract.Size"))
   #     if(nrow(NA.check.df)>0){
@@ -1868,7 +1866,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #
   #   if("Extent.Competed" %in% names(df)){
-  #     df<-read_and_join(df,"LOOKUP_Extent_Competed.csv")
+  #     df<-read_and_join_experiment(df,"LOOKUP_Extent_Competed.csv")
   #
   #     NA.check.df<-subset(df, is.na(Extent.Competed.Sum), select=c("Extent.Competed.Sum"))
   #     if(nrow(NA.check.df)>0){
@@ -1880,7 +1878,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #   if("systemequipmentcode" %in% names(df)){
   #     df<-replace_nas_with_unlabeled(df,"systemequipmentcode")
   #
-  #     df<-read_and_join(df,"LOOKUP_systemequipmentcode.csv")
+  #     df<-read_and_join_experiment(df,"LOOKUP_systemequipmentcode.csv")
   #
   #     NA.check.df<-subset(df, is.na(systemequipmentcode)|is.na(systemequipmentshorttext), select=c("systemequipmentcode","systemequipmentcodeText","systemequipmentshorttext"))
   #     if(nrow(NA.check.df)>0){
@@ -2051,7 +2049,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   }
   #
   #   if("Fiscal_Year"%in% names(df)){
-  #     df<-read_and_join(df,
+  #     df<-read_and_join_experiment(df,
   #                           "Lookup_Deflators.csv",
   #                           by="Fiscal_Year",
   #                           new_var_checked=FALSE,
@@ -2187,7 +2185,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #
   #
-  #     df<-read_and_join(
+  #     df<-read_and_join_experiment(
   #       df,
   #       "LOOKUP_comparison_dollar_type.csv"
   #     )
