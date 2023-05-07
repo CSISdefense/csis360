@@ -25,6 +25,3 @@ Check Derived
 A derived column is one that could be consolidated only to the primary keys
 and the derived column
 }
-\examples{
-
-}

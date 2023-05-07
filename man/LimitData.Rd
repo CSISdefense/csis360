@@ -15,9 +15,6 @@ LimitData(Path, FPDS.gov, customer = NULL, big.ProdServ = NULL)
 
 \item{big.ProdServ}{character string; choose from "Products", "Services", or ""; defaults to "" for all}
 }
-\value{
-
-}
 \description{
 Limit the data to only comparison set e.g. only services or defense.
 }

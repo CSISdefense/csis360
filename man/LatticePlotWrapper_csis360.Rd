@@ -74,6 +74,3 @@ A legacy function for graphs that allows primary and s econdary facets and
 \details{
 This should really be integrated into build_plot
 }
-\examples{
-
-}

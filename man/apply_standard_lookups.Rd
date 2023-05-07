@@ -6,7 +6,8 @@
 \usage{
 apply_standard_lookups(
   df,
-  path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/"
+  path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
+  deflator_var = NULL
 )
 }
 \arguments{
@@ -24,8 +25,4 @@ Add column variants, including summaries, and deflated dollars, to a contract da
 \details{
 Add column variants, including summaries, and deflated dollars,
 to a contract dataset.
-}
-\examples{
-
-
 }
