@@ -1,3 +1,51 @@
+
+#' Get Column Key based on the names in a data frame
+#'
+#' @param data A data frame
+#' @param path The path or url for the column key.  By default, checks
+#' the CSISdefense Github lookups repository at CSISdefense/Lookup-Tables/master/style/
+#'
+#' @return A data frame of the column names from data joined up to the column key
+#'
+#' @details Warning: This function should be used in data processing only,
+#' not in a live app.  It reads an external file from GitHub,
+#' which will slow down an app substantially if done repeatedly. Works best
+#' when standardize_names has already been run on the data frame in question.
+#'
+#' @examples
+#'
+#' FullData <- read_csv("2017_SP_CompetitionVendorSizeHistoryBucketPlatformSubCustomer.csv",
+#'   col_names = TRUE, col_types = "cccccccccc",na=c("NA","NULL"))
+#' PrepareLabelsAndColors(Coloration,FullData,"Customer")
+#'
+#' @export
+get_column_key <- function(
+    data,
+    path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/style/"
+){
+  column_key<-colnames(data)
+  column_key<-as.data.frame(column_key)
+  colnames(column_key)[1]<-"column"
+
+  if(!file.exists(file.path(path,"Lookup_Coloration.csv")) || path=="offline")
+    path<-file.path(get_local_lookup_path(),"style//")
+
+  #Join up the files
+  column_key<-read_and_join_experiment(column_key,
+                                       "Lookup_Column_Key.csv",
+                                       path=path,
+                                       directory="",
+                                       by="column",
+                                       new_var_checked=FALSE,
+                                       case_sensitive = FALSE
+  )
+
+  #Set empty string coloration.keys equal to na
+  column_key$coloration.key[column_key$coloration.key==""]<-NA
+  return(column_key)
+}
+
+
 #' Prepare Labels And Colors
 #'
 #' @param data the data frame to be joined
