@@ -53,7 +53,7 @@ swap_in_zip<-function(filename,path,directory=""){
 #' rather than wait for github to full parse the pushed files. In addition a
 #' local path can enable working offline.
 #'
-#' examples sget_local_lookup_path()
+#' examples get_local_lookup_path()
 #'
 get_local_lookup_path<-function(){
   local_path<-"C:\\Users\\Present\\Documents\\Repositories\\Lookup-Tables\\"
@@ -69,6 +69,9 @@ get_local_lookup_path<-function(){
   if(file.exists(local_path))
     return(local_path)
   local_path<-"F:\\Users\\gsanders\\Documents\\Repositories\\Lookup-Tables\\"
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-"C:\\Users\\grego\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
   stop("Could not find local path. Update the list in Apply_Lookups.R")
@@ -844,6 +847,9 @@ get_column_key <- function(
   column_key<-colnames(data)
   column_key<-as.data.frame(column_key)
   colnames(column_key)[1]<-"column"
+
+  if(!file.exists(file.path(path,"Lookup_Coloration.csv")) || path=="offline")
+    path<-file.path(get_local_lookup_path(),"style//")
 
   #Join up the files
   column_key<-read_and_join_experiment(column_key,

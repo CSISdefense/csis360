@@ -31,6 +31,7 @@ prepare_labels_and_colors<-function(data
 
   data<-as.data.frame(data)
 
+
   #Confirm that the category is even available in the data set.
   if(!is.null(var)){
     if(!var %in% names(data)){
@@ -38,6 +39,8 @@ prepare_labels_and_colors<-function(data
     }
   }
 
+  if(!file.exists(file.path(path,"Lookup_Coloration.csv")) || path=="offline")
+    path<-file.path(get_local_lookup_path(),"style//")
   #Read in coloration
   coloration<-read.csv(
 
@@ -50,6 +53,7 @@ prepare_labels_and_colors<-function(data
   if(ncol(coloration)!=12) stop("Mismatched number of columns in coloration.txt.")
 
   #Fix oddities involving coloration text, and handle accented characters.
+
   coloration$variable <- gsub("\\\\n","\n",coloration$variable)#iconv, from="UTF-8", to="LATIN1")
   coloration$Label <- gsub("\\\\n","\n",coloration$Label)#incov, from="UTF-8", to="LATIN1")
 
