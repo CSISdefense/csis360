@@ -46,6 +46,10 @@ standardize_variable_names<- function(data,
   if(all(is.na(data[(nrow(data)-1):nrow(data),])))
     data<-data[1:(nrow(data)-2),]
 
+  if(!file.exists(file.path(path,"Lookup_StandardizeVariableNames.csv")) || path=="offline")
+    path<-file.path(get_local_lookup_path(),"style//")
+
+
   if(replace_special==TRUE){
       #First cover any special character names we always have parsed.
       standardize_variable_names(data,path,var,replace_special = FALSE)
