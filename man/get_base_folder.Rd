@@ -20,6 +20,3 @@ When a project is open, R files use the base of the repository
 as the working directory. RMD files use their own position, typically
 script or analysis.
 }
-\examples{
-
-}

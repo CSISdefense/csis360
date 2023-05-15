@@ -13,9 +13,6 @@ import_SQLserver_file(Path, prefix, file.name)
 
 \item{file.name}{file name, sans any prefix.}
 }
-\value{
-
-}
 \description{
 Import a comparison file from SQL server.
 }

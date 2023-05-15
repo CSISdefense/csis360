@@ -62,10 +62,13 @@ get_local_lookup_path<-function(){
   local_path<-"K:\\Users\\Greg\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
+  local_path<-"C:\\Users\\gsand\\Repositories\\Lookup-Tables\\"
+  if(file.exists(local_path))
+    return(local_path)
   local_path<-"F:\\Users\\Greg\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
-  local_path<-"D:\\Repositories\\Lookup-Tables\\style\\"
+  local_path<-"D:\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
   local_path<-"F:\\Users\\gsanders\\Documents\\Repositories\\Lookup-Tables\\"
@@ -457,7 +460,7 @@ read_and_join<-function(
 read_and_join_experiment<-function(
     data,
     lookup_file,
-    path="https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
+    path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
     directory="Lookups/",
     by=NULL,
     replace_na_var=NULL,

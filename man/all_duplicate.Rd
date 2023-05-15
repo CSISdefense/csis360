@@ -22,6 +22,3 @@ Duplicated just returns the 2nd row of duplicates and doesn't have
 a trivially easy way of just checking for duplicates in primary keys rather
 than all rows, this function covers both.
 }
-\examples{
-
-}

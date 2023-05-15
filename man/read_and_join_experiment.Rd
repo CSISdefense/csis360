@@ -7,7 +7,7 @@
 read_and_join_experiment(
   data,
   lookup_file,
-  path = "https://raw.githubusercontent.com/CSISdefense/R-scripts-and-data/master/",
+  path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
   directory = "Lookups/",
   by = NULL,
   replace_na_var = NULL,

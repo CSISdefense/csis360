@@ -20,6 +20,3 @@ Group By List
 \details{
 Replacement for group_by_ now that it has been depricated.
 }
-\examples{
-
-}

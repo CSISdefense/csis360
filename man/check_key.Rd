@@ -22,6 +22,3 @@ This function is uesed to check if a provided set of columns act as
 unique identifiers. This is often particularly valuable before merging two
 sets of tables, though it has a variety of other uses.
 }
-\examples{
-
-}

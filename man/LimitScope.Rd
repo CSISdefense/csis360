@@ -11,9 +11,6 @@ LimitScope(FPDS.gov, main.DF)
 
 \item{main.DF}{Comparison  data frame.}
 }
-\value{
-
-}
 \description{
 Match up yeaers between two datasets to limit the scope.
 }
