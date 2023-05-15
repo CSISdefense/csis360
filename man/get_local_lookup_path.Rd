@@ -17,6 +17,8 @@ The lookup-table repository is a public one and can be found online.
 However, when updating lookup files, it can be faster to use the local version
 rather than wait for github to full parse the pushed files. In addition a
 local path can enable working offline.
+}
+\examples{
+sget_local_lookup_path()
 
-examples sget_local_lookup_path()
 }
