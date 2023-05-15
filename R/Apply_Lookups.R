@@ -482,6 +482,10 @@ read_and_join_experiment<-function(
   # read.delim doesn't like \\
   path<-gsub("\\\\","//",path)
   directory<-gsub("\\\\","//",directory)
+  if(!file.exists(file.path(path,directory,lookup_file)) || path=="offline"){
+    warning("Using offline path")
+    path<-get_local_lookup_path()
+  }
 
 
   case_match<-function(name, list){
