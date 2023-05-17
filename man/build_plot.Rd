@@ -63,6 +63,3 @@ Adds a geom layer to a ggplot object based on user input.
 Intended to handle ggplot settings that depend on user input.
 Settings that apply universally should be added in server.R.
 }
-\examples{
-
-}

@@ -14,12 +14,6 @@ append_contract_fixes(
 
 \item{df}{data frame}
 }
-\value{
-
-}
 \description{
 Apply know fixes to contract files.
-}
-\details{
-
 }

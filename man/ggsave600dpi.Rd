@@ -12,7 +12,8 @@ ggsave600dpi(
   height,
   units = "in",
   size = 60,
-  lineheight = 0.13
+  lineheight = 0.13,
+  ...
 )
 }
 \arguments{

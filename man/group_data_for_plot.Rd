@@ -23,6 +23,3 @@ A tibble of formatted data
 \description{
 Returns data in the appropriate format for the user-specified plot
 }
-\details{
-
-}

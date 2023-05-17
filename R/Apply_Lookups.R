@@ -25,7 +25,7 @@
 #' as an extension instead of .txt or .csv. This checks if the base file is available and if
 #' not it handles opening the zip file instead.
 #'
-#' examples swap_in_zip(filename="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv)
+#' @examples swap_in_zip(filename="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv)
 #'
 swap_in_zip<-function(filename,path,directory=""){
   input<-paste(path,directory,filename,sep="")
@@ -53,7 +53,7 @@ swap_in_zip<-function(filename,path,directory=""){
 #' rather than wait for github to full parse the pushed files. In addition a
 #' local path can enable working offline.
 #'
-#' examples get_local_lookup_path()
+#' @examples get_local_lookup_path()
 #'
 get_local_lookup_path<-function(){
   local_path<-"C:\\Users\\Present\\Documents\\Repositories\\Lookup-Tables\\"
@@ -62,10 +62,13 @@ get_local_lookup_path<-function(){
   local_path<-"K:\\Users\\Greg\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
+  local_path<-"C:\\Users\\gsand\\Repositories\\Lookup-Tables\\"
+  if(file.exists(local_path))
+    return(local_path)
   local_path<-"F:\\Users\\Greg\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
-  local_path<-"D:\\Repositories\\Lookup-Tables\\style\\"
+  local_path<-"D:\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
   local_path<-"F:\\Users\\gsanders\\Documents\\Repositories\\Lookup-Tables\\"

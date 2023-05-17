@@ -24,6 +24,3 @@ A derived column is one that could be consolidated only to the primary keys
 and the derived column (with any nas removed). If that criteria is met, this function
 then fills in the nas with those derived alues.
 }
-\examples{
-
-}
