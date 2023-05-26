@@ -485,7 +485,8 @@ read_and_join_experiment<-function(
   # read.delim doesn't like \\
   path<-gsub("\\\\","//",path)
   directory<-gsub("\\\\","//",directory)
-  if(!file.exists(file.path(path,directory,lookup_file)) || path=="offline"){
+  if(tolower(substr(path,1,4))=="http"&!RCurl::url.exists(file.path(path,directory,lookup_file))
+     || path=="offline"){
     warning("Using offline path")
     path<-get_local_lookup_path()
   }
