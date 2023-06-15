@@ -38,7 +38,7 @@ jitter_binary<-function(a, jitt = 0.05){
 #' @export
 get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
   #Make sure Open Sans is available.
-  if(!"Open Sans" %in% sysfonts::font_families()) sysfonts::font_add_google("Open Sans")
+  # if(!"Open Sans" %in% sysfonts::font_families()) sysfonts::font_add_google("Open Sans")
   t<-theme(
     panel.background = element_rect(fill = "#F4F4F4"),
     strip.background = element_rect(fill ="#E0E0E0"),
@@ -852,11 +852,12 @@ if (caption==TRUE)
 #'
 #' @import ggplot2
 #' @export
-ggsave600dpi<-function(filename,gg,width,height,units="in",size=60,lineheight=0.13,...){
+ggsave600dpi<-function(filename,gg,width,height,units="in",size=12,lineheight=0.13,
+                       caption_fraction=10/12,...){
   ggsave(filename, gg+
          theme(text=element_text(size=size,lineheight=lineheight),
                legend.spacing.x = unit(0.1, 'cm'),
-               plot.caption = element_text(size=round(size * 5/6,0))
+               plot.caption = element_text(size=round(size * caption_fraction,0))
                ),
                  # font("xy.title", size = 45) +
                  # font("xy.text", size = 45) +
