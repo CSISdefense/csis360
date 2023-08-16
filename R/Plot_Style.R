@@ -361,7 +361,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
   # add x-axis labeling
   if(any(class(data[,x_var])=="Date")){
     mainplot<-mainplot+scale_x_date(
-      breaks=scales::date_breaks("2 years"),
+      # breaks=scales::date_breaks("2 years"),
       #                 c(seq(
       #                     as.numeric(format(min(VAR.long.DF$x.variable),"%Y")),
       #                     as.numeric(format(max(VAR.long.DF$x.variable),"%Y")),
@@ -843,7 +843,7 @@ if (caption==TRUE)
 #' @param height Output height as per ggsave
 #' @param units Output measurement unit as per ggsave
 #' @param size New text size
-#'
+#' @param caption_fraction Ratio of caption to the rest of text
 #' @return Does not return, outptus to file
 #'
 #'
@@ -852,11 +852,11 @@ if (caption==TRUE)
 #'
 #' @import ggplot2
 #' @export
-ggsave600dpi<-function(filename,gg,width,height,units="in",size=60,lineheight=0.13,...){
+ggsave600dpi<-function(filename,gg,width,height,units="in",size=60,lineheight=0.13,caption_fraction=5/6,...){
   ggsave(filename, gg+
          theme(text=element_text(size=size,lineheight=lineheight),
                legend.spacing.x = unit(0.1, 'cm'),
-               plot.caption = element_text(size=round(size * 5/6,0))
+               plot.caption = element_text(size=round(size * caption_fraction,0))
                ),
                  # font("xy.title", size = 45) +
                  # font("xy.text", size = 45) +
