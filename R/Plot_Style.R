@@ -852,7 +852,8 @@ if (caption==TRUE)
 #'
 #' @import ggplot2
 #' @export
-ggsave600dpi<-function(filename,gg,width,height,units="in",size=60,lineheight=0.13,caption_fraction=5/6,...){
+ggsave600dpi<-function(filename,gg,width,height,units="in",size=12,lineheight=0.13,
+                       caption_fraction=10/12,...){
   ggsave(filename, gg+
          theme(text=element_text(size=size,lineheight=lineheight),
                legend.spacing.x = unit(0.1, 'cm'),
