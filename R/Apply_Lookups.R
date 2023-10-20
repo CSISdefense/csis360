@@ -1932,6 +1932,20 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
   }
 
+  if("VendorAddressCountry" %in% colnames(df) & !"VendorAddressISOalpha3" %in% colnames(df)){
+    if("ISOalpha3" %in% colnames(df))
+      df<-subset(df,select=-c(ISOalpha3))
+    df$VendorAddressCountry[df$VendorAddressCountry==""]<-NA
+    df<-read_and_join_experiment(df,lookup_file="Location_CountryName.csv",
+                                 path=path,dir="location/",
+                                 add_var = c("ISOalpha3"),
+                                 by=c("VendorAddressCountry"="CountryName"),
+                                 # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                 missing_file="missing_VendorAddressCountry.csv",
+                                 case_sensitive = FALSE)
+    colnames(df)[colnames(df)=="ISOalpha3"]<-"VendorAddressISOalpha3"
+  }
+
 
 
   if("PlaceISOalpha3" %in% colnames(df)){
@@ -1957,6 +1971,20 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  missing_file="missing_DSCA_iso.csv")
     colnames(df)[colnames(df)=="isforeign"]<-"VendorIsForeign"
   }
+
+
+  if("VendorAddressISOalpha3" %in% colnames(df)){
+    if("VendorAddressIsForeign" %in% colnames(df))
+      df<-subset(df,select=-c(VendorIsForeign))
+    df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
+                                 path=path,dir="location/",
+                                 add_var = c("isforeign"),#"USAID region",
+                                 by=c("VendorAddressISOalpha3"="alpha-3"),
+                                 # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                 missing_file="missing_iso.csv")
+    colnames(df)[colnames(df)=="isforeign"]<-"VendorAddressIsForeign"
+  }
+
   if ("Shiny.VendorSize" %in% colnames(df) & "VendorIsForeign" %in% colnames(df)){
     df$VendorSize_Intl<-factor(df$Shiny.VendorSize)
     levels(df$VendorSize_Intl)<-list(
