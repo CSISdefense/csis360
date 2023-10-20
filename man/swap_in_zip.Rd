@@ -25,3 +25,7 @@ up, one zip per file, and name the zip file the same name as the data file, exce
 as an extension instead of .txt or .csv. This checks if the base file is available and if
 not it handles opening the zip file instead.
 }
+\examples{
+swap_in_zip(filename="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv")
+
+}

@@ -14,6 +14,12 @@ append_contract_fixes(
 
 \item{df}{data frame}
 }
+\value{
+updata datframe
+}
 \description{
 Apply know fixes to contract files.
+}
+\details{
+There are a few adjustments we make to the main contract.fpds dataset. This function applies this to our fpds.gov data as well.
 }

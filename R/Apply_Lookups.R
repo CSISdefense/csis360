@@ -25,8 +25,9 @@
 #' as an extension instead of .txt or .csv. This checks if the base file is available and if
 #' not it handles opening the zip file instead.
 #'
-#' @examples swap_in_zip(filename="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv)
+#' @examples swap_in_zip(filename="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv")
 #'
+#' @export
 swap_in_zip<-function(filename,path,directory=""){
   input<-paste(path,directory,filename,sep="")
   #File.exist seems only to work for local files.
@@ -55,6 +56,7 @@ swap_in_zip<-function(filename,path,directory=""){
 #'
 #' @examples get_local_lookup_path()
 #'
+#' @export
 get_local_lookup_path<-function(){
   local_path<-"C:\\Users\\Present\\Documents\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
@@ -89,6 +91,8 @@ get_local_lookup_path<-function(){
 #' @details Returns the variable after removing $s and ,s.
 #'
 #' @examples FactorToNumber("5")
+#'
+#' @export
 FactorToNumber<-function(x){
   warning("Deprecated in favor of text_to_number")
   if ((is.factor(x))||(is.character(x))){
@@ -109,6 +113,8 @@ FactorToNumber<-function(x){
 #' @details Returns ',' for csv and '/t' for txt files. Creates an error for other file types.
 #'
 #' @examples get_delim("test.csv")
+#'
+#' @export
 get_delim<-function(filename){
   delim<-NULL
   extension<-substring(filename,nchar(filename)-2,nchar(filename))
@@ -893,7 +899,6 @@ get_fiscal_year<-function(
 #'
 #' @details Add column variants, including summaries, and deflated dollars,
 #' to a contract dataset.
-#' @examples
 #'
 #'
 #' @export

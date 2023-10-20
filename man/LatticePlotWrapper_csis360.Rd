@@ -2,7 +2,7 @@
 % Please edit documentation in R/Plot_Style.R
 \name{LatticePlotWrapper_csis360}
 \alias{LatticePlotWrapper_csis360}
-\title{A legacy function for graphs that allows primary and s econdary facets and}
+\title{A legacy function for graphs that allows primary and secondary facets and}
 \usage{
 LatticePlotWrapper_csis360(
   VAR.color.legend.label,
@@ -69,7 +69,7 @@ LatticePlotWrapper_csis360(
 A ggplot object following user-specified parameters.
 }
 \description{
-A legacy function for graphs that allows primary and s econdary facets and
+A legacy function for graphs that allows primary and secondary facets and
 }
 \details{
 This should really be integrated into build_plot

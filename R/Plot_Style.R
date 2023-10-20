@@ -131,7 +131,6 @@ get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
 #' @details Intended to handle ggplot settings that depend on user input.
 #'Settings that apply universally should be added in server.R.
 #'
-#' @examples
 #'
 #' @import ggplot2
 #' @import stringr
@@ -454,7 +453,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
 }
 
 
-#' @title A legacy function for graphs that allows primary and s econdary facets and
+#' @title A legacy function for graphs that allows primary and secondary facets and
 #'
 #' @param VAR.color.legend.label Label for the fill legend
 #' @param VAR.main.label Main title for the graph
@@ -480,8 +479,6 @@ if(is.null(x_var)) x_var<-names(data)[1]
 #' @return A ggplot object following user-specified parameters.
 #'
 #' @details This should really be integrated into build_plot
-#'
-#' @examples
 #'
 #' @import ggplot2
 #' @import dplyr

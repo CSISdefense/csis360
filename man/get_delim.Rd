@@ -20,4 +20,5 @@ Returns ',' for csv and '/t' for txt files. Creates an error for other file type
 }
 \examples{
 get_delim("test.csv")
+
 }

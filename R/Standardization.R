@@ -119,7 +119,7 @@ standardize_variable_names<- function(data,
 #'
 #' @return A tibble of formatted data
 #'
-#' @details
+#' @details Transforms data by summarizing on key display variable
 #'
 #'
 #'
@@ -1644,8 +1644,6 @@ update_sample_col_CSIScontractID<-function(smp,
 #' unique identifiers. This is often particularly valuable before merging two
 #' sets of tables, though it has a variety of other uses.
 #'
-#' @examples
-#'
 #' @export
 check_key<-function(x,key){
   if(!all(key %in% colnames(x))){
@@ -1676,8 +1674,6 @@ check_key<-function(x,key){
 #' a trivially easy way of just checking for duplicates in primary keys rather
 #' than all rows, this function covers both.
 #'
-#' @examples
-#'
 #' @export
 all_duplicate<-function(x,key=NULL){
   if(is.null(key)) key<-colnames(x)
@@ -1698,8 +1694,6 @@ all_duplicate<-function(x,key=NULL){
 #'
 #' @details A derived column is one that could be consolidated only to the primary keys
 #' and the derived column
-#'
-#' @examples
 #'
 #' @export
 
@@ -1733,8 +1727,6 @@ check_derived<-function(x,key,derived_col,na.rm=FALSE){
 #' and the derived column (with any nas removed). If that criteria is met, this function
 #' then fills in the nas with those derived alues.
 #'
-#' @examples
-#'
 #' @export
 
 fill_derived<-function(x,key,derived_col){
@@ -1759,8 +1751,6 @@ fill_derived<-function(x,key,derived_col){
 #'
 #' @details Replacement for group_by_ now that it has been depricated.
 #'
-#' @examples
-#'
 #' @export
 group_by_list<-function(x,key){
   if(all(key=="") | length(key)==0) return(group_by(x))
@@ -1780,8 +1770,6 @@ group_by_list<-function(x,key){
 #' @details When a project is open, R files use the base of the repository
 #' as the working directory. RMD files use their own position, typically
 #' script or analysis.
-#'
-#' @examples
 #'
 #' @export
 get_base_folder<-function(folder){
