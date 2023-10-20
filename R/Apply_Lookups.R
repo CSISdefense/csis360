@@ -903,7 +903,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   df<-standardize_variable_names(df)
 
   #Clear out blank/admin/error message rows at the end of the input file.
-  if(substring(df$Fiscal_Year[nrow(df)],1,15) %in% c(
+  if(substring(df[nrow(df),1],1,15) %in% c(
     "Completion time",
     "An error occurr"))#ed while executing batch. Error message is: One or more errors occurred
     df<-df[-nrow(df),]
@@ -1422,41 +1422,60 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #   }
   #
-  #   colnames(df)[colnames(df) %in% c("ProdServ","Product.or.Service.Code")]<-"ProductOrServiceCode"
-  if("ProductOrServiceCode" %in% names(df))
+  #If there's existing productorservce descriptions, these may be more precise than
+  #What we can provide via lookup tables.
+  if("ProductOrServiceCode" %in% names(df) & !"Product.or.Service.Description" %in% names(df)&
+     !"ProductOrServiceCodeText" %in% names(df))
   {
     if(is.integer(df$ProductOrServiceCode)){
       df$ProductOrServiceCode<-factor(df$ProductOrServiceCode)
     }
     df$ProductOrServiceCode[df$ProductOrServiceCode==""]<-NA
 
-    if("Product.or.Service.Description" %in% names(df)){
-      df<-subset(df, select=-c(Product.or.Service.Description))
-    }
-    if("SimpleArea" %in% names(df)){
-      df<-subset(df, select=-c(SimpleArea))
-    }
-
-    #           debug(read_and_join_experiment)
     df<-csis360::read_and_join_experiment(df,
                                           "ProductOrServiceCodes.csv",
                                           by=c("ProductOrServiceCode"="ProductOrServiceCode"),
-                                          add_var=c("CrisisProductOrServiceArea","Simple","ProductOrServiceArea","ProductServiceOrRnDarea",
-                                                    "ProductOrServiceCodeText"),
+                                          add_var=c("ProductOrServiceCodeText"),
                                           path=path,
-                                          skip_check_var = c("CrisisProductOrServiceArea","Simple"),
+                                          # skip_check_var = c("CrisisProductOrServiceArea","Simple"),
                                           dir=""
     )
-    # df<-read_and_join_experiment(df,
-    #                       "ProductOrServiceCodes.csv",
-    #                       path=path,
-    #                       directory="",
-    #                       by="ProductOrServiceCode")
-    #         NA.check.df<-subset(df, is.na(ProductOrServiceArea), select=c("Product.or.Service.Code"))
-    #         if(nrow(NA.check.df)>0){
-    #             print(unique(NA.check.df))
-    #             stop(paste(nrow(NA.check.df),"rows of NAs generated in ProductOrServiceArea"))
-    #         }
+  }
+  #We can be more precise
+  if("ProductOrServiceCode" %in% names(df) &
+     !"ProductServiceOrRnDarea" %in% names(df))
+  {
+    if(is.integer(df$ProductOrServiceCode)){
+      df$ProductOrServiceCode<-factor(df$ProductOrServiceCode)
+    }
+    df$ProductOrServiceCode[df$ProductOrServiceCode==""]<-NA
+
+    df<-df %>% mutate(fiscal_year_gt_2020=ifelse(Fiscal_Year>2020,1,0))
+    df<-csis360::read_and_join_experiment(df,
+                                          "PSCAtransition.csv",
+                                          dir="ProductOrServiceCode",
+                                          by=c("ProductOrServiceCode"="ProductOrServiceCode",
+                                               "fiscal_year_gt_2020"="fiscal_year_gt_2020"),
+                                          add_var=c("ProductServiceOrRnDarea"),
+                                          path=path,
+                                          skip_check_var = c("ProductServiceOrRnDarea"),
+    )
+    colnames(df)[colnames(df)=="ProductServiceOrRnDarea"]<-"TransitionProductServiceOrRnDarea"
+
+    df<-csis360::read_and_join_experiment(df,
+                                          "ProductOrServiceCodes.csv",
+                                          by=c("ProductOrServiceCode"="ProductOrServiceCode"),
+                                          add_var=c("CrisisProductOrServiceArea","Simple","ProductOrServiceArea","ProductServiceOrRnDarea"),
+                                          path=path,
+                                          skip_check_var = c("ProductServiceOrRnDarea"),
+                                          dir=""
+
+    )
+    df$ProductServiceOrRnDarea[is.na(ProductServiceOrRnDarea)]<-
+      df$TransitionProductServiceOrRnDarea[is.na(ProductServiceOrRnDarea)]
+
+    df<-df %>% select(-fiscal_year_gt_2020,-TransitionProductServiceOrRnDarea)
+
   }
   else if("ProductServiceOrRnDarea" %in% names(df))
   {

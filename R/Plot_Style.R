@@ -38,7 +38,7 @@ jitter_binary<-function(a, jitt = 0.05){
 #' @export
 get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
   #Make sure Open Sans is available.
-  if(!"Open Sans" %in% sysfonts::font_families()) sysfonts::font_add_google("Open Sans")
+  # if(!"Open Sans" %in% sysfonts::font_families()) sysfonts::font_add_google("Open Sans")
   t<-theme(
     panel.background = element_rect(fill = "#F4F4F4"),
     strip.background = element_rect(fill ="#E0E0E0"),
@@ -361,7 +361,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
   # add x-axis labeling
   if(any(class(data[,x_var])=="Date")){
     mainplot<-mainplot+scale_x_date(
-      breaks=scales::date_breaks("2 years"),
+      # breaks=scales::date_breaks("2 years"),
       #                 c(seq(
       #                     as.numeric(format(min(VAR.long.DF$x.variable),"%Y")),
       #                     as.numeric(format(max(VAR.long.DF$x.variable),"%Y")),
@@ -843,7 +843,7 @@ if (caption==TRUE)
 #' @param height Output height as per ggsave
 #' @param units Output measurement unit as per ggsave
 #' @param size New text size
-#'
+#' @param caption_fraction Ratio of caption to the rest of text
 #' @return Does not return, outptus to file
 #'
 #'
