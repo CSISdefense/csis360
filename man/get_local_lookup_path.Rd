@@ -19,6 +19,6 @@ rather than wait for github to full parse the pushed files. In addition a
 local path can enable working offline.
 }
 \examples{
-sget_local_lookup_path()
+get_local_lookup_path()
 
 }

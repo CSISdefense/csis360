@@ -20,4 +20,5 @@ Returns the variable after removing $s and ,s.
 }
 \examples{
 FactorToNumber("5")
+
 }

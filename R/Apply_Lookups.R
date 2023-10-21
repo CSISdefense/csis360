@@ -25,8 +25,9 @@
 #' as an extension instead of .txt or .csv. This checks if the base file is available and if
 #' not it handles opening the zip file instead.
 #'
-#' @examples swap_in_zip(filename="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv)
+#' @examples swap_in_zip(filename="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv")
 #'
+#' @export
 swap_in_zip<-function(filename,path,directory=""){
   input<-paste(path,directory,filename,sep="")
   #File.exist seems only to work for local files.
@@ -55,6 +56,7 @@ swap_in_zip<-function(filename,path,directory=""){
 #'
 #' @examples get_local_lookup_path()
 #'
+#' @export
 get_local_lookup_path<-function(){
   local_path<-"C:\\Users\\Present\\Documents\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
@@ -92,6 +94,8 @@ get_local_lookup_path<-function(){
 #' @details Returns the variable after removing $s and ,s.
 #'
 #' @examples FactorToNumber("5")
+#'
+#' @export
 FactorToNumber<-function(x){
   warning("Deprecated in favor of text_to_number")
   if ((is.factor(x))||(is.character(x))){
@@ -112,6 +116,8 @@ FactorToNumber<-function(x){
 #' @details Returns ',' for csv and '/t' for txt files. Creates an error for other file types.
 #'
 #' @examples get_delim("test.csv")
+#'
+#' @export
 get_delim<-function(filename){
   delim<-NULL
   extension<-substring(filename,nchar(filename)-2,nchar(filename))
@@ -896,7 +902,6 @@ get_fiscal_year<-function(
 #'
 #' @details Add column variants, including summaries, and deflated dollars,
 #' to a contract dataset.
-#' @examples
 #'
 #'
 #' @export
@@ -906,7 +911,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   df<-standardize_variable_names(df)
 
   #Clear out blank/admin/error message rows at the end of the input file.
-  if(substring(df$Fiscal_Year[nrow(df)],1,15) %in% c(
+  if(substring(df[nrow(df),1],1,15) %in% c(
     "Completion time",
     "An error occurr"))#ed while executing batch. Error message is: One or more errors occurred
     df<-df[-nrow(df),]
@@ -1425,41 +1430,60 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #   }
   #
-  #   colnames(df)[colnames(df) %in% c("ProdServ","Product.or.Service.Code")]<-"ProductOrServiceCode"
-  if("ProductOrServiceCode" %in% names(df))
+  #If there's existing productorservce descriptions, these may be more precise than
+  #What we can provide via lookup tables.
+  if("ProductOrServiceCode" %in% names(df) & !"Product.or.Service.Description" %in% names(df)&
+     !"ProductOrServiceCodeText" %in% names(df))
   {
     if(is.integer(df$ProductOrServiceCode)){
       df$ProductOrServiceCode<-factor(df$ProductOrServiceCode)
     }
     df$ProductOrServiceCode[df$ProductOrServiceCode==""]<-NA
 
-    if("Product.or.Service.Description" %in% names(df)){
-      df<-subset(df, select=-c(Product.or.Service.Description))
-    }
-    if("SimpleArea" %in% names(df)){
-      df<-subset(df, select=-c(SimpleArea))
-    }
-
-    #           debug(read_and_join_experiment)
     df<-csis360::read_and_join_experiment(df,
                                           "ProductOrServiceCodes.csv",
                                           by=c("ProductOrServiceCode"="ProductOrServiceCode"),
-                                          add_var=c("CrisisProductOrServiceArea","Simple","ProductOrServiceArea","ProductServiceOrRnDarea",
-                                                    "ProductOrServiceCodeText"),
+                                          add_var=c("ProductOrServiceCodeText"),
                                           path=path,
-                                          skip_check_var = c("CrisisProductOrServiceArea","Simple"),
+                                          # skip_check_var = c("CrisisProductOrServiceArea","Simple"),
                                           dir=""
     )
-    # df<-read_and_join_experiment(df,
-    #                       "ProductOrServiceCodes.csv",
-    #                       path=path,
-    #                       directory="",
-    #                       by="ProductOrServiceCode")
-    #         NA.check.df<-subset(df, is.na(ProductOrServiceArea), select=c("Product.or.Service.Code"))
-    #         if(nrow(NA.check.df)>0){
-    #             print(unique(NA.check.df))
-    #             stop(paste(nrow(NA.check.df),"rows of NAs generated in ProductOrServiceArea"))
-    #         }
+  }
+  #We can be more precise
+  if("ProductOrServiceCode" %in% names(df) &
+     !"ProductServiceOrRnDarea" %in% names(df))
+  {
+    if(is.integer(df$ProductOrServiceCode)){
+      df$ProductOrServiceCode<-factor(df$ProductOrServiceCode)
+    }
+    df$ProductOrServiceCode[df$ProductOrServiceCode==""]<-NA
+
+    df<-df %>% mutate(fiscal_year_gt_2020=ifelse(Fiscal_Year>2020,1,0))
+    df<-csis360::read_and_join_experiment(df,
+                                          "PSCAtransition.csv",
+                                          dir="ProductOrServiceCode",
+                                          by=c("ProductOrServiceCode"="ProductOrServiceCode",
+                                               "fiscal_year_gt_2020"="fiscal_year_gt_2020"),
+                                          add_var=c("ProductServiceOrRnDarea"),
+                                          path=path,
+                                          skip_check_var = c("ProductServiceOrRnDarea"),
+    )
+    colnames(df)[colnames(df)=="ProductServiceOrRnDarea"]<-"TransitionProductServiceOrRnDarea"
+
+    df<-csis360::read_and_join_experiment(df,
+                                          "ProductOrServiceCodes.csv",
+                                          by=c("ProductOrServiceCode"="ProductOrServiceCode"),
+                                          add_var=c("CrisisProductOrServiceArea","Simple","ProductOrServiceArea","ProductServiceOrRnDarea"),
+                                          path=path,
+                                          skip_check_var = c("ProductServiceOrRnDarea"),
+                                          dir=""
+
+    )
+    df$ProductServiceOrRnDarea[is.na(ProductServiceOrRnDarea)]<-
+      df$TransitionProductServiceOrRnDarea[is.na(ProductServiceOrRnDarea)]
+
+    df<-df %>% select(-fiscal_year_gt_2020,-TransitionProductServiceOrRnDarea)
+
   }
   else if("ProductServiceOrRnDarea" %in% names(df))
   {
@@ -1935,6 +1959,20 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
   }
 
+  if("VendorAddressCountry" %in% colnames(df) & !"VendorAddressISOalpha3" %in% colnames(df)){
+    if("ISOalpha3" %in% colnames(df))
+      df<-subset(df,select=-c(ISOalpha3))
+    df$VendorAddressCountry[df$VendorAddressCountry==""]<-NA
+    df<-read_and_join_experiment(df,lookup_file="Location_CountryName.csv",
+                                 path=path,dir="location/",
+                                 add_var = c("ISOalpha3"),
+                                 by=c("VendorAddressCountry"="CountryName"),
+                                 # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                 missing_file="missing_VendorAddressCountry.csv",
+                                 case_sensitive = FALSE)
+    colnames(df)[colnames(df)=="ISOalpha3"]<-"VendorAddressISOalpha3"
+  }
+
 
 
   if("PlaceISOalpha3" %in% colnames(df)){
@@ -1960,6 +1998,20 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  missing_file="missing_DSCA_iso.csv")
     colnames(df)[colnames(df)=="isforeign"]<-"VendorIsForeign"
   }
+
+
+  if("VendorAddressISOalpha3" %in% colnames(df)){
+    if("VendorAddressIsForeign" %in% colnames(df))
+      df<-subset(df,select=-c(VendorIsForeign))
+    df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
+                                 path=path,dir="location/",
+                                 add_var = c("isforeign"),#"USAID region",
+                                 by=c("VendorAddressISOalpha3"="alpha-3"),
+                                 # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                 missing_file="missing_iso.csv")
+    colnames(df)[colnames(df)=="isforeign"]<-"VendorAddressIsForeign"
+  }
+
   if ("Shiny.VendorSize" %in% colnames(df) & "VendorIsForeign" %in% colnames(df)){
     df$VendorSize_Intl<-factor(df$Shiny.VendorSize)
     levels(df$VendorSize_Intl)<-list(

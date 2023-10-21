@@ -1,4 +1,3 @@
-
 #' Get Column Key based on the names in a data frame
 #'
 #' @param data A data frame
