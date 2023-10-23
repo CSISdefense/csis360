@@ -1760,6 +1760,68 @@ group_by_list<-function(x,key){
   x
 }
 
+#' Save a copy of the plot, a current dollars csv, and an excel copy
+#'
+#' @param plot a ggplot object
+#' @param df the underlying data
+#' @param filename the name for the files, excluding extension
+#' @param xlsx the excel file to output to
+#' @param sheet the sheet to use in excel, typically shorter than the name
+#' @param path="..\\output\\" what directory for the output
+#' @param width=6.5
+#' @param height=3.5
+#' @param startRow=1
+#' @param startCol=10
+#'
+#'
+#' @return no value
+#'
+#'
+#'
+#' @export
+log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output", width=6.5,height=3.5,
+                     startRow=1,startCol=10,format=TRUE,var_list=NA,
+                     output_plot=TRUE) {
+
+
+  if(format){
+
+
+    #This may end up breaking with pivoted graphs. But lets cross that bridge when we come to it.
+    y_var<-plot$plot_env$y_var
+    x_var<-plot$plot_env$x_var
+    if(all(is.na(var_list))){
+      var_list<-colnames(plot$data)
+      var_list<-var_list[!var_list %in% y_var & !var_list %in% x_var]
+    }
+    #Swap in Fiscal_Year for dFYear for ease of table readability
+    if("dFYear"==x_var & "Fiscal_Year" %in% colnames(df))
+      x_var<-"Fiscal_Year"
+    #Add other constant dollar here variables
+    if(y_var %in% c("Action_Obligation_OMB24_GDP22"))
+      y_var<-"Action_Obligation_Then_Year"
+    else
+      stop("Unrecognized y_var")
+
+    df<-group_data_for_plot(df,x_var=x_var, y_var=y_var, breakout=var_list) %>% arrange(!!as.name(x_var))%>%
+      pivot_wider(names_from=!!as.name(x_var),
+                  values_from=!!as.name(y_var)) %>%
+      arrange(.by_group = TRUE)
+
+  }
+
+  if (output_plot==TRUE)
+    ggsave600dpi(plot+labs(caption=NULL,title=NULL),
+                 file=file.path(path,paste(filename,".svg",sep="")),size=12,caption_fraction=8/12,lineheight=1, height =height, width=width)
+
+  write.csv(df,file=file.path(path,"then_year_csv",paste(filename,".csv",sep="")),row.names = FALSE, na = "")
+
+  wb <- loadWorkbook(file.path(path,xlsx))
+  writeData(wb, df, sheet = sheet, startRow = startRow, startCol = startCol)
+  saveWorkbook(wb,file=(file.path(path,xlsx)),overwrite = TRUE)
+  rm(wb)
+}
+
 #***********************Get Base Folder
 #' Get Base Folder
 #'

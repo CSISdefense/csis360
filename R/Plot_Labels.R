@@ -232,7 +232,20 @@ prepare_labels_and_colors<-function(data
   names.data
 }
 
-
+#' Quickly assign yearly breaks to a chart
+#'
+#' @param start First year of break sequence
+#' @param stop Last year of break sequence
+#' @by Frequency of data breakes, e.g. 1 for every year, 5 for everry 5 years
+#' @fiscal_year A placeholder for future tuning by fiscal vs. calendar year
+#'
+#' @return A plot with added color and fill scales for the column passed
+#'
+#' @details Add year breaks at specified intervals for date data
+#'
+#' @examples date_x_year_breaks(2000,2023,2)
+#'
+#' @export
 date_x_year_breaks<-function(start,stop,by,fiscal_year=TRUE){
   return(scale_x_date(breaks = as.Date(paste(seq(start,stop, by=by),"01","01",sep="-")),
               date_labels = "'%y"))
