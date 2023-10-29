@@ -524,8 +524,8 @@ read_and_join_experiment<-function(
   #If the  file specified is an RDA
   if(tolower(substring(lookup_file,nchar(lookup_file)-3))==".rda"){
     if (!file.exists(paste(path,directory,lookup_file,sep="")))
-      stop(paste(path,directory,rdata_file," does not exist",sep=""))
-    load(paste(path,directory,rdata_file,sep=""))
+      stop(paste(path,directory,lookup_file," does not exist",sep=""))
+    load(paste(path,directory,lookup_file,sep=""))
   }
   #If there exists an rda variant of the file passed.
   else if (file.exists(paste(path,directory,substring(lookup_file,1,nchar(lookup_file)-3),"rda", sep="")))
