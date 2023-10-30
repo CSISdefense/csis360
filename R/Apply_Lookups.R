@@ -911,10 +911,15 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   df<-standardize_variable_names(df)
 
   #Clear out blank/admin/error message rows at the end of the input file.
-  if(substring(df[nrow(df),1],1,15) %in% c(
+  while(substring(df[nrow(df),1],1,15) %in% c(
     "Completion time",
-    "An error occurr"))#ed while executing batch. Error message is: One or more errors occurred
+    "An error occurr",#ed while executing batch. Error message is: One or more errors occurred
+    "Msg 208, Level ",#16, State 1, Procedure
+    "Invalid object "#Invalid object name 'contract.FDPSpartia
+    )){
+
     df<-df[-nrow(df),]
+  }
   #Empty rows
   if((df[nrow(df),1]=="" | is.na(df[nrow(df),1]))  & is.na(df$Fiscal_Year[nrow(df)]))
     df<-df[-nrow(df),]
@@ -1458,12 +1463,12 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     }
     df$ProductOrServiceCode[df$ProductOrServiceCode==""]<-NA
 
-    df<-df %>% mutate(fiscal_year_gt_2020=ifelse(Fiscal_Year>2020,1,0))
+    df<-df %>% mutate(Fiscal_Year_gt_2020=ifelse(Fiscal_Year>2020,1,0))
     df<-csis360::read_and_join_experiment(df,
                                           "PSCAtransition.csv",
-                                          dir="ProductOrServiceCode",
+                                          dir="ProductOrService\\",
                                           by=c("ProductOrServiceCode"="ProductOrServiceCode",
-                                               "fiscal_year_gt_2020"="fiscal_year_gt_2020"),
+                                               "Fiscal_Year_gt_2020"="Fiscal_Year_gt_2020"),
                                           add_var=c("ProductServiceOrRnDarea"),
                                           path=path,
                                           skip_check_var = c("ProductServiceOrRnDarea"),
@@ -1482,7 +1487,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df$ProductServiceOrRnDarea[is.na(ProductServiceOrRnDarea)]<-
       df$TransitionProductServiceOrRnDarea[is.na(ProductServiceOrRnDarea)]
 
-    df<-df %>% select(-fiscal_year_gt_2020,-TransitionProductServiceOrRnDarea)
+    df<-df %>% select(-Fiscal_Year_gt_2020,-TransitionProductServiceOrRnDarea)
 
   }
   else if("ProductServiceOrRnDarea" %in% names(df))
