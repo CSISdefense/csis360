@@ -1478,14 +1478,14 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df<-csis360::read_and_join_experiment(df,
                                           "ProductOrServiceCodes.csv",
                                           by=c("ProductOrServiceCode"="ProductOrServiceCode"),
-                                          add_var=c("CrisisProductOrServiceArea","Simple","ProductOrServiceArea","ProductServiceOrRnDarea"),
+                                          add_var=c("Simple","ProductOrServiceArea","ProductServiceOrRnDarea"),
                                           path=path,
                                           skip_check_var = c("ProductServiceOrRnDarea"),
                                           dir=""
 
     )
-    df$ProductServiceOrRnDarea[is.na(ProductServiceOrRnDarea)]<-
-      df$TransitionProductServiceOrRnDarea[is.na(ProductServiceOrRnDarea)]
+    df$ProductServiceOrRnDarea[is.na(df$ProductServiceOrRnDarea)]<-
+      df$TransitionProductServiceOrRnDarea[is.na(df$ProductServiceOrRnDarea)]
 
     df<-df %>% select(-Fiscal_Year_gt_2020,-TransitionProductServiceOrRnDarea)
 
