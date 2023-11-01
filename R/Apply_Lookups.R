@@ -1487,7 +1487,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df$ProductServiceOrRnDarea[is.na(df$ProductServiceOrRnDarea)]<-
       df$TransitionProductServiceOrRnDarea[is.na(df$ProductServiceOrRnDarea)]
 
-    df<-df %>% select(-Fiscal_Year_gt_2020,-TransitionProductServiceOrRnDarea)
+    df<-df %>% dplyr::select(-Fiscal_Year_gt_2020,-TransitionProductServiceOrRnDarea)
 
   }
   else if("ProductServiceOrRnDarea" %in% names(df))
