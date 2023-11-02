@@ -921,8 +921,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df<-df[-nrow(df),]
   }
   #Empty rows
-  if((df[nrow(df),1]=="" | is.na(df[nrow(df),1]))  & is.na(df$Fiscal_Year[nrow(df)]))
-    df<-df[-nrow(df),]
+  if("Fiscal_Year" %in% colnames(df))
+    if((df[nrow(df),1]=="" | is.na(df[nrow(df),1]))  & is.na(df$Fiscal_Year[nrow(df)]))
+      df<-df[-nrow(df),]
 
 
   #
