@@ -524,8 +524,8 @@ read_and_join_experiment<-function(
   #If the  file specified is an RDA
   if(tolower(substring(lookup_file,nchar(lookup_file)-3))==".rda"){
     if (!file.exists(paste(path,directory,lookup_file,sep="")))
-      stop(paste(path,directory,rdata_file," does not exist",sep=""))
-    load(paste(path,directory,rdata_file,sep=""))
+      stop(paste(path,directory,lookup_file," does not exist",sep=""))
+    load(paste(path,directory,lookup_file,sep=""))
   }
   #If there exists an rda variant of the file passed.
   else if (file.exists(paste(path,directory,substring(lookup_file,1,nchar(lookup_file)-3),"rda", sep="")))
@@ -911,16 +911,19 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   df<-standardize_variable_names(df)
 
   #Clear out blank/admin/error message rows at the end of the input file.
-  if(substring(df[nrow(df),1],1,15) %in% c(
+  while(substring(df[nrow(df),1],1,15) %in% c(
     "Completion time",
-    "An error occurr",
-    "Msg 208, Level ",
-    "Invalid object "
-    ))#ed while executing batch. Error message is: One or more errors occurred
+    "An error occurr",#ed while executing batch. Error message is: One or more errors occurred
+    "Msg 208, Level ",#16, State 1, Procedure
+    "Invalid object "#Invalid object name 'contract.FDPSpartia
+    )){
+
     df<-df[-nrow(df),]
+  }
   #Empty rows
-  if((df[nrow(df),1]=="" | is.na(df[nrow(df),1]))  & is.na(df$Fiscal_Year[nrow(df)]))
-    df<-df[-nrow(df),]
+  if("Fiscal_Year" %in% colnames(df))
+    if((df[nrow(df),1]=="" | is.na(df[nrow(df),1]))  & is.na(df$Fiscal_Year[nrow(df)]))
+      df<-df[-nrow(df),]
 
 
   #
@@ -1491,7 +1494,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       print(unique(NA.check.df))
       stop(paste(nrow(NA.check.df),"rows of NAs generated in ProductServiceOrRnDarea"))
     }
-    df<-df %>% select(-Fiscal_Year_gt_2020,-TransitionProductServiceOrRnDarea)
+
+    df<-df %>% dplyr::select(-Fiscal_Year_gt_2020,-TransitionProductServiceOrRnDarea)
 
   }
   else if("ProductServiceOrRnDarea" %in% names(df))

@@ -1781,15 +1781,15 @@ group_by_list<-function(x,key){
 #' @export
 log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output", width=6.5,height=3.5,
                      startRow=1,startCol=10,format=TRUE,var_list=NA,
-                     output_plot=TRUE) {
+                     output_plot=TRUE,x_var=NULL,y_var=NULL) {
 
 
   if(format){
 
 
     #This may end up breaking with pivoted graphs. But lets cross that bridge when we come to it.
-    y_var<-plot$plot_env$y_var
-    x_var<-plot$plot_env$x_var
+    if (is.null(y_var)) y_var<-plot$plot_env$y_var
+    if (is.null(x_var)) x_var<-plot$plot_env$x_var
     if(all(is.na(var_list))){
       var_list<-colnames(plot$data)
       var_list<-var_list[!var_list %in% y_var & !var_list %in% x_var]
