@@ -921,8 +921,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df<-df[-nrow(df),]
   }
   #Empty rows
-  if((df[nrow(df),1]=="" | is.na(df[nrow(df),1]))  & is.na(df$Fiscal_Year[nrow(df)]))
-    df<-df[-nrow(df),]
+  if("Fiscal_Year" %in% colnames(df))
+    if((df[nrow(df),1]=="" | is.na(df[nrow(df),1]))  & is.na(df$Fiscal_Year[nrow(df)]))
+      df<-df[-nrow(df),]
 
 
   #
@@ -1466,7 +1467,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df<-df %>% mutate(Fiscal_Year_gt_2020=ifelse(Fiscal_Year>2020,1,0))
     df<-csis360::read_and_join_experiment(df,
                                           "PSCAtransition.csv",
-                                          dir="ProductOrService\\",
+                                          dir="ProductOrService/",
                                           by=c("ProductOrServiceCode"="ProductOrServiceCode",
                                                "Fiscal_Year_gt_2020"="Fiscal_Year_gt_2020"),
                                           add_var=c("ProductServiceOrRnDarea"),
@@ -1486,6 +1487,13 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
     df$ProductServiceOrRnDarea[is.na(df$ProductServiceOrRnDarea)]<-
       df$TransitionProductServiceOrRnDarea[is.na(df$ProductServiceOrRnDarea)]
+    #Manual check because we have to draw from two sources
+    NA.check.df<-subset(df, is.na(ProductServiceOrRnDarea)&!is.na(ProductOrServiceCode),
+                        select=c("ProductOrServiceCode","TransitionProductServiceOrRnDarea","ProductServiceOrRnDarea"))
+    if(nrow(NA.check.df)>0){
+      print(unique(NA.check.df))
+      stop(paste(nrow(NA.check.df),"rows of NAs generated in ProductServiceOrRnDarea"))
+    }
 
     df<-df %>% dplyr::select(-Fiscal_Year_gt_2020,-TransitionProductServiceOrRnDarea)
 

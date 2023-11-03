@@ -1788,8 +1788,8 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output", width=6.5,h
 
 
     #This may end up breaking with pivoted graphs. But lets cross that bridge when we come to it.
-    if(is.null(y_var)) y_var<-plot$plot_env$y_var
-    if(is.null(x_var)) x_var<-plot$plot_env$x_var
+    if (is.null(y_var)) y_var<-plot$plot_env$y_var
+    if (is.null(x_var)) x_var<-plot$plot_env$x_var
     if(all(is.na(var_list))){
       var_list<-colnames(plot$data)
       var_list<-var_list[!var_list %in% y_var & !var_list %in% x_var]
