@@ -238,6 +238,8 @@ prepare_labels_and_colors<-function(data
 #' @param stop Last year of break sequence
 #' @by Frequency of data breaks, e.g. 1 for every year, 5 for every 5 years
 #' @fiscal_year A placeholder for future tuning by fiscal vs. calendar year
+#' @partial_year If one year of incomplete data is included, specify it with this variable
+#' @partial_label If one year of incomplete data is included, specify it with this variable
 #'
 #' @return A plot with added color and fill scales for the column passed
 #'
@@ -246,33 +248,25 @@ prepare_labels_and_colors<-function(data
 #' @examples date_x_year_breaks(2000,2023,2)
 #'
 #' @export
-date_x_year_breaks<-function(start,stop,by,fiscal_year=TRUE){
+date_x_year_breaks<-function(start,stop,by,fiscal_year=TRUE,partial_year=NULL,partial_label="\nYTD"){
+  if(is.null(partial_year))
     return(scale_x_date(breaks = as.Date(paste(seq(start,stop, by=by),"01","01",sep="-")),
-              date_labels = "'%y"))
+                        date_labels = "'%y"))
+  else {
+    #List dates in sequence and the partial_year
+    b<-as.Date(paste(c(seq(start,stop, by=by),partial_year),"01","01",sep="-"))
+    #If the partial year shows up twice, remove it the duplicate
+    b<-b[!duplicated(b)]
+    l<-as.character(b)
+    py<-l==paste(partial_year,"01","01",sep="-")
+    l[!py]<-format(as.Date(l[!py]),"'%y")
+    l[py]<-paste(format(as.Date(l[py]),"'%y"),partial_label,sep="")
+    return(scale_x_date(breaks = b,labels=l))
 
-}
+  }
 
-#' Quickly assign yearly breaks to a chart with YTD
-#'
-#' @param dates the fiscal year in date form
-#' @param start First year of break sequence
-#' @param stop Last year of break sequence
-#' @by Frequency of data breaks, e.g. 1 for every year, 5 for every 5 years
-#' @fiscal_year A placeholder for future tuning by fiscal vs. calendar year
-#'
-#' @return A plot with added color and fill scales for the column passed
-#'
-#' @details Add year breaks at specified intervals for date data
-#'
-#' @examples date_x_year_breaks(2000,2023,2)
-#'
-#' @export
-date_x_year_breaks_ytd<-function(dates,start,stop,by,YTD,fiscal_year=TRUE){
-  #https://stackoverflow.com/questions/67641520/how-to-create-custom-date-labels-using-ggplot-with-scale-x-date
-  l<-ifelse(year(dates)==YTD,format(dates,"'%y YTD"),"")
-  l[duplicated(l)]<-""
-  l<-ifelse(!duplicated(dates)&year(dates) %in% seq(start,stop,by=by),format(dates,"'%y"),"")
-  return(scale_x_discrete(labels=l))
+  ToplinePricing+scale_x_continuous(breaks=c(seq(2000,2020, by=6),2023),
+                                    labels=c(paste("'",substr(seq(2000,2020, by=6),3,4)),"'23\n(Q1-Q2)"))
 }
 
 #' Take existing data frame and associate colors with values
