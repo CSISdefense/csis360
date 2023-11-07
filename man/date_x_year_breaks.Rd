@@ -4,7 +4,14 @@
 \alias{date_x_year_breaks}
 \title{Quickly assign yearly breaks to a chart}
 \usage{
-date_x_year_breaks(start, stop, by, fiscal_year = TRUE)
+date_x_year_breaks(
+  start,
+  stop,
+  by,
+  fiscal_year = TRUE,
+  partial_year = NULL,
+  partial_label = "\\nYTD"
+)
 }
 \arguments{
 \item{start}{First year of break sequence}

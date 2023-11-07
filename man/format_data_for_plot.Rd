@@ -14,6 +14,7 @@ format_data_for_plot(
   color_var = "None",
   facet_var = "None",
   second_var = NULL,
+  alpha_var = NULL,
   labels_and_colors = NULL,
   group = TRUE,
   drop_missing_labels = TRUE,

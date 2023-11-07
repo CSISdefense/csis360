@@ -19,7 +19,8 @@ build_plot(
   column_key = NULL,
   format = FALSE,
   ytextposition = FALSE,
-  reverse_color = FALSE
+  reverse_color = FALSE,
+  alpha_var = NULL
 )
 }
 \arguments{
