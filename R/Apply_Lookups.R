@@ -1025,8 +1025,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #
 
-  # Organization Funder ####
 
+  # Organization Funder ####
 
 
 
@@ -2436,7 +2436,21 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
     df$Fiscal_Year <- text_to_number(df$Fiscal_Year)
     df$dFYear<-as.Date(paste("1/1/",as.character(df$Fiscal_Year),sep=""),"%m/%d/%Y")
-    # df$Fiscal_Year <-as.Date(paste("1/1/",as.character(df$Fiscal_Year),sep=""),"%m/%d/%Y")
+
+
+    if(fiscal_quarter %in% colnames(df)){
+      df$Fiscal_YQ<-NA
+      df$Fiscal_YQ[!is.na(df$fiscal_quarter)]<-text_to_number(paste(df$Fiscal_Year[!is.na(df$fiscal_quarter)],
+                                                                                text_to_number(df$fiscal_quarter[!is.na(df$fiscal_quarter)]),sep="."))
+      df$Fiscal_YQ[is.na(df$Fiscal_YQ)]<-df$Fiscal_Year[is.na(df$Fiscal_YQ)]
+    }
+    else if (fiscal_quarter_YTD %in% colnames(df)){
+      df$Fiscal_YQ<-NA
+      df$Fiscal_YQ[!is.na(df$fiscal_quarter_YTD)]<-text_to_number(paste(df$Fiscal_Year[!is.na(df$fiscal_quarter_YTD)],
+                                                                    text_to_number(df$fiscal_quarter_YTD[!is.na(df$fiscal_quarter_YTD)]),sep="."))
+      df$Fiscal_YQ[is.na(df$Fiscal_YQ)]<-df$Fiscal_Year[is.na(df$Fiscal_YQ)]
+    }
+
     # df$Fiscal_Year.End <-as.Date(paste("9/30/",as.character(year(df$Fiscal_Year)),sep=""),"%m/%d/%Y")
     # df$Fiscal_Year.Start <-as.Date(paste("10/1/",as.character(year(df$Fiscal_Year)-1),sep=""),"%m/%d/%Y")
   }
