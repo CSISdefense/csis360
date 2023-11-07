@@ -152,7 +152,8 @@ build_plot <- function(
   column_key=NULL,
   format=FALSE,
   ytextposition=FALSE,
-  reverse_color=FALSE
+  reverse_color=FALSE,
+  alpha_var=NULL
 ){
   if(all(!is.null(second_var),facet_var==second_var | second_var=="None")) second_var<-NULL
   #To add, check for missing labels and colors
@@ -166,6 +167,7 @@ build_plot <- function(
                                  color_var=color_var,
                                  facet_var=facet_var,
                                  second_var=second_var,
+                                 alpha_var=alpha_var,
                                  labels_and_colors=labels_and_colors,
                                  add_ytextposition=ytextposition)
 
@@ -200,14 +202,16 @@ if(is.null(x_var)) x_var<-names(data)[1]
       mainplot <- mainplot +
         geom_line(aes_q(
           x = as.name(x_var),
-          y = as.name(y_var)
+          y = as.name(y_var),
+          alpha = ifelse(is.null(alpha_var), NULL, as.name(alpha_var))
         ))
     } else {
       mainplot <- mainplot +
         geom_line(aes_q(
           x = as.name(x_var),
           y = as.name(y_var),
-          color = as.name(color_var)
+          color = as.name(color_var),
+          alpha = ifelse(is.null(alpha_var), NULL, as.name(alpha_var))
         )) +
         guides(color = guide_legend(override.aes = list(size = 1)))+
         theme(legend.key = element_rect(fill = "white"))
@@ -220,7 +224,8 @@ if(is.null(x_var)) x_var<-names(data)[1]
       mainplot <- mainplot +
         geom_bar(aes_q(
           x = as.name(names(data)[1]),
-          y = as.name(y_var)
+          y = as.name(y_var),
+          alpha = ifelse(is.null(alpha_var), NULL, as.name(alpha_var))
         ),
         stat = "identity")
     } else {
@@ -228,7 +233,8 @@ if(is.null(x_var)) x_var<-names(data)[1]
         geom_bar(aes_q(
           x = as.name(x_var),
           y = as.name(y_var),
-          fill = as.name(color_var)
+          fill = as.name(color_var),
+          alpha = ifelse(is.null(alpha_var), NULL, as.name(alpha_var))
         ),
         stat = "identity")
     }

@@ -225,6 +225,7 @@ format_data_for_plot <- function(data, fy_var,
                                  color_var="None",
                                  facet_var="None",
                                  second_var=NULL,
+                                 alpha_var=NULL,
                                  labels_and_colors=NULL,
                                  group=TRUE,
                                  drop_missing_labels=TRUE,
@@ -234,10 +235,12 @@ format_data_for_plot <- function(data, fy_var,
 
   shown_data <- data
   if(all(!is.null(second_var),facet_var==second_var | second_var=="None")) second_var<-NULL
+  if(all(!is.null(alpha_var),facet_var==alpha_var | alpha_var=="None")) alpha_var<-NULL
 
-  breakout <- c(color_var, facet_var, second_var)
+  breakout <- c(color_var, facet_var, second_var, alpha_var)
   breakout <- breakout[breakout != "None"]
   breakout <- breakout[!is.null(breakout)]
+  breakout <- breakout[!duplicated(breakout)]
 
   if(group){
     shown_data<-group_data_for_plot(
