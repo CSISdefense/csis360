@@ -198,45 +198,81 @@ if(is.null(x_var)) x_var<-names(data)[1]
 
   # add a line layer, broken out by color if requested
   if(chart_geom == "Line Chart"){
+    #There must be a better way to do this
     if(color_var == "None"){
-      mainplot <- mainplot +
-        geom_line(aes_q(
-          x = as.name(x_var),
-          y = as.name(y_var),
-          alpha = ifelse(is.null(alpha_var), NULL, as.name(alpha_var))
-        ))
+      if(is.null(alpha_var))
+        mainplot <- mainplot +
+          geom_line(aes_q(
+            x = as.name(names(data)[1]),
+            y = as.name(y_var)))
+      else
+        mainplot <- mainplot +
+          geom_line(aes_q(
+            x = as.name(names(data)[1]),
+            y = as.name(y_var),
+            alpha = as.name(alpha_var)
+          ))
     } else {
-      mainplot <- mainplot +
-        geom_line(aes_q(
-          x = as.name(x_var),
-          y = as.name(y_var),
-          color = as.name(color_var),
-          alpha = ifelse(is.null(alpha_var), NULL, as.name(alpha_var))
-        )) +
-        guides(color = guide_legend(override.aes = list(size = 1)))+
-        theme(legend.key = element_rect(fill = "white"))
+      if(is.null(alpha_var)){
+        mainplot <- mainplot +
+          geom_line(aes_q(
+            x = as.name(x_var),
+            y = as.name(y_var),
+            color = as.name(color_var)
+          ))+
+          guides(color = guide_legend(override.aes = list(size = 1)))+
+          theme(legend.key = element_rect(fill = "white"))
+      }
+      else{
+        mainplot <- mainplot +
+          geom_line(aes_q(
+            x = as.name(x_var),
+            y = as.name(y_var),
+            line= as.name(color_var),
+            color = as.name(alpha_var)
+          ))+
+          guides(color = guide_legend(override.aes = list(size = 1)))+
+          theme(legend.key = element_rect(fill = "white"))
+      }
     }
   }
 
   # add a bar layer, broken out by color if requested
   else if(chart_geom == "Bar Chart"){
+    #There must be a better way to do this
     if(color_var == "None"){
-      mainplot <- mainplot +
-        geom_bar(aes_q(
-          x = as.name(names(data)[1]),
-          y = as.name(y_var),
-          alpha = ifelse(is.null(alpha_var), NULL, as.name(alpha_var))
-        ),
-        stat = "identity")
+      if(is.null(alpha_var))
+        mainplot <- mainplot +
+          geom_bar(aes_q(
+            x = as.name(names(data)[1]),
+            y = as.name(y_var)),
+            stat = "identity")
+      else
+        mainplot <- mainplot +
+          geom_bar(aes_q(
+            x = as.name(names(data)[1]),
+            y = as.name(y_var),
+            alpha = as.name(alpha_var)
+          ),
+          stat = "identity")
     } else {
-      mainplot <- mainplot +
-        geom_bar(aes_q(
-          x = as.name(x_var),
-          y = as.name(y_var),
-          fill = as.name(color_var),
-          alpha = ifelse(is.null(alpha_var), NULL, as.name(alpha_var))
-        ),
-        stat = "identity")
+      if(is.null(alpha_var))
+        mainplot <- mainplot +
+          geom_bar(aes_q(
+            x = as.name(x_var),
+            y = as.name(y_var),
+            fill = as.name(color_var)
+          ),
+          stat = "identity")
+      else
+        mainplot <- mainplot +
+          geom_bar(aes_q(
+            x = as.name(x_var),
+            y = as.name(y_var),
+            fill = as.name(color_var),
+            alpha = as.name(alpha_var)
+          ),
+          stat = "identity")
     }
   }
 
