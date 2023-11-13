@@ -1771,10 +1771,23 @@ group_by_list<-function(x,key){
 #' @param xlsx the excel file to output to
 #' @param sheet the sheet to use in excel, typically shorter than the name
 #' @param path="..\\output\\" what directory for the output
-#' @param width=6.5
-#' @param height=3.5
-#' @param startRow=1
-#' @param startCol=10
+#' @param width=6.5 Width for the plot in inches
+#' @param height=3.5 Height for the plot in inches
+#' @param output_doc_svg=TRUE GGsave a svg of the graph for a document?
+#' @param output_doc_png=FALSE GGsave a png of the graph for a document?
+#' @param startRow=1 Start row for excel output
+#' @param startCol=10 Start column for excel output
+#' @param format=TRUE Format the data rather then listing the df directl
+#' @param x_var=NULL Override option for x_var
+#' @param y_var=NULL Override option for y_var
+#' @param var_list=NA Override option for what variables to include in addition to x_var and y_var, also sets arrangement order.
+#' @param group_unlabeled_facets Whether to all unlabeled facets (but not colors) into a single line
+#' @param csv_then_year=TRUE Override the graphed y_var to include nominal dollars in csv output
+#' @param excel_then_year=TRUE Override the graphed y_var to include nominal dollars in excel output
+#' @param excel_y_var=FALSE Include the graphed y_var (or over)
+#' @param excel_share=FALSE Include percent shares for the y_var for each of the facets
+
+group_unlabeled_facets=FALSE
 #'
 #'
 #' @return no value
@@ -1782,14 +1795,17 @@ group_by_list<-function(x,key){
 #'
 #'
 #' @export
-log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output", width=6.5,height=3.5,
-                     startRow=1,startCol=10,format=TRUE,var_list=NA,
-                     output_plot=TRUE,x_var=NULL,y_var=NULL) {
+log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
+                     width=6.5,height=3.5,output_doc_svg=TRUE,output_doc_png=FALSE,
+                     startRow=1,startCol=10,format=TRUE,
+                     x_var=NULL,y_var=NULL,var_list=NA,
+                     csv_then_year=TRUE,
+                     excel_then_year=TRUE,excel_y_var=FALSE,excel_share=FALSE,
+                     group_unlabeled_facets=FALSE
+                     ) {
 
 
   if(format){
-
-
     #This may end up breaking with pivoted graphs. But lets cross that bridge when we come to it.
     if(is.null(y_var)) y_var<-plot$plot_env$y_var
     if(is.null(x_var)) x_var<-plot$plot_env$x_var
@@ -1801,29 +1817,66 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output", width=6.5,h
     #Swap in Fiscal_Year for dFYear for ease of table readability
     if("dFYear"==x_var & "Fiscal_Year" %in% colnames(df))
       x_var<-"Fiscal_Year"
-    #Add other constant dollar here variables
-    if(y_var %in% c("Action_Obligation_OMB24_GDP22"))
-      y_var<-"Action_Obligation_Then_Year"
-    else if(!y_var %in% c("Dollars"))
-      stop("Unrecognized y_var")
-
-    df<-group_data_for_plot(df,x_var=x_var, y_var=y_var, breakout=var_list) %>% arrange(!!as.name(x_var))%>%
-      pivot_wider(names_from=!!as.name(x_var),
-                  values_from=!!as.name(y_var)) %>%
-      arrange(.by_group = TRUE)
+    if(excel_then_year | csv_then_year){
+      #Add other constant dollar here variables
+      if(y_var %in% c("Action_Obligation_OMB24_GDP22"))
+        then_year_y_var<-"Action_Obligation_Then_Year"
+      else stop("Unrecognized y_var")
+      then_year_df<-group_data_for_plot(df,x_var=x_var, y_var=then_year_y_var, breakout=var_list) %>%
+        arrange(!!as.name(x_var))%>%
+        pivot_wider(names_from=!!as.name(x_var),
+                    values_from=!!as.name(then_year_y_var)) %>%
+        arrange(.by_group = TRUE)
+    }
+    if (excel_y_var)
+      y_var_df<-group_data_for_plot(df,x_var=x_var, y_var=y_var, breakout=var_list) %>%
+        arrange(!!as.name(x_var))%>%
+        pivot_wider(names_from=!!as.name(x_var),
+                    values_from=!!as.name(y_var)) %>%
+        arrange(.by_group = TRUE)
+    # I probably should switch to format_data_for_plot to do this
+    # if(excel_shared)
+    #   shared_df<--group_data_for_plot(df,x_var=x_var, y_var=y_var, breakout=var_list) %>%
+    #     arrange(!!as.name(x_var))%>%
+    #     pivot_wider(names_from=!!as.name(x_var),
+    #                 values_from=!!as.name(y_var)) %>%
+    #     arrange(.by_group = TRUE)
 
   }
 
-  if (output_plot==TRUE)
+  if (output_doc_svg==TRUE)
     ggsave600dpi(plot+labs(caption=NULL,title=NULL),
                  file=file.path(path,paste(filename,".svg",sep="")),size=12,caption_fraction=8/12,lineheight=1, height =height, width=width)
+  if (output_doc_png==TRUE)
+    ggsave600dpi(plot,
+                 file=file.path(path,paste(filename,".png",sep="")),size=12,caption_fraction=8/12,lineheight=1, height =height+0.25, width=width)
 
-  write.csv(df,file=file.path(path,"then_year_csv",paste(filename,".csv",sep="")),row.names = FALSE, na = "")
-
-  wb <- loadWorkbook(file.path(path,xlsx))
-  writeData(wb, df, sheet = sheet, startRow = startRow, startCol = startCol)
-  saveWorkbook(wb,file=(file.path(path,xlsx)),overwrite = TRUE)
-  rm(wb)
+  if(csv_then_year){
+    if(!dir.exists(file.path(path,"then_year_csv")))
+      dir.create(file.path(path,"then_year_csv"))
+    write.csv(then_year_df,file=file.path(path,"then_year_csv",paste(filename,".csv",sep="")),row.names = FALSE, na = "")
+  }
+  if(excel_then_year | excel_y_var | excel_share){
+    if(file.exists(file.path(path,xlsx))){
+      wb <- loadWorkbook(file.path(path,xlsx))
+    }
+      else{
+        wb<-createWorkbook(file.path(path,xlsx))
+      }
+    if(!sheet %in% names(wb))
+      addWorksheet(wb,sheet)
+    if(excel_then_year){
+      writeData(wb, then_year_df, sheet = sheet, startRow = startRow, startCol = startCol)
+      startRow<-startRow+nrow(then_year_df)+4 #Header row, total row, check_sum_row, blank row
+    }
+    if(excel_y_var){
+      writeData(wb, y_var_df, sheet = sheet, startRow = startRow, startCol = startCol)
+      startRow<-startRow+nrow(then_year_df)+4 #Header row, total row, check_sum_row, blank row
+    }
+    freezePane(wb,sheet,firstActiveRow = 2,firstActiveCol = 1+length(var_list))
+    saveWorkbook(wb,file=(file.path(path,xlsx)),overwrite = TRUE)
+    rm(wb)
+  }
 }
 
 #***********************Get Base Folder
