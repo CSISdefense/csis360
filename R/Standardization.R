@@ -1795,7 +1795,8 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output", width=6.5,h
     if(is.null(x_var)) x_var<-plot$plot_env$x_var
     if(all(is.na(var_list))){
       var_list<-colnames(plot$data)
-      var_list<-var_list[!var_list %in% y_var & !var_list %in% x_var & !var_list %in% "YTD"]
+      var_list<-var_list[!var_list %in% y_var & !var_list %in% x_var &
+                           !var_list %in% plot$plot_env$x_var & !var_list %in% "YTD"]
     }
     #Swap in Fiscal_Year for dFYear for ease of table readability
     if("dFYear"==x_var & "Fiscal_Year" %in% colnames(df))
