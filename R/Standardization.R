@@ -1865,13 +1865,20 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
       }
     if(!sheet %in% names(wb))
       addWorksheet(wb,sheet)
+    bstyle<-createStyle(numFmt = "0.00,,,\"B\"")
     if(excel_then_year){
       writeData(wb, then_year_df, sheet = sheet, startRow = startRow, startCol = startCol)
+      addStyle(wb, sheet, bstyle,gridExpand = T,
+               rows=(startRow+1):(startRow+nrow(then_year_df)),
+               cols=(startCol+length(var_list)):(startCol+ncol(then_year_df)+2-length(var_list)))
       startRow<-startRow+nrow(then_year_df)+4 #Header row, total row, check_sum_row, blank row
     }
     if(excel_y_var){
       writeData(wb, y_var_df, sheet = sheet, startRow = startRow, startCol = startCol)
-      startRow<-startRow+nrow(then_year_df)+4 #Header row, total row, check_sum_row, blank row
+      addStyle(wb, sheet, bstyle,gridExpand = T,
+               rows=(startRow+1):(startRow+nrow(y_var_df)),
+                      cols=(startCol+length(var_list)):(startCol+ncol(y_var_df)+2-length(var_list)))
+      startRow<-startRow+nrow(y_var_df)+4 #Header row, total row, check_sum_row, blank row
     }
     freezePane(wb,sheet,firstActiveRow = 2,firstActiveCol = 1+length(var_list))
     saveWorkbook(wb,file=(file.path(path,xlsx)),overwrite = TRUE)
