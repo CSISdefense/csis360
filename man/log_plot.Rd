@@ -13,13 +13,19 @@ log_plot(
   path = "..\\\\output",
   width = 6.5,
   height = 3.5,
+  output_doc_svg = TRUE,
+  output_doc_png = FALSE,
   startRow = 1,
   startCol = 10,
   format = TRUE,
-  var_list = NA,
-  output_plot = TRUE,
   x_var = NULL,
-  y_var = NULL
+  y_var = NULL,
+  var_list = NA,
+  csv_then_year = TRUE,
+  excel_then_year = TRUE,
+  excel_y_var = FALSE,
+  excel_share = FALSE,
+  group_unlabeled_facets = FALSE
 )
 }
 \arguments{
@@ -33,9 +39,39 @@ log_plot(
 
 \item{sheet}{the sheet to use in excel, typically shorter than the name}
 
+\item{group_unlabeled_facets}{Whether to all unlabeled facets (but not colors) into a single line}
+
 \item{path="..\\output\\"}{what directory for the output}
 
-\item{startCol=10}{}
+\item{width=6.5}{Width for the plot in inches}
+
+\item{height=3.5}{Height for the plot in inches}
+
+\item{output_doc_svg=TRUE}{GGsave a svg of the graph for a document?}
+
+\item{output_doc_png=FALSE}{GGsave a png of the graph for a document?}
+
+\item{startRow=1}{Start row for excel output}
+
+\item{startCol=10}{Start column for excel output}
+
+\item{format=TRUE}{Format the data rather then listing the df directl}
+
+\item{x_var=NULL}{Override option for x_var}
+
+\item{y_var=NULL}{Override option for y_var}
+
+\item{var_list=NA}{Override option for what variables to include in addition to x_var and y_var, also sets arrangement order.}
+
+\item{csv_then_year=TRUE}{Override the graphed y_var to include nominal dollars in csv output}
+
+\item{excel_then_year=TRUE}{Override the graphed y_var to include nominal dollars in excel output}
+
+\item{excel_y_var=FALSE}{Include the graphed y_var (or over)}
+
+\item{excel_share=FALSE}{Include percent shares for the y_var for each of the facets}
+
+\item{group_unlabeled_facets=FALSE}{Combine all unlabeled facet categories into a single line in the data.}
 }
 \value{
 no value

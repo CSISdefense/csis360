@@ -1786,8 +1786,7 @@ group_by_list<-function(x,key){
 #' @param excel_then_year=TRUE Override the graphed y_var to include nominal dollars in excel output
 #' @param excel_y_var=FALSE Include the graphed y_var (or over)
 #' @param excel_share=FALSE Include percent shares for the y_var for each of the facets
-
-group_unlabeled_facets=FALSE
+#' @param group_unlabeled_facets=FALSE Combine all unlabeled facet categories into a single line in the data.
 #'
 #'
 #' @return no value
