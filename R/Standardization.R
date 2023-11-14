@@ -1776,10 +1776,10 @@ group_by_list<-function(x,key){
 #' @param output_doc_svg=TRUE GGsave a svg of the graph for a document?
 #' @param output_doc_png=FALSE GGsave a png of the graph for a document?
 #' @param startRow=1 Start row for excel output
-#' @param startCol=10 Start column for excel output
+#' @param startCol=NA Start column for excel output
 #' @param format=TRUE Format the data rather then listing the df directl
-#' @param x_var=NULL Override option for x_var
-#' @param y_var=NULL Override option for y_var
+#' @param x_var=NA Override option for x_var
+#' @param y_var=NA Override option for y_var
 #' @param var_list=NA Override option for what variables to include in addition to x_var and y_var, also sets arrangement order.
 #' @param group_unlabeled_facets Whether to all unlabeled facets (but not colors) into a single line
 #' @param csv_then_year=TRUE Override the graphed y_var to include nominal dollars in csv output
@@ -1799,8 +1799,8 @@ group_by_list<-function(x,key){
 #' @export
 log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                      width=6.5,height=3.5,output_doc_svg=TRUE,output_doc_png=FALSE,
-                     startRow=1,startCol=10,format=TRUE,
-                     x_var=NULL,y_var=NULL,var_list=NA,
+                     startRow=1,startCol=NA,format=TRUE,
+                     x_var=NA,y_var=NA,var_list=NA,
                      csv_then_year=TRUE,
                      excel_then_year=TRUE,excel_y_var=FALSE,excel_share=FALSE,
                      excel_formulas=FALSE,
@@ -1811,13 +1811,14 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
 
   if(format){
     #This may end up breaking with pivoted graphs. But lets cross that bridge when we come to it.
-    if(is.null(y_var)) y_var<-plot$plot_env$y_var
-    if(is.null(x_var)) x_var<-plot$plot_env$x_var
+    if(is.na(y_var)) y_var<-plot$plot_env$y_var
+    if(is.na(x_var)) x_var<-plot$plot_env$x_var
     if(all(is.na(var_list))){
       var_list<-colnames(plot$data)
       var_list<-var_list[!var_list %in% y_var & !var_list %in% x_var &
                            !var_list %in% plot$plot_env$x_var & !var_list %in% "YTD"]
     }
+    if(is.na(startCol)) startCol<-10+length(var_list)
     #Swap in Fiscal_Year for dFYear for ease of table readability
     if("dFYear"==x_var & "Fiscal_Year" %in% colnames(df))
       x_var<-"Fiscal_Year"
@@ -1873,7 +1874,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
     pstyle<-createStyle(numFmt = "PERCENTAGE")
     if(excel_then_year){
       writeData(wb, then_year_df, sheet = sheet, startRow = startRow, startCol = startCol)
-      for (c in length(var_list))
+      for (c in 1:length(var_list))
         writeFormula(wb,sheet,c(paste0(int2col(c+startCol-1),(startRow):(startRow+nrow(then_year_df)+1))),
                      startRow=startRow,startCol=c)
       gt<-data.frame(Total=c("Grand Total",rep("",length(var_list)-1),
@@ -1899,7 +1900,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
     }
     if(excel_y_var){
       writeData(wb, y_var_df, sheet = sheet, startRow = startRow, startCol = startCol)
-      for (c in length(var_list))
+      for (c in 1:length(var_list))
         writeFormula(wb,sheet,c(paste0(int2col(c+startCol-1),(startRow):(startRow+nrow(y_var_df)+1))),
                      startRow=startRow,startCol=c)
       if(excel_formulas){
