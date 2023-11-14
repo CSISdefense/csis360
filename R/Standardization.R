@@ -1879,10 +1879,10 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                      startRow=startRow,startCol=c)
       gt<-data.frame(Total=c("Grand Total",rep("",length(var_list)-1),
 
-                             paste0("Sum(",int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
+                             paste0("Sum(",int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list))),
                                     startRow+1,":",
-                                    int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
-                                    startRow+nrow(y_var_df),")")))
+                                    int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list))),
+                                    startRow+nrow(then_year_df),")")))
       gt$rn<-rownames(gt)
       gt<-as.data.frame(pivot_wider(gt,values_from=Total,names_from=rn))
       for (i in colnames(gt)[(length(var_list)+1):ncol(gt)]) class(gt[,i])<-c(class(gt[,i]),"formula")
