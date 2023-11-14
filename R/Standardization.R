@@ -1786,6 +1786,9 @@ group_by_list<-function(x,key){
 #' @param excel_then_year=TRUE Override the graphed y_var to include nominal dollars in excel output
 #' @param excel_y_var=FALSE Include the graphed y_var (or over)
 #' @param excel_share=FALSE Include percent shares for the y_var for each of the facets
+#' @param excel_formulas=FALSE Create formulas to accompany the table
+#' @param hist_year=2015 Historical anchor to include in summary stats
+#' @param cur_year=2022 Most recent complete year to include in summary stats
 #' @param group_unlabeled_facets=FALSE Combine all unlabeled facet categories into a single line in the data.
 #'
 #'
@@ -1800,6 +1803,8 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                      x_var=NULL,y_var=NULL,var_list=NA,
                      csv_then_year=TRUE,
                      excel_then_year=TRUE,excel_y_var=FALSE,excel_share=FALSE,
+                     excel_formulas=FALSE,
+                     hist_year=2015, cur_year=2022,
                      group_unlabeled_facets=FALSE
                      ) {
 
@@ -1865,21 +1870,141 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
     if(!sheet %in% names(wb))
       addWorksheet(wb,sheet)
     bstyle<-createStyle(numFmt = "0.00,,,\"B\"")
+    pstyle<-createStyle(numFmt = "PERCENTAGE")
     if(excel_then_year){
       writeData(wb, then_year_df, sheet = sheet, startRow = startRow, startCol = startCol)
+      for (c in length(var_list))
+        writeFormula(wb,sheet,c(paste0(int2col(c+startCol-1),(startRow):(startRow+nrow(then_year_df)+1))),
+                     startRow=startRow,startCol=c)
+      gt<-data.frame(Total=c("Grand Total",rep("",length(var_list)-1),
+
+                             paste0("Sum(",int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
+                                    startRow+1,":",
+                                    int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
+                                    startRow+nrow(y_var_df),")")))
+      gt$rn<-rownames(gt)
+      gt<-as.data.frame(pivot_wider(gt,values_from=Total,names_from=rn))
+      for (i in colnames(gt)[(length(var_list)+1):ncol(gt)]) class(gt[,i])<-c(class(gt[,i]),"formula")
+      writeData(wb,sheet=sheet,
+                gt,
+                startRow=startRow+nrow(then_year_df)+1,
+                startCol=startCol,
+                colNames=FALSE
+      )
+
       addStyle(wb, sheet, bstyle,gridExpand = T,
-               rows=(startRow+1):(startRow+nrow(then_year_df)),
+               rows=(startRow+1):(startRow+nrow(then_year_df)+1),
                cols=(startCol+length(var_list)):(startCol+ncol(then_year_df)+2-length(var_list)))
       startRow<-startRow+nrow(then_year_df)+4 #Header row, total row, check_sum_row, blank row
     }
     if(excel_y_var){
       writeData(wb, y_var_df, sheet = sheet, startRow = startRow, startCol = startCol)
+      for (c in length(var_list))
+        writeFormula(wb,sheet,c(paste0(int2col(c+startCol-1),(startRow):(startRow+nrow(y_var_df)+1))),
+                     startRow=startRow,startCol=c)
+      if(excel_formulas){
+        if(!hist_year %in% colnames(y_var_df))
+          stop("hist_year not in provided data")
+        #Historic year
+        hist_col<-which(colnames(y_var_df)==hist_year)+startCol-1
+        writeFormula(wb,sheet,c(paste0(int2col(hist_col),(startRow):(startRow+nrow(y_var_df)+1))),
+                     startRow=startRow,startCol=length(var_list)+1)
+        cur_col<-which(colnames(y_var_df)==cur_year)+startCol-1
+        #Year before current
+        writeFormula(wb,sheet,c(paste0(int2col(cur_col-1),(startRow):(startRow+nrow(y_var_df)+1))),
+                     startRow=startRow,startCol=length(var_list)+2)
+        #Current year
+        writeFormula(wb,sheet,c(paste0(int2col(cur_col),(startRow):(startRow+nrow(y_var_df)+1))),
+                     startRow=startRow,startCol=length(var_list)+3)
+        #Incomplete year
+        writeFormula(wb,sheet,c(paste0(int2col(cur_col+1),(startRow):(startRow+nrow(y_var_df)+1))),
+                     startRow=startRow,startCol=length(var_list)+4)
+
+
+        addStyle(wb, sheet, bstyle,gridExpand = T,
+                 rows=(startRow+1):(startRow+nrow(y_var_df)+1),
+                 cols=(length(var_list)+1):(length(var_list)+4))
+
+
+        #Year before current to current comparison
+        writeFormula(wb,sheet,c(#Heading
+          paste0(int2col(cur_col-1),startRow,"&\"-\"&",int2col(cur_col),startRow),
+          #Formulas
+          paste0(int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+                 int2col(cur_col-1),(startRow+1):(startRow+nrow(y_var_df)+1),"-1")),
+          startRow=startRow,startCol=length(var_list)+5)
+
+        #Historic year to current comparison
+        writeFormula(wb,sheet,c(#Heading
+          paste0(int2col(hist_col),startRow,"&\"-\"&",int2col(cur_col),startRow),
+          #Formulas
+          paste0(int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+                 int2col(hist_col),(startRow+1):(startRow+nrow(y_var_df)+1),"-1")),
+          startRow=startRow,startCol=length(var_list)+6)
+
+        #YTD over current comparison
+        writeFormula(wb,sheet,c(#Heading
+          paste0(int2col(cur_col+1),startRow,"&\"/\"&",int2col(cur_col),startRow),
+          #Formulas
+          paste0(int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+                 int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1))),
+          startRow=startRow,startCol=length(var_list)+7)
+
+        #Current year share
+        writeFormula(wb,sheet,c(#Heading
+          paste0("\"Share \"&",int2col(cur_col),startRow),
+          #Formulas
+          paste0(int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)),"/",
+                 "Sum(",int2col(cur_col),"$",(startRow),":",
+                 int2col(cur_col),"$",(startRow+nrow(y_var_df)),")"),
+          paste0("Sum(",int2col(length(var_list)+8),"$",(startRow),":",
+                 int2col(length(var_list)+8),"$",(startRow+nrow(y_var_df)),")")),
+          startRow=startRow,startCol=length(var_list)+8)
+
+        #YTD share
+
+        writeFormula(wb,sheet,c(#Heading
+          paste0("\"Share \"&",int2col(cur_col+1),startRow),
+          #Formulas
+          paste0(int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)),"/",
+                 "Sum(",int2col(cur_col+1),(startRow),":",
+                 int2col(cur_col+1),"$",(startRow+nrow(y_var_df)),")"),
+          paste0("Sum(",int2col(length(var_list)+9),"$",(startRow),":",
+                 int2col(length(var_list)+9),"$",(startRow+nrow(y_var_df)),")")),
+          startRow=startRow,startCol=length(var_list)+9)
+
+        addStyle(wb, sheet, pstyle,gridExpand = T,
+                 rows=(startRow+1):(startRow+nrow(y_var_df)+1),
+                 cols=(length(var_list)+5):(length(var_list)+9))
+
+        gt<-data.frame(Total=c("Grand Total",rep("",length(var_list)-1),
+
+          paste0("Sum(",int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
+                                       startRow+1,":",
+                                       int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
+                                       startRow+nrow(y_var_df),")")))
+        gt$rn<-rownames(gt)
+        gt<-as.data.frame(pivot_wider(gt,values_from=Total,names_from=rn))
+        for (i in colnames(gt)[(length(var_list)+1):ncol(gt)]) class(gt[,i])<-c(class(gt[,i]),"formula")
+        writeData(wb,sheet=sheet,
+                     gt,
+                     startRow=startRow+nrow(y_var_df)+1,
+                     startCol=startCol,
+                  colNames=FALSE
+        )
+      }
+
+
+
       addStyle(wb, sheet, bstyle,gridExpand = T,
-               rows=(startRow+1):(startRow+nrow(y_var_df)),
+               rows=(startRow+1):(startRow+nrow(y_var_df)+1),
                       cols=(startCol+length(var_list)):(startCol+ncol(y_var_df)+2-length(var_list)))
+
+
       startRow<-startRow+nrow(y_var_df)+4 #Header row, total row, check_sum_row, blank row
     }
     freezePane(wb,sheet,firstActiveRow = 2,firstActiveCol = 1+length(var_list))
+
     saveWorkbook(wb,file=(file.path(path,xlsx)),overwrite = TRUE)
     rm(wb)
   }
