@@ -1829,7 +1829,10 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
 
     if(excel_then_year | csv_then_year){
       #Add other constant dollar here variables
-      if(y_var %in% c("Action_Obligation_OMB24_GDP22"))
+      if(y_var %in% c("Then_Year_Dollars","Action_Obligation_Then_Year") &
+         excel_y_var==FALSE)
+        then_year_y_var<-y_var
+      else if(y_var %in% c("Action_Obligation_OMB24_GDP22"))
         then_year_y_var<-"Action_Obligation_Then_Year"
       else stop("Unrecognized y_var")
       then_year_df<-group_data_for_plot(df,x_var=x_var, y_var=then_year_y_var, breakout=var_list) %>%
