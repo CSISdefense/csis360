@@ -261,7 +261,8 @@ date_x_year_breaks<-function(start,stop,by,fiscal_year=TRUE,partial_year=NULL,pa
     py<-l==paste(partial_year,"01","01",sep="-")
     l[!py]<-format(as.Date(l[!py]),"'%y")
     l[py]<-paste(format(as.Date(l[py]),"'%y"),partial_label,sep="")
-    return(scale_x_date(breaks = b,labels=l))
+    return(scale_x_date(breaks = b,labels=l)+theme(plot.margin = margin(t=0,r=0.25,b=0.1,l=0.1,"inches"))
+    )
 
   }
 

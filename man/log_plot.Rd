@@ -16,15 +16,18 @@ log_plot(
   output_doc_svg = TRUE,
   output_doc_png = FALSE,
   startRow = 1,
-  startCol = 10,
+  startCol = NA,
   format = TRUE,
-  x_var = NULL,
-  y_var = NULL,
+  x_var = NA,
+  y_var = NA,
   var_list = NA,
   csv_then_year = TRUE,
   excel_then_year = TRUE,
   excel_y_var = FALSE,
   excel_share = FALSE,
+  excel_formulas = FALSE,
+  hist_year = 2015,
+  cur_year = 2022,
   group_unlabeled_facets = FALSE
 )
 }
@@ -53,13 +56,13 @@ log_plot(
 
 \item{startRow=1}{Start row for excel output}
 
-\item{startCol=10}{Start column for excel output}
+\item{startCol=NA}{Start column for excel output}
 
 \item{format=TRUE}{Format the data rather then listing the df directl}
 
-\item{x_var=NULL}{Override option for x_var}
+\item{x_var=NA}{Override option for x_var}
 
-\item{y_var=NULL}{Override option for y_var}
+\item{y_var=NA}{Override option for y_var}
 
 \item{var_list=NA}{Override option for what variables to include in addition to x_var and y_var, also sets arrangement order.}
 
@@ -70,6 +73,12 @@ log_plot(
 \item{excel_y_var=FALSE}{Include the graphed y_var (or over)}
 
 \item{excel_share=FALSE}{Include percent shares for the y_var for each of the facets}
+
+\item{excel_formulas=FALSE}{Create formulas to accompany the table}
+
+\item{hist_year=2015}{Historical anchor to include in summary stats}
+
+\item{cur_year=2022}{Most recent complete year to include in summary stats}
 
 \item{group_unlabeled_facets=FALSE}{Combine all unlabeled facet categories into a single line in the data.}
 }
