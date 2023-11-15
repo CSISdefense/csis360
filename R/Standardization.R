@@ -1820,8 +1820,13 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
     }
     if(is.na(startCol)) startCol<-10+length(var_list)
     #Swap in Fiscal_Year for dFYear for ease of table readability
+
     if("dFYear"==x_var & "Fiscal_Year" %in% colnames(df))
       x_var<-"Fiscal_Year"
+
+    if("dtDelivYear"==x_var & "Fiscal_Year" %in% colnames(df))
+      x_var<-"MixedYear"
+
     if(excel_then_year | csv_then_year){
       #Add other constant dollar here variables
       if(y_var %in% c("Action_Obligation_OMB24_GDP22"))
