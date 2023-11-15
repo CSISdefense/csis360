@@ -45,7 +45,7 @@ get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
     plot.background = element_rect(fill = "white", color="white"),
     panel.grid.major.y = element_line(size=.1, color="gray"),
     panel.grid.minor.y = element_line(size=.1, color="lightgray"),
-    plot.margin = margin(t=0,r=0.1,b=0.1,l=0.1,"inches")
+    plot.margin = margin(t=0,r=0.25,b=0.1,l=0.1,"inches")
     )
   if(blank_x_lines==TRUE){
   t<-t+theme(
