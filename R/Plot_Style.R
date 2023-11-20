@@ -198,20 +198,40 @@ if(is.null(x_var)) x_var<-names(data)[1]
 
   # add a line layer, broken out by color if requested
   if(chart_geom == "Line Chart"){
-    #There must be a better way to do this
+    #There must be a better way to do this than 4 branches to cover variable nulls
+    #Line plots need duplication, otherwise the YTD year is left out because it's only one point.
+    if(alpha_var=="YTD" & x_var %in% c("Fiscal_Year","Mixed_Year","dFYear")){
+      max_full_year<-max(data[data$YTD=="Full Year",x_var])
+      data<-rbind(data,
+                  data[data[,x_var]==max_full_year,] %>%
+                    mutate(YTD="YTD"))
+      #Need to renew the data link here.
+      if(color_var!="None"){
+        data$coloralpha<-paste(data[,color_var],data[,alpha_var])
+        group_var<-"coloralpha"
+      }
+      mainplot <- ggplot(data = data)
+
+    }
     if(color_var == "None"){
       if(is.null(alpha_var))
         mainplot <- mainplot +
           geom_line(aes_q(
-            x = as.name(names(data)[1]),
+            x = as.name(x_var),
             y = as.name(y_var)))
-      else
+      else{
         mainplot <- mainplot +
           geom_line(aes_q(
-            x = as.name(names(data)[1]),
+            x = as.name(x_var),
             y = as.name(y_var),
-            alpha = as.name(alpha_var)
+            alpha = as.name(alpha_var),
+            group = as.name(alpha_var),
+            linetype= as.name(alpha_var)
           ))
+        if(alpha_var=="YTD"){
+          mainplot<-mainplot+scale_linetype_discrete(breaks=c(1,4))
+        }
+      }
     } else {
       if(is.null(alpha_var)){
         mainplot <- mainplot +
@@ -228,11 +248,16 @@ if(is.null(x_var)) x_var<-names(data)[1]
           geom_line(aes_q(
             x = as.name(x_var),
             y = as.name(y_var),
-            line= as.name(color_var),
-            color = as.name(alpha_var)
+            color = as.name(color_var),
+            group = as.name(group_var),
+            # alpha = as.name(alpha_var)
+            linetype= as.name(alpha_var)
           ))+
           guides(color = guide_legend(override.aes = list(size = 1)))+
           theme(legend.key = element_rect(fill = "white"))
+        if(alpha_var=="YTD"){
+          mainplot<-mainplot+scale_linetype_discrete(breaks=c(1,4))
+        }
       }
     }
   }
@@ -244,17 +269,21 @@ if(is.null(x_var)) x_var<-names(data)[1]
       if(is.null(alpha_var))
         mainplot <- mainplot +
           geom_bar(aes_q(
-            x = as.name(names(data)[1]),
+            x = as.name(x_var),
             y = as.name(y_var)),
             stat = "identity")
-      else
+      else{
         mainplot <- mainplot +
           geom_bar(aes_q(
-            x = as.name(names(data)[1]),
+            x = as.name(x_var),
             y = as.name(y_var),
             alpha = as.name(alpha_var)
           ),
           stat = "identity")
+        if(alpha_var=="YTD"){
+          mainplot<-mainplot+scale_alpha_ordinal(range=c(1,0.5))
+        }
+      }
     } else {
       if(is.null(alpha_var))
         mainplot <- mainplot +
@@ -264,7 +293,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
             fill = as.name(color_var)
           ),
           stat = "identity")
-      else
+      else{
         mainplot <- mainplot +
           geom_bar(aes_q(
             x = as.name(x_var),
@@ -273,6 +302,10 @@ if(is.null(x_var)) x_var<-names(data)[1]
             alpha = as.name(alpha_var)
           ),
           stat = "identity")
+        if(alpha_var=="YTD"){
+          mainplot<-mainplot+scale_alpha_ordinal(range=c(1,0.5))
+        }
+      }
     }
   }
 
