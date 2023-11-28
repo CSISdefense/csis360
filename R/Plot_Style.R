@@ -210,7 +210,8 @@ if(is.null(x_var)) x_var<-names(data)[1]
           geom_line(aes_q(
             x = as.name(names(data)[1]),
             y = as.name(y_var),
-            alpha = as.name(alpha_var)
+            alpha = as.name(alpha_var),
+            linetype = as.name(alpha_var)
           ))
     } else {
       if(is.null(alpha_var)){
@@ -228,8 +229,9 @@ if(is.null(x_var)) x_var<-names(data)[1]
           geom_line(aes_q(
             x = as.name(x_var),
             y = as.name(y_var),
-            line= as.name(color_var),
-            color = as.name(alpha_var)
+            color= as.name(color_var),
+            alpha = as.name(alpha_var),
+            linetype = as.name(alpha_var)
           ))+
           guides(color = guide_legend(override.aes = list(size = 1)))+
           theme(legend.key = element_rect(fill = "white"))

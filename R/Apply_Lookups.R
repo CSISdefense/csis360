@@ -2438,11 +2438,12 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df$dFYear<-as.Date(paste("1/1/",as.character(df$Fiscal_Year),sep=""),"%m/%d/%Y")
 
 
-    if(fiscal_quarter %in% colnames(df)){
+    if("fiscal_quarter" %in% colnames(df)){
       df$Fiscal_YQ<-NA
       df$Fiscal_YQ[!is.na(df$fiscal_quarter)]<-text_to_number(paste(df$Fiscal_Year[!is.na(df$fiscal_quarter)],
                                                                                 text_to_number(df$fiscal_quarter[!is.na(df$fiscal_quarter)]),sep="."))
       df$Fiscal_YQ[is.na(df$Fiscal_YQ)]<-df$Fiscal_Year[is.na(df$Fiscal_YQ)]
+      df$YTD<-ifelse(df$Fiscal_Year==max(df$Fiscal_Year),"YTD","Full Year")
     }
     else if (fiscal_quarter_YTD %in% colnames(df)){
       df$Fiscal_YQ<-NA
