@@ -101,8 +101,8 @@ prepare_labels_and_colors<-function(data
 
   #Fix oddities involving coloration text, and handle accented characters.
 
-  coloration$variable <- gsub("\\\\n","\n",coloration$variable)#iconv, from="UTF-8", to="LATIN1")
-  coloration$Label <- gsub("\\\\n","\n",coloration$Label)#incov, from="UTF-8", to="LATIN1")
+  coloration$variable <- gsub("\\\\n","\n",coloration$variable,useBytes = TRUE)#iconv, from="UTF-8", to="LATIN1")
+  coloration$Label <- gsub("\\\\n","\n",coloration$Label,useBytes = TRUE)#incov, from="UTF-8", to="LATIN1")
 
   #Translate the category name into the appropriate coloration.key
   #This is used because we have more category names than coloration.key
