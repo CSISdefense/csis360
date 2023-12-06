@@ -229,7 +229,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
             linetype= as.name(alpha_var)
           ))
         if(alpha_var=="YTD"){
-          mainplot<-mainplot+scale_linetype_discrete(breaks=c(1,4))
+          mainplot<-mainplot+scale_linetype_discrete(breaks=c(1,3),labels=c("Full Year","YTD"))
         }
       }
     } else {
@@ -256,7 +256,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
           guides(color = guide_legend(override.aes = list(size = 1)))+
           theme(legend.key = element_rect(fill = "white"))
         if(alpha_var=="YTD"){
-          mainplot<-mainplot+scale_linetype_discrete(breaks=c(1,4))
+          mainplot<-mainplot+scale_linetype_discrete(breaks=c(1,3),labels=c("Full Year","YTD"))
         }
       }
     }
