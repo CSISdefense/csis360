@@ -67,8 +67,8 @@ get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
     margin=margin(0.1,0,0.1,0,"inch"),
     hjust = 0.5))
   t<-t+theme(axis.text.x = element_text(
-    family = "Open Sans",
-    margin = margin(0,0,0,0)
+    family = "Open Sans"#,
+    # margin = margin(0,0,0,0)
     ))
   t<-t+theme(axis.text.y = element_text(
     family = "Open Sans",
@@ -224,12 +224,12 @@ if(is.null(x_var)) x_var<-names(data)[1]
           geom_line(aes_q(
             x = as.name(x_var),
             y = as.name(y_var),
-            alpha = as.name(alpha_var),
             group = as.name(alpha_var),
             linetype= as.name(alpha_var)
           ))
         if(alpha_var=="YTD"){
           mainplot<-mainplot+scale_linetype_discrete(breaks=c(1,3),labels=c("Full Year","YTD"))
+            theme(axis.text.x = element_text(margin = margin(t = 1, unit = "pt")))
         }
       }
     } else {
@@ -257,6 +257,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
           theme(legend.key = element_rect(fill = "white"))
         if(alpha_var=="YTD"){
           mainplot<-mainplot+scale_linetype_discrete(breaks=c(1,3),labels=c("Full Year","YTD"))
+            theme(axis.text.x = element_text(margin = margin(t = 1, unit = "pt")))
         }
       }
     }
@@ -281,7 +282,8 @@ if(is.null(x_var)) x_var<-names(data)[1]
           ),
           stat = "identity")
         if(alpha_var=="YTD"){
-          mainplot<-mainplot+scale_alpha_ordinal(range=c(1,0.5))
+          mainplot<-mainplot+scale_alpha_ordinal(labels=c("Full Year","YTD"),range=c(1,0.5))+
+            theme(axis.text.x = element_text(margin = margin(t = 1, unit = "pt")))
         }
       }
     } else {
@@ -303,7 +305,8 @@ if(is.null(x_var)) x_var<-names(data)[1]
           ),
           stat = "identity")
         if(alpha_var=="YTD"){
-          mainplot<-mainplot+scale_alpha_ordinal(range=c(1,0.5))
+          mainplot<-mainplot+scale_alpha_ordinal(labels=c("Full Year","YTD"),range=c(1,0.5))+
+            theme(axis.text.x = element_text(margin = margin(t = 1, unit = "pt")))
         }
       }
     }
@@ -519,7 +522,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
 
   if(caption==TRUE)
     #+labs(y="",
-    mainplot<-mainplot+labs(caption = "Source: FPDS; CSIS analysis."
+    mainplot<-mainplot+labs(caption = "Source: FPDS and CSIS analysis."
     )
 
 
