@@ -200,18 +200,20 @@ if(is.null(x_var)) x_var<-names(data)[1]
   if(chart_geom == "Line Chart"){
     #There must be a better way to do this than 4 branches to cover variable nulls
     #Line plots need duplication, otherwise the YTD year is left out because it's only one point.
-    if(alpha_var=="YTD" & x_var %in% c("Fiscal_Year","Mixed_Year","dFYear")){
-      max_full_year<-max(data[data$YTD=="Full Year",x_var])
-      data<-rbind(data,
-                  data[data[,x_var]==max_full_year,] %>%
-                    mutate(YTD="YTD"))
-      #Need to renew the data link here.
-      if(color_var!="None"){
-        data$coloralpha<-paste(data[,color_var],data[,alpha_var])
-        group_var<-"coloralpha"
-      }
-      mainplot <- ggplot(data = data)
+    if(!is_null(alpha_var)){
+      if(alpha_var=="YTD" & x_var %in% c("Fiscal_Year","Mixed_Year","dFYear")){
+        max_full_year<-max(data[data$YTD=="Full Year",x_var])
+        data<-rbind(data,
+                    data[data[,x_var]==max_full_year,] %>%
+                      mutate(YTD="YTD"))
+        #Need to renew the data link here.
+        if(color_var!="None"){
+          data$coloralpha<-paste(data[,color_var],data[,alpha_var])
+          group_var<-"coloralpha"
+        }
+        mainplot <- ggplot(data = data)
 
+      }
     }
     if(color_var == "None"){
       if(is.null(alpha_var))
