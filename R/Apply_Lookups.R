@@ -1119,7 +1119,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #                                         dir="office/")
   # }
 
-  # Organization Contracting ####
+  # Organization Awarding ####
   if("agencyid" %in% names(df) &
      "PIID" %in% names(df) &
      "idvagencyid" %in% names(df) &
@@ -1184,6 +1184,43 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
     }
   }
+
+  if("awarding_agency_code" %in% names(df))
+  {
+
+    df<-read_and_join_experiment(df,
+                                 path=path,
+                                 "Awarding_Agency_Code.csv",
+                                 dir="office",
+                                 by=c("awarding_agency_code"="awarding_agency_code"),
+                                 add_var=c("Customer","SubCustomer","AgencyIDtext"),#Contracting.Agency.ID
+                                 skip_check_var=c("Platform","Customer","SubCustomer","AgencyIDtext"),
+                                 guess_max=2000)
+    colnames(df)[colnames(df)=="AgencyIDtext"]<-"ContractingAgencyName"
+
+    if("ContractingOfficeID" %in% names(df) & !"MajorCommandID" %in% names(df)){
+
+      df<-read_and_join_experiment(df,
+                                   path=path,
+                                   dir="office\\",
+                                   lookup_file = "MajComID.csv",
+                                   by =c("Fiscal_Year"="Fiscal_Year",
+                                         "Contracting_Agency_ID"="Contracting_Agency_ID",
+                                         "ContractingOfficeID"="ContractingOfficeID"),
+                                   skip_check_var = "MajorCommandID")
+
+      df<-read_and_join_experiment(df,
+                                   path=path,
+                                   dir="office\\",
+                                   lookup_file = "MajComSum.csv")
+
+
+
+
+    }
+  }
+
+
   if("Customer" %in% names(df) && "SubCustomer" %in% names(df)){
     if("SubCustomer.sum"%in% names(df)){
       df<-subset(df, select=-c(SubCustomer.sum))
@@ -1255,6 +1292,31 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
   }
 
+# Mechanism Type ####
+
+  df<-df %>% mutate(cfda_num=ifelse(
+    nchar(cfda_number)>6,
+    round(text_to_number(cfda_number),3),
+    cfda_number))
+  if(any(!is.na(df$cfda_number)&is.na(df$cfda_num)))
+    stop("Mangled CFDA number")
+  df<-read_and_join_experiment(df,directory="assistance//",lookup_file="assistance_type_code.csv",
+                               by="assistance_type_code")
+
+  if("assistance_type_code" %in% names(df) ){
+    df<-read_and_join_experiment(data=df
+                                 ,"assistance_type_code.csv"
+                                 ,path=path
+                                 ,dir="assistance//"
+                                 ,by="assistance_type_code",
+                                 ,add_var = c("assistance_type_description"),
+                                 # ,skip_check_var = c("PricingInflation","TypeOfContractPricingText")
+                                 ,lookup_char_as_factor = TRUE
+                                 # ,new_var_checked=FALSE
+                                 # ,create_lookup_rdata=TRUE
+                                 # ,col_types="dddddddddccc"
+    )
+  }
 
   if("TypeOfContractPricing" %in% names(df) ){
 
@@ -2432,6 +2494,15 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #
   #
+  if("action_date" %in% names(df)){
+    conversion_test<- as.Date(df$action_date)
+    if(any(is.na(conversion_test)&!is.na(df$action_date[is.na(conversion_test)]))){
+      stop("Failed action_date conversion")
+    }
+    df$action_date <- conversion_test
+    rm(conversion_test)
+
+  }
   if("Fiscal_Year"%in% names(df)){
 
     df$Fiscal_Year <- text_to_number(df$Fiscal_Year)
@@ -2445,7 +2516,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df$Fiscal_YQ[is.na(df$Fiscal_YQ)]<-df$Fiscal_Year[is.na(df$Fiscal_YQ)]
       df$YTD<-ifelse(df$Fiscal_Year==max(df$Fiscal_Year),"YTD","Full Year")
     }
-    else if (fiscal_quarter_YTD %in% colnames(df)){
+    else if ("fiscal_quarter_YTD" %in% colnames(df)){
       df$Fiscal_YQ<-NA
       df$Fiscal_YQ[!is.na(df$fiscal_quarter_YTD)]<-text_to_number(paste(df$Fiscal_Year[!is.na(df$fiscal_quarter_YTD)],
                                                                     text_to_number(df$fiscal_quarter_YTD[!is.na(df$fiscal_quarter_YTD)]),sep="."))

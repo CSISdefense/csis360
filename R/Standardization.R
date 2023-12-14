@@ -1815,17 +1815,13 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
     if(is.na(x_var)) x_var<-plot$plot_env$x_var
     if(all(is.na(var_list))){
       var_list<-colnames(plot$data)
-      var_list<-var_list[!var_list %in% c(x_var,y_var,plot$plot_env$x_var,"YTD","coloralpha")]
+      var_list<-var_list[!var_list %in% y_var & !var_list %in% x_var &
+                           !var_list %in% plot$plot_env$x_var & !var_list %in% "YTD"]
     }
     if(is.na(startCol)) startCol<-10+length(var_list)
     #Swap in Fiscal_Year for dFYear for ease of table readability
-
     if("dFYear"==x_var & "Fiscal_Year" %in% colnames(df))
       x_var<-"Fiscal_Year"
-
-    if("dtDelivYear"==x_var & "Fiscal_Year" %in% colnames(df))
-      x_var<-"MixedYear"
-
     if(excel_then_year | csv_then_year){
       #Add other constant dollar here variables
       if(y_var %in% c("Then_Year_Dollars","Action_Obligation_Then_Year") &
