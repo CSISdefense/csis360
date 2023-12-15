@@ -1185,40 +1185,40 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     }
   }
 
-  if("awarding_agency_code" %in% names(df))
-  {
-
-    df<-read_and_join_experiment(df,
-                                 path=path,
-                                 "Awarding_Agency_Code.csv",
-                                 dir="office",
-                                 by=c("awarding_agency_code"="awarding_agency_code"),
-                                 add_var=c("Customer","SubCustomer","AgencyIDtext"),#Contracting.Agency.ID
-                                 skip_check_var=c("Platform","Customer","SubCustomer","AgencyIDtext"),
-                                 guess_max=2000)
-    colnames(df)[colnames(df)=="AgencyIDtext"]<-"ContractingAgencyName"
-
-    if("ContractingOfficeID" %in% names(df) & !"MajorCommandID" %in% names(df)){
-
-      df<-read_and_join_experiment(df,
-                                   path=path,
-                                   dir="office\\",
-                                   lookup_file = "MajComID.csv",
-                                   by =c("Fiscal_Year"="Fiscal_Year",
-                                         "Contracting_Agency_ID"="Contracting_Agency_ID",
-                                         "ContractingOfficeID"="ContractingOfficeID"),
-                                   skip_check_var = "MajorCommandID")
-
-      df<-read_and_join_experiment(df,
-                                   path=path,
-                                   dir="office\\",
-                                   lookup_file = "MajComSum.csv")
-
-
-
-
-    }
-  }
+  # if("awarding_agency_code" %in% names(df))
+  # {
+  #
+  #   df<-read_and_join_experiment(df,
+  #                                path=path,
+  #                                "Awarding_Agency_Code.csv",
+  #                                dir="office",
+  #                                by=c("awarding_agency_code"="awarding_agency_code"),
+  #                                add_var=c("Customer","SubCustomer","AgencyIDtext"),#Contracting.Agency.ID
+  #                                skip_check_var=c("Platform","Customer","SubCustomer","AgencyIDtext"),
+  #                                guess_max=2000)
+  #   colnames(df)[colnames(df)=="AgencyIDtext"]<-"ContractingAgencyName"
+  #
+  #   if("ContractingOfficeID" %in% names(df) & !"MajorCommandID" %in% names(df)){
+  #
+  #     df<-read_and_join_experiment(df,
+  #                                  path=path,
+  #                                  dir="office\\",
+  #                                  lookup_file = "MajComID.csv",
+  #                                  by =c("Fiscal_Year"="Fiscal_Year",
+  #                                        "Contracting_Agency_ID"="Contracting_Agency_ID",
+  #                                        "ContractingOfficeID"="ContractingOfficeID"),
+  #                                  skip_check_var = "MajorCommandID")
+  #
+  #     df<-read_and_join_experiment(df,
+  #                                  path=path,
+  #                                  dir="office\\",
+  #                                  lookup_file = "MajComSum.csv")
+  #
+  #
+  #
+  #
+  #   }
+  # }
 
 
   if("Customer" %in% names(df) && "SubCustomer" %in% names(df)){
