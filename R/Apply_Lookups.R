@@ -29,7 +29,7 @@
 #'
 #' @export
 swap_in_zip<-function(filename,path,directory=""){
-  input<-paste(path,directory,filename,sep="")
+  input<-file.path(path,directory,filename)
   #File.exist seems only to work for local files.
   if(!file.exists(input) & !tolower(substr(input,1,4)) %in% c("http","ftp:") ){
     zip_file<-paste(substring(input,1,nchar(input)-3),"zip",sep="")
@@ -523,36 +523,36 @@ read_and_join_experiment<-function(
 
   #If the  file specified is an RDA
   if(tolower(substring(lookup_file,nchar(lookup_file)-3))==".rda"){
-    if (!file.exists(paste(path,directory,lookup_file,sep="")))
-      stop(paste(path,directory,lookup_file," does not exist",sep=""))
-    load(paste(path,directory,lookup_file,sep=""))
+    if (!file.exists(file.path(path,directory,lookup_file)))
+      stop(paste0(file.path(path,directory,lookup_file)," does not exist"))
+    load(file.path(path,directory,lookup_file))
   }
   #If there exists an rda variant of the file passed.
-  else if (file.exists(paste(path,directory,substring(lookup_file,1,nchar(lookup_file)-3),"rda", sep="")))
-    load(paste(path,directory,substring(lookup_file,1,nchar(lookup_file)-3),"rda", sep=""))
+  else if (file.exists(file.path(path,directory,paste0(substring(lookup_file,1,nchar(lookup_file)-3),"rda"))))
+    load(file.path(path,directory,paste0(substring(lookup_file,1,nchar(lookup_file)-3),"rda")))
 
   else{ if(!is.null(zip_file)){
     #Case sensitivity fix for zip filename
-    # dir_list<-list.files(paste(path,directory,sep=""))
+    # dir_list<-list.files(file.path(path,directory))
     # zip_file<-case_match(zip_file,dir_list)
 
     #Read in the lookup file
-    if (!file.exists(paste(path,directory,zip_file,sep=""))){
-      stop(paste(path,directory,zip_file," does not exist",sep=""))
+    if (!file.exists(file.path(path,directory,zip_file))){
+      stop(paste(file.path(path,directory,zip_file),"does not exist"))
     }
-    file_size<-file.info(paste(path,directory,zip_file,sep=""))$size
+    file_size<-file.info(file.path(path,directory,zip_file))$size
     if (file_size>200000000){
       stop(paste("Zip file size (",file_size,") exceeds 200 megabytes and unz can't handle this. Current solution is to unzip in file system and read in directly."))
     }
 
     #Case sensitivity fix for data filename
-    file_list<-unzip(paste(path,directory,zip_file,sep=""),list=TRUE)
+    file_list<-unzip(file.path(path,directory,zip_file),list=TRUE)
     lookup_file<-case_match(lookup_file,file_list$Name)
     if(!lookup_file %in% (file_list$Name)){
       print(file_list)
       stop(paste(lookup_file,"not present in",zip_file))
     }
-    input<-paste(path,directory,zip_file,sep="")#unz(description=paste(path,directory,zip_file,sep=""),filename=lookup_file)
+    input<-file.path(path,directory,zip_file)#unz(description=paste(path,directory,zip_file,sep=""),filename=lookup_file)
 
   }
     else{#No zip file
@@ -586,8 +586,8 @@ read_and_join_experiment<-function(
     }
 
     if (create_lookup_rdata==TRUE)
-      save(lookup,file=paste(path,directory,
-                             substring(lookup_file,1,nchar(lookup_file)-3),"rda",sep="")
+      save(lookup,file=file.path(path,directory,
+                             paste0(substring(lookup_file,1,nchar(lookup_file)-3),"rda"))
       )
   }
   #Remove byte order marks present in UTF encoded files
