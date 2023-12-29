@@ -1771,6 +1771,7 @@ group_by_list<-function(x,key){
 #' @param xlsx the excel file to output to
 #' @param sheet the sheet to use in excel, typically shorter than the name
 #' @param path="..\\output\\" what directory for the output
+#' @param second_path=NA for saving to a second location to automatically
 #' @param width=6.5 Width for the plot in inches
 #' @param height=3.5 Height for the plot in inches
 #' @param output_doc_svg=TRUE GGsave a svg of the graph for a document?
@@ -1798,6 +1799,7 @@ group_by_list<-function(x,key){
 #'
 #' @export
 log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
+                     second_path=NA,
                      width=6.5,height=3.5,output_doc_svg=TRUE,output_doc_png=FALSE,
                      startRow=1,startCol=NA,format=TRUE,
                      x_var=NA,y_var=NA,var_list=NA,
@@ -1855,6 +1857,22 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
     #     arrange(.by_group = TRUE)
 
   }
+  #Now that formatting is done, we can efficiently call for a second log path
+  if (!is.na(second_path))
+    log_plot <- function(plot=plot, df=df,filename=filename,
+                         xlsx=xlsx,sheet=sheet,path=second_path,
+                         second_path=NA,
+                         width=width,height=height,
+                         output_doc_svg=output_doc_svg,output_doc_png=output_doc_png,
+                         startRow=startRow,startCol=startCol,format=FALSE,
+                         x_var=x_var,y_var=y_var,var_list=var_list,
+                         csv_then_year=csv_then_year,
+                         excel_then_year=excel_then_year,
+                         excel_y_var=excel_y_var,excel_share=excel_share,
+                         excel_formulas=excel_formulas,
+                         hist_year=hist_year, cur_year=cur_year,
+                         group_unlabeled_facets=group_unlabeled_facets
+    )
 
   if (output_doc_svg==TRUE)
     ggsave600dpi(plot+labs(caption=NULL,title=NULL),

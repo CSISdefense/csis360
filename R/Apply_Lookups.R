@@ -85,6 +85,49 @@ get_local_lookup_path<-function(){
   stop("Could not find local path. Update the list in Apply_Lookups.R")
 }
 
+
+
+#' A kludge, that should someday be replaced by using Microsoft365 repo.
+#'
+#'' @param site Which site. The DIIG sharepoint folder is the default.
+#'
+#' @return The path, if a known one exists. Otherwise it will throw an error.
+#'
+#' @details This is strictly for internal CSIS usage, as the user will need to
+#' separately be syncing sharepoint to their drive. The intent is to update,
+#' particularly via log_path,
+#'
+#' @examples get_local_sharepoint_path()
+#'
+#' @export
+get_local_sharepoint_path<-function(site="DIIG - Documents"){
+  local_path<-file.path("C:\\Users\\Present\\Documents\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("K:\\Users\\Greg\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("C:\\Users\\gsand\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("D:\\Users\\Greg\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("F:\\Users\\Greg\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("D:\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("F:\\Users\\gsanders\\Documents\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("C:\\Users\\grego\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  stop("Could not find local path. Update the list in Apply_Lookups.R")
+}
+
 #' Turn a factor  into a number
 #'
 #' @param x The factor or character string
