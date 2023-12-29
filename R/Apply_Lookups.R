@@ -486,7 +486,8 @@ read_and_join_experiment<-function(
     missing_file=NULL,
     create_lookup_rdata=FALSE,
     lookup_char_as_factor=FALSE,
-    guess_max=NULL
+    guess_max=NULL,
+    join_type="left"
 ){
   if(!is.null(names(by)))
     left_by<-names(by)
@@ -671,11 +672,18 @@ read_and_join_experiment<-function(
       add_var<-colnames(lookup)[!colnames(lookup) %in% colnames(data)]
     left_by<-colnames(lookup)[colnames(lookup) %in% colnames(data)]
 
-
+    if(join_type=="left"){
     data<- dplyr::left_join(
       data,
       lookup
     )
+    } else if(join_type=="full"){
+      data<- dplyr::full_join(
+        data,
+        lookup
+      )
+    }
+    else stop("Unrecognized join_type")
   }
   else{
     if(case_sensitive==FALSE){
@@ -693,12 +701,21 @@ read_and_join_experiment<-function(
       }
     }
 
+    if(join_type=="left"){
+      data<- dplyr::left_join(
+        data,
+        lookup,
+        by=by
+      )
+    } else if(join_type=="full"){
+      data<- dplyr::full_join(
+        data,
+        lookup,
+        by=by
+      )
+    }
+    else stop("Unrecognized join_type")
 
-    data<- dplyr::left_join(
-      data,
-      lookup,
-      by=by
-    )
 
     if(case_sensitive==FALSE){
       #Switch back the by variables to their pre-tolower value
