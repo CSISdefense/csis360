@@ -29,7 +29,7 @@
 #'
 #' @export
 swap_in_zip<-function(filename,path,directory=""){
-  input<-paste(path,directory,filename,sep="")
+  input<-file.path(path,directory,filename)
   #File.exist seems only to work for local files.
   if(!file.exists(input) & !tolower(substr(input,1,4)) %in% c("http","ftp:") ){
     zip_file<-paste(substring(input,1,nchar(input)-3),"zip",sep="")
@@ -80,6 +80,49 @@ get_local_lookup_path<-function(){
   if(file.exists(local_path))
     return(local_path)
   local_path<-"C:\\Users\\grego\\Repositories\\Lookup-Tables\\"
+  if(file.exists(local_path))
+    return(local_path)
+  stop("Could not find local path. Update the list in Apply_Lookups.R")
+}
+
+
+
+#' A kludge, that should someday be replaced by using Microsoft365 repo.
+#'
+#'' @param site Which site. The DIIG sharepoint folder is the default.
+#'
+#' @return The path, if a known one exists. Otherwise it will throw an error.
+#'
+#' @details This is strictly for internal CSIS usage, as the user will need to
+#' separately be syncing sharepoint to their drive. The intent is to update,
+#' particularly via log_path,
+#'
+#' @examples get_local_sharepoint_path()
+#'
+#' @export
+get_local_sharepoint_path<-function(site="DIIG - Documents"){
+  local_path<-file.path("C:\\Users\\Present\\Documents\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("K:\\Users\\Greg\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("C:\\Users\\gsand\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("D:\\Users\\Greg\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("F:\\Users\\Greg\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("D:\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("F:\\Users\\gsanders\\Documents\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("C:\\Users\\grego\\Center Strategic Intl Studies Inc CSIS",site)
   if(file.exists(local_path))
     return(local_path)
   stop("Could not find local path. Update the list in Apply_Lookups.R")
@@ -486,7 +529,8 @@ read_and_join_experiment<-function(
     missing_file=NULL,
     create_lookup_rdata=FALSE,
     lookup_char_as_factor=FALSE,
-    guess_max=NULL
+    guess_max=NULL,
+    join_type="left"
 ){
   if(!is.null(names(by)))
     left_by<-names(by)
@@ -523,36 +567,36 @@ read_and_join_experiment<-function(
 
   #If the  file specified is an RDA
   if(tolower(substring(lookup_file,nchar(lookup_file)-3))==".rda"){
-    if (!file.exists(paste(path,directory,lookup_file,sep="")))
-      stop(paste(path,directory,lookup_file," does not exist",sep=""))
-    load(paste(path,directory,lookup_file,sep=""))
+    if (!file.exists(file.path(path,directory,lookup_file)))
+      stop(paste0(file.path(path,directory,lookup_file)," does not exist"))
+    load(file.path(path,directory,lookup_file))
   }
   #If there exists an rda variant of the file passed.
-  else if (file.exists(paste(path,directory,substring(lookup_file,1,nchar(lookup_file)-3),"rda", sep="")))
-    load(paste(path,directory,substring(lookup_file,1,nchar(lookup_file)-3),"rda", sep=""))
+  else if (file.exists(file.path(path,directory,paste0(substring(lookup_file,1,nchar(lookup_file)-3),"rda"))))
+    load(file.path(path,directory,paste0(substring(lookup_file,1,nchar(lookup_file)-3),"rda")))
 
   else{ if(!is.null(zip_file)){
     #Case sensitivity fix for zip filename
-    # dir_list<-list.files(paste(path,directory,sep=""))
+    # dir_list<-list.files(file.path(path,directory))
     # zip_file<-case_match(zip_file,dir_list)
 
     #Read in the lookup file
-    if (!file.exists(paste(path,directory,zip_file,sep=""))){
-      stop(paste(path,directory,zip_file," does not exist",sep=""))
+    if (!file.exists(file.path(path,directory,zip_file))){
+      stop(paste(file.path(path,directory,zip_file),"does not exist"))
     }
-    file_size<-file.info(paste(path,directory,zip_file,sep=""))$size
+    file_size<-file.info(file.path(path,directory,zip_file))$size
     if (file_size>200000000){
       stop(paste("Zip file size (",file_size,") exceeds 200 megabytes and unz can't handle this. Current solution is to unzip in file system and read in directly."))
     }
 
     #Case sensitivity fix for data filename
-    file_list<-unzip(paste(path,directory,zip_file,sep=""),list=TRUE)
+    file_list<-unzip(file.path(path,directory,zip_file),list=TRUE)
     lookup_file<-case_match(lookup_file,file_list$Name)
     if(!lookup_file %in% (file_list$Name)){
       print(file_list)
       stop(paste(lookup_file,"not present in",zip_file))
     }
-    input<-paste(path,directory,zip_file,sep="")#unz(description=paste(path,directory,zip_file,sep=""),filename=lookup_file)
+    input<-file.path(path,directory,zip_file)#unz(description=paste(path,directory,zip_file,sep=""),filename=lookup_file)
 
   }
     else{#No zip file
@@ -586,8 +630,8 @@ read_and_join_experiment<-function(
     }
 
     if (create_lookup_rdata==TRUE)
-      save(lookup,file=paste(path,directory,
-                             substring(lookup_file,1,nchar(lookup_file)-3),"rda",sep="")
+      save(lookup,file=file.path(path,directory,
+                             paste0(substring(lookup_file,1,nchar(lookup_file)-3),"rda"))
       )
   }
   #Remove byte order marks present in UTF encoded files
@@ -671,11 +715,18 @@ read_and_join_experiment<-function(
       add_var<-colnames(lookup)[!colnames(lookup) %in% colnames(data)]
     left_by<-colnames(lookup)[colnames(lookup) %in% colnames(data)]
 
-
+    if(join_type=="left"){
     data<- dplyr::left_join(
       data,
       lookup
     )
+    } else if(join_type=="full"){
+      data<- dplyr::full_join(
+        data,
+        lookup
+      )
+    }
+    else stop("Unrecognized join_type")
   }
   else{
     if(case_sensitive==FALSE){
@@ -693,12 +744,21 @@ read_and_join_experiment<-function(
       }
     }
 
+    if(join_type=="left"){
+      data<- dplyr::left_join(
+        data,
+        lookup,
+        by=by
+      )
+    } else if(join_type=="full"){
+      data<- dplyr::full_join(
+        data,
+        lookup,
+        by=by
+      )
+    }
+    else stop("Unrecognized join_type")
 
-    data<- dplyr::left_join(
-      data,
-      lookup,
-      by=by
-    )
 
     if(case_sensitive==FALSE){
       #Switch back the by variables to their pre-tolower value
