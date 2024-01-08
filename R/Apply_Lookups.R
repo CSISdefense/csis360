@@ -1561,6 +1561,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #If there's existing productorservce descriptions, these may be more precise than
   #What we can provide via lookup tables.
+  #### PSC / NAICS / Project ####
   if("ProductOrServiceCode" %in% names(df) & !"Product.or.Service.Description" %in% names(df)&
      !"ProductOrServiceCodeText" %in% names(df))
   {
@@ -1948,6 +1949,21 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #   }
   #
   #
+
+  if("principalnaicscode" %in% names(df))
+  {
+
+    df<-csis360::read_and_join_experiment(df,
+                                          "Lookup_PrincipalNAICScode.csv",
+                                          by=c("principalnaicscode"="principalnaicscode"),
+                                          add_var=c("principalnaicscodeText"),
+                                          path=path,
+                                          skip_check_var = c("principalnaicscodeText"),
+                                          dir="economic"
+    )
+  }
+
+  #### Vendor Size ####
   if("VendorSize" %in% names(df)){
     df<-replace_nas_with_unlabeled(df,"VendorSize")
 
