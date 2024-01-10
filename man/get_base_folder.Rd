@@ -10,7 +10,7 @@ get_base_folder(folder)
 \item{folder}{}
 }
 \value{
-"../[folder]" or "[folder]" depending on the relative position.
+"../../[folder]", "../[folder]", or "[folder]" depending on the relative position.
 }
 \description{
 Get Base Folder

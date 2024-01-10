@@ -115,6 +115,11 @@ get_local_sharepoint_path<-function(site="DIIG - Documents"){
     return(local_path)
   local_path<-file.path("F:\\Users\\Greg\\Center Strategic Intl Studies Inc CSIS",site)
   if(file.exists(local_path))
+    local_path<-file.path("F:\\Users\\Greg\\Center Strategic Intl Studies Inc CSIS",site)
+  local_path<-file.path("F:\\Users\\gsanders\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    local_path<-file.path("F:\\Users\\gsanders\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
     return(local_path)
   local_path<-file.path("D:\\Center Strategic Intl Studies Inc CSIS",site)
   if(file.exists(local_path))
@@ -631,7 +636,7 @@ read_and_join_experiment<-function(
 
     if (create_lookup_rdata==TRUE)
       save(lookup,file=file.path(path,directory,
-                             paste0(substring(lookup_file,1,nchar(lookup_file)-3),"rda"))
+                                 paste0(substring(lookup_file,1,nchar(lookup_file)-3),"rda"))
       )
   }
   #Remove byte order marks present in UTF encoded files
@@ -716,10 +721,10 @@ read_and_join_experiment<-function(
     left_by<-colnames(lookup)[colnames(lookup) %in% colnames(data)]
 
     if(join_type=="left"){
-    data<- dplyr::left_join(
-      data,
-      lookup
-    )
+      data<- dplyr::left_join(
+        data,
+        lookup
+      )
     } else if(join_type=="full"){
       data<- dplyr::full_join(
         data,
@@ -976,7 +981,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     "An error occurr",#ed while executing batch. Error message is: One or more errors occurred
     "Msg 208, Level ",#16, State 1, Procedure
     "Invalid object "#Invalid object name 'contract.FDPSpartia
-    )){
+  )){
 
     df<-df[-nrow(df),]
   }
@@ -1330,15 +1335,15 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   if("CompetitionClassification" %in% names(df) & "ClassifyNumberOfOffers" %in% names(df) )
   {
     df<-csis360::read_and_join_experiment(df,
-                               "CompetitionClassification.csv",
-                               by=c("CompetitionClassification","ClassifyNumberOfOffers"),
-                               replace_na_var="ClassifyNumberOfOffers",
-                               add_var=c("Competition.sum",
-                                         "Competition.multisum",
-                                         "Competition.effective.only",
-                                         "No.Competition.sum"),
-                               path=path,
-                               dir="contract/"
+                                          "CompetitionClassification.csv",
+                                          by=c("CompetitionClassification","ClassifyNumberOfOffers"),
+                                          replace_na_var="ClassifyNumberOfOffers",
+                                          add_var=c("Competition.sum",
+                                                    "Competition.multisum",
+                                                    "Competition.effective.only",
+                                                    "No.Competition.sum"),
+                                          path=path,
+                                          dir="contract/"
     )
   }
   if("Vehicle" %in% names(df) ){
@@ -1352,16 +1357,17 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
   }
 
-# Mechanism Type ####
-
-  df<-df %>% mutate(cfda_num=ifelse(
-    nchar(cfda_number)>6,
-    round(text_to_number(cfda_number),3),
-    cfda_number))
-  if(any(!is.na(df$cfda_number)&is.na(df$cfda_num)))
-    stop("Mangled CFDA number")
-  df<-read_and_join_experiment(df,directory="assistance//",lookup_file="assistance_type_code.csv",
-                               by="assistance_type_code")
+  # Mechanism Type ####
+  if("assistance_type_code" %in% names(df) ){
+    df<-df %>% mutate(cfda_num=ifelse(
+      nchar(cfda_number)>6,
+      round(text_to_number(cfda_number),3),
+      cfda_number))
+    if(any(!is.na(df$cfda_number)&is.na(df$cfda_num)))
+      stop("Mangled CFDA number")
+    df<-read_and_join_experiment(df,directory="assistance//",lookup_file="assistance_type_code.csv",
+                                 by="assistance_type_code",path=path)
+  }
 
   if("assistance_type_code" %in% names(df) ){
     df<-read_and_join_experiment(data=df
@@ -1560,6 +1566,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #If there's existing productorservce descriptions, these may be more precise than
   #What we can provide via lookup tables.
+  #### PSC / NAICS / Project ####
   if("ProductOrServiceCode" %in% names(df) & !"Product.or.Service.Description" %in% names(df)&
      !"ProductOrServiceCodeText" %in% names(df))
   {
@@ -1579,7 +1586,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   }
   #We can be more precise
   if("ProductOrServiceCode" %in% names(df) &
-     !"ProductServiceOrRnDarea" %in% names(df))
+     !"ProductServiceOrRnDarea" %in% names(df) &
+     "Fiscal_Year"  %in% names(df))
   {
     if(is.integer(df$ProductOrServiceCode)){
       df$ProductOrServiceCode<-factor(df$ProductOrServiceCode)
@@ -1646,13 +1654,13 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
     #Classify Product or Service Codes
     df<-csis360::read_and_join_experiment(df,
-                               "ProductServiceOrRnDarea.csv",
-                               # by="ProductOrServiceArea",
-                               by="ProductServiceOrRnDarea",
-                               replace_na_var="ProductServiceOrRnDarea",
-                               add_var=c("ProductServiceOrRnDarea.sum","ServicesCategory.detail","ServicesCategory.sum"),
-                               path=path,
-                               dir="productorservice/"
+                                          "ProductServiceOrRnDarea.csv",
+                                          # by="ProductOrServiceArea",
+                                          by="ProductServiceOrRnDarea",
+                                          replace_na_var="ProductServiceOrRnDarea",
+                                          add_var=c("ProductServiceOrRnDarea.sum","ServicesCategory.detail","ServicesCategory.sum"),
+                                          path=path,
+                                          dir="productorservice/"
     )
 
 
@@ -1946,6 +1954,21 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #   }
   #
   #
+
+  if("principalnaicscode" %in% names(df))
+  {
+
+    df<-csis360::read_and_join_experiment(df,
+                                          "Lookup_PrincipalNAICScode.csv",
+                                          by=c("principalnaicscode"="principalnaicscode"),
+                                          add_var=c("principalnaicscodeText"),
+                                          path=path,
+                                          skip_check_var = c("principalnaicscodeText"),
+                                          dir="economic"
+    )
+  }
+
+  #### Vendor Size ####
   if("VendorSize" %in% names(df)){
     df<-replace_nas_with_unlabeled(df,"VendorSize")
 
@@ -2572,14 +2595,14 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     if("fiscal_quarter" %in% colnames(df)){
       df$Fiscal_YQ<-NA
       df$Fiscal_YQ[!is.na(df$fiscal_quarter)]<-text_to_number(paste(df$Fiscal_Year[!is.na(df$fiscal_quarter)],
-                                                                                text_to_number(df$fiscal_quarter[!is.na(df$fiscal_quarter)]),sep="."))
+                                                                    text_to_number(df$fiscal_quarter[!is.na(df$fiscal_quarter)]),sep="."))
       df$Fiscal_YQ[is.na(df$Fiscal_YQ)]<-df$Fiscal_Year[is.na(df$Fiscal_YQ)]
       df$YTD<-ifelse(df$Fiscal_Year==max(df$Fiscal_Year),"YTD","Full Year")
     }
     else if ("fiscal_quarter_YTD" %in% colnames(df)){
       df$Fiscal_YQ<-NA
       df$Fiscal_YQ[!is.na(df$fiscal_quarter_YTD)]<-text_to_number(paste(df$Fiscal_Year[!is.na(df$fiscal_quarter_YTD)],
-                                                                    text_to_number(df$fiscal_quarter_YTD[!is.na(df$fiscal_quarter_YTD)]),sep="."))
+                                                                        text_to_number(df$fiscal_quarter_YTD[!is.na(df$fiscal_quarter_YTD)]),sep="."))
       df$Fiscal_YQ[is.na(df$Fiscal_YQ)]<-df$Fiscal_Year[is.na(df$Fiscal_YQ)]
     }
 

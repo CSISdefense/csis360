@@ -1826,6 +1826,8 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
     #Swap in Fiscal_Year for dFYear for ease of table readability
     if("dFYear"==x_var & "Fiscal_Year" %in% colnames(df))
       x_var<-"Fiscal_Year"
+    if("dtDelivYear"==x_var & "Delivery.year" %in% colnames(df))
+      x_var<-"Delivery.year"
     if(excel_then_year | csv_then_year){
       #Add other constant dollar here variables
       if(y_var %in% c("Then_Year_Dollars","Action_Obligation_Then_Year") &
@@ -1835,8 +1837,10 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
         then_year_y_var<-"Action_Obligation_Then_Year"
       else if(y_var %in% c("Amount_OMB24_GDP22"))
         then_year_y_var<-"Amount_Then_Year"
+      else if(y_var %in% c("delivery_BEA22"))
+        then_year_y_var<-"delivery_Then_Year"
       else stop("Unrecognized y_var")
-      if(any(!is.na(df[,x_var]) & df[,x_var]==""))
+      if(any(is.Date(df[,x_var]) & !is.na(df[,x_var]) & df[,x_var]==""))
         stop("Empty string values in x_var cause a pivot_wider error.")
       then_year_df<-group_data_for_plot(df,x_var=x_var, y_var=then_year_y_var, breakout=var_list) %>%
         arrange(!!as.name(x_var))%>%
@@ -1890,7 +1894,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
         wb <- loadWorkbook(file.path(path,xlsx))
       }
       else{
-        wb<-createWorkbook(file.path(path,xlsx))
+        wb<-openxlsx::createWorkbook(file.path(path,xlsx))
       }
       if(!sheet %in% names(wb))
         addWorksheet(wb,sheet)

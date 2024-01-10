@@ -11,10 +11,12 @@ log_plot(
   xlsx,
   sheet,
   path = "..\\\\output",
+  second_path = NA,
   width = 6.5,
   height = 3.5,
   output_doc_svg = TRUE,
   output_doc_png = FALSE,
+  suppress_text = NA,
   startRow = 1,
   startCol = NA,
   format = TRUE,
@@ -46,6 +48,8 @@ log_plot(
 
 \item{path="..\\output\\"}{what directory for the output}
 
+\item{second_path=NA}{for saving to a second location to automatically}
+
 \item{width=6.5}{Width for the plot in inches}
 
 \item{height=3.5}{Height for the plot in inches}
@@ -53,6 +57,8 @@ log_plot(
 \item{output_doc_svg=TRUE}{GGsave a svg of the graph for a document?}
 
 \item{output_doc_png=FALSE}{GGsave a png of the graph for a document?}
+
+\item{suppress_text=NA}{Remove titles and captions. If unspecified, treated as TRUE for SVG and FALSE for PNG.}
 
 \item{startRow=1}{Start row for excel output}
 
