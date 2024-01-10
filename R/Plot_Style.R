@@ -122,7 +122,7 @@ get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
 #' @param column_key A csis360 lookup data.frame with column information
 #' @param format If TRUE, summarize the data.frame
 #' @param ytextposition If TRUE, add ytextposition to allow for geom_text overlays.
-#' @param reverse_color If TRUE, the
+#' @param reverse_color If TRUE, the order of the color variable is flipped
 #'
 #'
 #'
@@ -183,7 +183,6 @@ build_plot <- function(
   if(!is.null(labels_and_colors) & !is.numeric(labels_and_colors$Display.Order)){
     labels_and_colors$Display.Order<-as.numeric(as.character(labels_and_colors$Display.Order))
     labels_and_colors<-labels_and_colors[order(labels_and_colors$column,labels_and_colors$Display.Order),]
-
   }
   #Primarily for bar plots, sometimes we want the first in order on the bottom so it is easier to track movements.
   if(reverse_color){
