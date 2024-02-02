@@ -205,14 +205,13 @@ if(is.null(x_var)) x_var<-names(data)[1]
         data<-rbind(data,
                     data[data[,x_var]==max_full_year,] %>%
                       mutate(YTD="YTD"))
+      }
         #Need to renew the data link here.
         if(color_var!="None"){
           data$coloralpha<-paste(data[,color_var],data[,alpha_var])
           group_var<-"coloralpha"
         }
         mainplot <- ggplot(data = data)
-
-      }
     }
     if(color_var == "None"){
       if(is.null(alpha_var))
@@ -250,11 +249,10 @@ if(is.null(x_var)) x_var<-names(data)[1]
             x = as.name(x_var),
             y = as.name(y_var),
             color = as.name(color_var),
-            group = as.name(group_var),
             # alpha = as.name(alpha_var)
             linetype= as.name(alpha_var)
           ))+
-          guides(color = guide_legend(override.aes = list(size = 1)))+
+          guides(color = guide_legend(override.aes = list(linewidth = 1)))+
           theme(legend.key = element_rect(fill = "white"))
         if(alpha_var=="YTD"){
           mainplot<-mainplot+scale_linetype_discrete(breaks=c(1,3),labels=c("Full Year","YTD"))+
@@ -405,8 +403,8 @@ if(is.null(x_var)) x_var<-names(data)[1]
           facet_grid(as.formula(paste0("`",facet_var, "` ~ `", second_var, "`"))) +
           theme(strip.background = element_rect(fill = "white"))
       }
-      # theme(strip.background = element_rect(colour = "#554449", fill = "white", size=0.5),
-      #       panel.border = element_rect(colour = "#554449", fill=NA, size=0.5))
+      # theme(strip.background = element_rect(colour = "#554449", fill = "white", linewidth=0.5),
+      #       panel.border = element_rect(colour = "#554449", fill=NA, linewidth=0.5))
     }
     else{
       mainplot <- mainplot +
@@ -921,10 +919,6 @@ if (caption==TRUE)
 #' @param size New text size
 #' @param caption_fraction Ratio of caption to the rest of text
 #' @return Does not return, outptus to file
-#'
-#'
-#'
-#'
 #'
 #' @import ggplot2
 #' @export
