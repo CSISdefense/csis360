@@ -30,6 +30,7 @@
 #' @export
 swap_in_zip<-function(filename,path,directory=""){
   input<-file.path(path,directory,filename)
+  if (path=="") input<-file.path(path,directory,filename)
   #File.exist seems only to work for local files.
   if(!file.exists(input) & !tolower(substr(input,1,4)) %in% c("http","ftp:") ){
     zip_file<-paste(substring(input,1,nchar(input)-3),"zip",sep="")
@@ -370,15 +371,16 @@ read_and_join<-function(
     data<-replace_nas_with_unlabeled(data,
                                      replace_na_var)
   }
-
+  pathdir=file.path(path,dir)
+  if(path=="") pathdir<-dir
   #This doesn't  work for URLs. Worth trying again later with some parsing
-  # if (!file.exists(paste(path,directory,lookup_file,sep=""))){
-  # stop(paste(path,directory,lookup_file," does not exist.",sep=""))
+  # if (!file.exists(file.path(pathdir,lookup_file))){
+  # stop(paste(file.path(pathdir,lookup_file)," does not exist.",sep=""))
   # }
 
   #Read in the lookup file
   lookup<-read.csv(
-    paste(path,directory,lookup_file,sep=""),
+    file.path(pathdir,lookup_file),
     header=TRUE,
     sep=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
     na.strings=c("NA","NULL"),
@@ -546,14 +548,16 @@ read_and_join_experiment<-function(
   # read.delim doesn't like \\
   path<-gsub("\\\\","//",path)
   directory<-gsub("\\\\","//",directory)
-  if(tolower(substr(path,1,4))=="http"&!RCurl::url.exists(file.path(path,directory,lookup_file))
+  pathdir=file.path(path,dir)
+  if(path=="") pathdir<-dir
+  if(tolower(substr(path,1,4))=="http"&!RCurl::url.exists(file.path(pathdir,lookup_file))
      || path=="offline"){
     warning("Using offline path")
     path<-get_local_lookup_path()
   }
   #Prevent "" from sending the path back to the \ directory rather than the root for the project.
   if (path=="") pathdir<-directory
-  else pathdir=file.path(path,directory)
+  else pathdir=file.path(pathdir)
 
 
   case_match<-function(name, list){
