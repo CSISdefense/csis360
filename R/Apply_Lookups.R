@@ -1957,6 +1957,11 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
   if("principalnaicscode" %in% names(df))
   {
+    df$principalnaicscode[df$principalnaicscode==""]<-NA
+    if(any(is.na(text_to_number(df$principalnaicscode))&!is.na(df$principalnaicscode)))
+      stop(paste("Text in principalnaicscode:",
+                 levels(factor(df$principalnaicscode[is.na(text_to_number(df$principalnaicscode))&!is.na(df$principalnaicscode)]))))
+    df$principalnaicscode<-text_to_number(df$principalnaicscode)
 
     df<-csis360::read_and_join_experiment(df,
                                           "Lookup_PrincipalNAICScode.csv",
@@ -2080,7 +2085,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   if("fundedbyforeignentity" %in% colnames(df) &
      !"foreign_funding_description" %in% colnames(df)){
     df$fundedbyforeignentity[df$fundedbyforeignentity==""]<-NA
-    df %<>% read_and_join_experiment(lookup_file="Budget_FundedByForeignEntity.csv",
+    df<-   read_and_join_experiment(df,lookup_file="Budget_FundedByForeignEntity.csv",
                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",dir="budget/",
                                      add_var = c("foreign_funding_description"),
                                      by=c("fundedbyforeignentity")
@@ -2579,10 +2584,19 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   if("action_date" %in% names(df)){
     conversion_test<- as.Date(df$action_date)
-    if(any(is.na(conversion_test)&!is.na(df$action_date[is.na(conversion_test)]))){
+    if(any(is.na(conversion_test)&!is.na(df$action_date))){
       stop("Failed action_date conversion")
     }
     df$action_date <- conversion_test
+    rm(conversion_test)
+
+  }
+  if("signeddate" %in% names(df)){
+    conversion_test<- as.Date(df$signeddate)
+    if(any(is.na(conversion_test)&!is.na(df$signeddate))){
+      stop("Failed signeddate conversion")
+    }
+    df$signeddate <- conversion_test
     rm(conversion_test)
 
   }
@@ -2608,6 +2622,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
     # df$Fiscal_Year.End <-as.Date(paste("9/30/",as.character(year(df$Fiscal_Year)),sep=""),"%m/%d/%Y")
     # df$Fiscal_Year.Start <-as.Date(paste("10/1/",as.character(year(df$Fiscal_Year)-1),sep=""),"%m/%d/%Y")
+  } else if ("signeddate" %in% colnames(df)){
+    df$Fiscal_Year<-get_fiscal_year(df$signeddate)
+    df$dFYear<-as.Date(paste("1/1/",as.character(df$Fiscal_Year),sep=""),"%m/%d/%Y")
   }
   #
   #   if("Date.Signed"%in% names(df)){
