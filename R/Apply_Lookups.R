@@ -548,15 +548,17 @@ read_and_join_experiment<-function(
   # read.delim doesn't like \\
   path<-gsub("\\\\","//",path)
   directory<-gsub("\\\\","//",directory)
-  #Prevent "" from sending the path back to the \ directory rather than the root for the project.
-  pathdir=file.path(path,directory)
-  if(path=="") pathdir<-directory
 
   if(tolower(substr(path,1,4))=="http"&!RCurl::url.exists(file.path(pathdir,lookup_file))
      || path=="offline"){
     warning("Using offline path")
     path<-get_local_lookup_path()
   }
+
+  #Prevent "" from sending the path back to the \ directory rather than the root for the project.
+  pathdir=file.path(path,directory)
+  if(path=="") pathdir<-directory
+
 
   case_match<-function(name, list){
     if(!name %in% (list)){
