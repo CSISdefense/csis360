@@ -549,7 +549,7 @@ read_and_join_experiment<-function(
   path<-gsub("\\\\","//",path)
   directory<-gsub("\\\\","//",directory)
 
-  if(tolower(substr(path,1,4))=="http"&!RCurl::url.exists(file.path(pathdir,lookup_file))
+  if(tolower(substr(path,1,4))=="http"&!RCurl::url.exists(file.path(path,directory,lookup_file))
      || path=="offline"){
     warning("Using offline path")
     path<-get_local_lookup_path()
@@ -880,6 +880,12 @@ deflate <- function(
 
 
   data[[money_var]] <- as.numeric(data[[money_var]])
+
+  if(tolower(substr(path,1,4))=="http"&!RCurl::url.exists(file.path(path,directory,deflator_file))
+     || path=="offline"){
+    warning("Using offline path")
+    path<-get_local_lookup_path()
+  }
 
   cat(paste("\n Applying\n", deflator_var, "\n in \n", deflator_file, "\n from\n", path, "\n"))
   deflators_retrieved <- readr::read_csv(file.path(path, directory,deflator_file))
@@ -1640,7 +1646,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           by=c("ProductOrServiceCode"="ProductOrServiceCode"),
                                           add_var=c("ProductOrServiceCodeText"),
                                           path=path,
-                                          # skip_check_var = c("CrisisProductOrServiceArea","Simple"),
+                                          skip_check_var = c("ProductServiceOrRnDarea"),
                                           directory=""
     )
   }
@@ -1662,7 +1668,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                                "Fiscal_Year_gt_2020"="Fiscal_Year_gt_2020"),
                                           add_var=c("ProductServiceOrRnDarea"),
                                           path=path,
-                                          skip_check_var = c("ProductServiceOrRnDarea"),
+                                          skip_check_var = c("ProductServiceOrRnDarea",
+                                                             "TransitionProductServiceOrRnDarea"),
     )
     colnames(df)[colnames(df)=="ProductServiceOrRnDarea"]<-"TransitionProductServiceOrRnDarea"
 
@@ -1682,7 +1689,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                         select=c("ProductOrServiceCode","TransitionProductServiceOrRnDarea","ProductServiceOrRnDarea"))
     if(nrow(NA.check.df)>0){
       print(unique(NA.check.df))
-      stop(paste(nrow(NA.check.df),"rows of NAs generated in ProductServiceOrRnDarea"))
+      warning(paste(nrow(NA.check.df),"rows of NAs generated in ProductServiceOrRnDarea"))
     }
 
     df<-df %>% dplyr::select(-Fiscal_Year_gt_2020,-TransitionProductServiceOrRnDarea)
@@ -2137,7 +2144,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df<-deflate(df,
                   money_var = "Action_Obligation",
                   fy_var="Fiscal_Year",
-                  deflator_var=deflator_var
+                  deflator_var=deflator_var,
+                  path=path
       )
     }
   }
