@@ -1763,6 +1763,50 @@ group_by_list<-function(x,key){
   x
 }
 
+#***********************Label Top
+#' Group By List
+#'
+#' @param df the data frame to be checked
+#' @param label_col The column from which to pull top entries
+#' @param value_col The column used to determine what counts as top
+#' @param n=7 The number of top
+#'
+#' @return Group_By using a list of quoted names.
+#'
+#' @details Replacement for group_by_ now that it has been depricated.
+#'
+#' @export
+
+summary(factor(platpscintldef$ProjectPlatform))
+
+colnames(platpscintldef)[colnames(platpscintldef)=="Action_Obligation_Then_Year_Then_Year"]<-
+  "Action_Obligation_Then_Year"
+
+colnames(platpscintldef)[colnames(platpscintldef)=="Action_Obligation_Then_Year_OMB23_GDP21"]<-
+  "Action_Obligation_OMB24_GDP22"
+
+topplat<-platpscintldef %>% group_by (Project.Name,PlatformPortfolio) %>%
+  summarise(Action_Obligation_OMB24_GDP22=sum(Action_Obligation_OMB24_GDP22),
+            Action_Obligation_2020=sum(ifelse(Fiscal_Year==2020,Action_Obligation_OMB24_GDP22,0)))%>%
+  group_by (PlatformPortfolio) %>%
+  mutate(rank_total=rank(desc(Action_Obligation_OMB24_GDP22)),
+         rank_2020=rank(desc(Action_Obligation_2020)))
+topplat %>% arrange(desc(Action_Obligation_OMB24_GDP22))
+
+
+topplat$TopProject<-
+  ifelse(topplat$rank_2020<=7 | topplat$rank_total<=7,topplat$Project.Name,NA)
+
+platpscintldef<-left_join(platpscintldef,topplat %>% select(-Action_Obligation_OMB24_GDP22,Action_Obligation_2020),
+                          by=c("Project.Name","PlatformPortfolio"))
+
+platpscintldef$TopProject[is.na(platpscintldef$TopProject) & !is.na(platpscintldef$Project.Name)]<-
+  "Other Labeled Project"
+
+
+summary(factor(platpscintldef$TopProject))
+
+
 #' Save a copy of the plot, a current dollars csv, and an excel copy
 #'
 #' @param plot a ggplot object
