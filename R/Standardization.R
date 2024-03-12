@@ -2249,7 +2249,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
         wb<-openxlsx::createWorkbook(file.path(path,xlsx))
       }
       if(!sheet %in% names(wb))
-        addWorksheet(wb,sheet)
+        openxlsx::addWorksheet(wb,sheet)
       bstyle<-createStyle(numFmt = "0.00,,,\"B\"")
       pstyle<-createStyle(numFmt = "PERCENTAGE")
       if(excel_then_year){
