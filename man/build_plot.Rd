@@ -52,7 +52,7 @@ build_plot(
 
 \item{ytextposition}{If TRUE, add ytextposition to allow for geom_text overlays.}
 
-\item{reverse_color}{If TRUE, the}
+\item{reverse_color}{If TRUE, the order of the color variable is flipped}
 }
 \value{
 A ggplot object including user-specified geom layer
