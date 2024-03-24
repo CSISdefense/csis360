@@ -1449,6 +1449,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  # ,col_types="dddddddddccc"
     )
   }
+  if("costaccountingstandardsclause" %in% names(df))
+    df$costaccountingstandardsclause[df$costaccountingstandardsclause==""]<-NA
 
   if("TypeOfContractPricing" %in% names(df) ){
 
