@@ -1410,6 +1410,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
   }
   else if ("ContractingCustomer" %in% names(df) & "ContractingSubCustomer" %in% names(df)){
+    df$ContractingCustomer[df$ContractingCustomer==""]<-NA
     df<-replace_nas_with_unlabeled(df,"ContractingSubCustomer","Uncategorized")
     df<-read_and_join_experiment(df,
                                           "SubCustomer.csv",
@@ -1490,6 +1491,11 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   }
   if("costaccountingstandardsclause" %in% names(df))
     df$costaccountingstandardsclause[df$costaccountingstandardsclause==""]<-NA
+  if("costorpricingdata" %in% names(df))
+    df$costorpricingdata[df$costorpricingdata==""]<-NA
+  if("CriticalTech" %in% names(df))
+    df$CriticalTech[df$CriticalTech==""]<-"Remaining Sectors"
+
 
   if("TypeOfContractPricing" %in% names(df) ){
 
