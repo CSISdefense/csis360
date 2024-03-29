@@ -951,6 +951,45 @@ text_to_number<-function(x){
   x
 }
 
+
+
+#' Get Column Key based on the names in a data frame
+#'
+#' @param x Text / numerical expression of a bit
+#'
+#' @return A 0,1,NULL value.
+#'
+#' @details Converts from character/number to bit
+#'
+#' @examples
+#'
+#' text_to_bit(c('Y','1','$20.00'))
+#'
+#' @export
+text_to_bit<-function(x){
+  x<-as.character(x)
+  yes_list<-c("Y","YES","Y: YES","Y:",
+              "1","TRUE","TRUE:","T")
+  no_list<-c("N","NO","N: NO",": NO",
+              "0","FALSE","FALSE:","F")
+  na_list<-c("",":")
+  b<-
+                 case_when(str_to_upper(x) %in% yes_list ~
+                             1,
+                           str_to_upper(x) %in% no_list ~
+                             0,
+                           str_to_upper(x) %in% na_list~
+                             NA,
+                 )
+  if(any(!x %in% c(yes_list,no_list,na_list) & !is.na(x))){
+    stop(paste0("text_to_bit does not know how to handle ",
+                x[!x %in% c(yes_list,no_list,na_list) & !is.na(x)]))
+  }
+  x<-as.integer(b)
+  x
+}
+
+
 #' Get Column Key based on the names in a data frame
 #'
 #' @param x A date.
