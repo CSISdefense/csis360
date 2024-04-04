@@ -1493,8 +1493,6 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df$costaccountingstandardsclause[df$costaccountingstandardsclause==""]<-NA
   if("costorpricingdata" %in% names(df))
     df$costorpricingdata[df$costorpricingdata==""]<-NA
-  if("CriticalTech" %in% names(df))
-    df$CriticalTech[df$CriticalTech==""]<-"Remaining Sectors"
 
 
   if("TypeOfContractPricing" %in% names(df) ){

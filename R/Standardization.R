@@ -2112,6 +2112,39 @@ log_plot2 <- function(plot, df,filename,xlsx,sheet,path="..\\output",
 }
 
 
+#' Save a copy of the plot, a current dollars csv, and an excel copy
+#'
+#' @param df the underlying data
+#' @param xlsx the excel file to output to
+#' @param sheet the sheet to use in excel, typically shorter than the name
+#' @param path="..\\output\\" what directory for the output
+#' @param second_path=NA for saving to a second location to automatically
+#' @param startRow=1 Start row for excel output
+#' @param startCol=NA Start column for excel output
+#'
+#'
+#' @return no value
+#'
+#'
+#'
+#' @export
+export_worksheet <- function(df,xlsx,sheet,path="..\\output",
+                     second_path=NA,
+                     startRow=1,startCol=1
+) {
+
+  wb <- loadWorkbook(file.path(path,xlsx))
+  writeData(wb, sheet = sheet, startRow = startRow, startCol = startCol,
+            df)
+  saveWorkbook(wb,file=file.path(path,xlsx),overwrite = TRUE)
+  if(!is.na(second_path)){
+  wb <- loadWorkbook(file.path(second_path,xlsx))
+  writeData(wb, sheet = sheet, startRow = startRow, startCol = startCol,
+            df)
+  saveWorkbook(wb,file=file.path(second_path,xlsx),overwrite = TRUE)
+  }
+}
+
 
 #' Save a copy of the plot, a current dollars csv, and an excel copy
 #'
