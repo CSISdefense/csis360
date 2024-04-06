@@ -1040,6 +1040,15 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
     df<-df[-nrow(df),]
   }
+  while(stringr::str_sub(df[nrow(df),1],-15,-1) %in% c(
+    " row affected)\r",
+    "rows affected)\r"
+  )){
+
+    df<-df[-nrow(df),]
+  }
+
+
   #Empty rows
   if("Fiscal_Year" %in% colnames(df))
     if((df[nrow(df),1]=="" | is.na(df[nrow(df),1]))  & is.na(df$Fiscal_Year[nrow(df)]))
