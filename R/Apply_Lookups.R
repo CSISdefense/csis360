@@ -1012,6 +1012,134 @@ get_fiscal_year<-function(
 }
 
 
+#' Label Top X entries in a data frame
+#'
+#' @param df A data frame.
+#' @param col The column to be evaluated.
+#' @param weight The variable summed to determine top entries, by default Action_Obligation_OMB24_GDP22
+#' @param rank_name The new column that will include
+#' @param group Sub groupings by which to rank, by default not included
+#' @param time The variable used for when considering recent top entries, by default Fiscal_Year
+#' @param recent Value used to give extra weight to recently top entries rather than just the overall period
+#'
+#' @return The revised data frame with the new variable
+#'
+#' @details Add column variants, including summaries, and deflated dollars,
+#' to a contract dataset.
+#'
+#'
+#' @export
+#'
+label_top<-function(df,
+                    col,
+                    n=5,
+                    weight="Action_Obligation_OMB24_GDP22",
+                    rank_name=NA,
+                    group_list=NA,
+                    time="Fiscal_Year",
+                    recent=NA){
+
+
+  agg_list<-col
+  if(!col %in% colnames(df))
+    stop(paste(col,"is not founds in the columns of df"))
+  if(!weight %in% colnames(df))
+    stop(paste(weight,"is not founds in the columns of df"))
+  if(!is.na(group_list)){
+    agg_list<-c(col,group_list)
+    for(g in group_list){
+      if(!g %in% colnames(df))
+        stop(paste(g,"is not founds in the columns of df"))
+    }
+  }
+
+  if(is.na(rank_name)) rank_name<-paste0("Top_",col)
+  if(rank_name %in% colnames(df)){
+    warning(paste(rank_name,"already present in df, removing."))
+    df<-df[,colnames(df)!=rank_name]
+  }
+
+  if(is.na(recent)){
+    #Just overall
+    if(length(agg_list) == 1){
+      agg_df <- df %>%
+        dplyr::group_by(!! as.name(agg_list)) %>%
+        summarize_(
+          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), weight = as.name(weight)))
+      agg_df<- agg_df %>% mutate(
+        rank_total=rank(desc(agg_val))) %>%
+        arrange(desc(agg_value))
+    } else {
+      agg_df <- df %>%
+        dplyr::group_by_(.dots = c(agg_list)) %>%
+        summarize_(
+          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(weight)))
+      agg_df<- agg_df %>% dplyr::group_by_(.dots = c(group_list)) %>%
+        mutate(
+          rank_total=rank(desc(agg_val))) %>%
+        arrange(desc(agg_val))
+
+    }
+    agg_df[,rank_name]<-NA
+    agg_df[agg_df$rank_total<=n,rank_name]<-
+      agg_df[agg_df$rank_total<=n,col]
+
+  } else{
+    #Recent
+    agg_df<-df
+    if("recent" %in% agg_df)
+      stop("'recent' is a column in agg_df and that name is needed.")
+
+    agg_df$recent<-agg_df[,time]>=recent
+
+    if(length(agg_list) == 1){
+      agg_df <- agg_df %>%
+        dplyr::group_by(!! as.name(agg_list)) %>%
+        summarize_(
+          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(weight)),
+          agg_val_recent = lazyeval::interp(~sum(ifelse(recent,var,NA), na.rm = TRUE), var = as.name(weight)),
+          )
+      agg_df<- agg_df %>% mutate(
+        rank_total=rank(desc(agg_val)),
+        rank_recent=rank(desc(agg_val_recent))) %>%
+        arrange(desc(agg_value))
+    } else {
+      agg_df <- agg_df %>%
+        dplyr::group_by_(.dots = c(agg_list)) %>%
+        summarize_(
+          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(weight)),
+          agg_val_recent = lazyeval::interp(~sum(ifelse(recent,var,NA), na.rm = TRUE), var = as.name(weight)))
+      agg_df<- agg_df %>% dplyr::group_by_(.dots = c(group_list)) %>%
+        mutate(
+          rank_total=rank(desc(agg_val)),
+          rank_recent=rank(desc(agg_val_recent))) %>%
+        arrange(desc(agg_val))
+
+    }
+    agg_df[,rank_name]<-NA
+    agg_df[agg_df$rank_total<=n|agg_df$rank_recent<=n ,rank_name]<-
+      agg_df[agg_df$rank_total<=n|agg_df$rank_recent<=n]
+
+  }
+
+
+  df<-left_join(df,agg_df[,!colnames(agg_df) %in% c(weight,"rank_total","rank_name")],
+                by=c(agg_list))
+
+
+  # agg_df<-df %>% group_by (Project.Name,PlatformPortfolio) %>%
+  #   summarise(Action_Obligation_OMB24_GDP22=sum(Action_Obligation_OMB24_GDP22),
+  #             # Action_Obligation_2022=sum(ifelse(Fiscal_Year>=2022,Action_Obligation_OMB24_GDP22,0)))%>%
+  #   group_by (PlatformPortfolio) %>%
+  #   mutate(rank_total=rank(desc(Action_Obligation_OMB24_GDP22)),
+  #          # rank_2022=rank(desc(Action_Obligation_2022)))
+  # agg_df %>% arrange(desc(Action_Obligation_OMB24_GDP22))
+
+  df[is.na(df[,rank_name]) & !is.na(df[,col]),rank_name]<-
+    "Other Labeled"
+  df
+}
+
 #' Add column variants, including summaries, and deflated dollars, to a contract dataset.
 #'
 #' @param df A data frame.
