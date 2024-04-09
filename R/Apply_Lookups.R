@@ -1017,10 +1017,11 @@ get_fiscal_year<-function(
 #' @param df A data frame.
 #' @param col The column to be evaluated.
 #' @param weight The variable summed to determine top entries, by default Action_Obligation_OMB24_GDP22
-#' @param rank_name The new column that will include
+#' @param top_name The new column that will include
 #' @param group Sub groupings by which to rank, by default not included
 #' @param time The variable used for when considering recent top entries, by default Fiscal_Year
 #' @param recent Value used to give extra weight to recently top entries rather than just the overall period
+#' @param retain_rank Retain any ranked variables created in processing.
 #'
 #' @return The revised data frame with the new variable
 #'
@@ -1034,10 +1035,11 @@ label_top<-function(df,
                     col,
                     n=5,
                     weight="Action_Obligation_OMB24_GDP22",
-                    rank_name=NA,
+                    top_name=NA,
                     group_list=NA,
                     time="Fiscal_Year",
-                    recent=NA){
+                    recent=NA,
+                    retain_rank=FALSE){
 
 
   agg_list<-col
@@ -1053,10 +1055,10 @@ label_top<-function(df,
     }
   }
 
-  if(is.na(rank_name)) rank_name<-paste0("Top_",col)
-  if(rank_name %in% colnames(df)){
-    warning(paste(rank_name,"already present in df, removing."))
-    df<-df[,colnames(df)!=rank_name]
+  if(is.na(top_name)) top_name<-paste0("Top_",col)
+  if(top_name %in% colnames(df)){
+    warning(paste(top_name,"already present in df, removing."))
+    df<-df[,colnames(df)!=top_name]
   }
 
   if(is.na(recent)){
@@ -1080,8 +1082,8 @@ label_top<-function(df,
         arrange(desc(agg_val))
 
     }
-    agg_df[,rank_name]<-NA
-    agg_df[agg_df$rank_total<=n,rank_name]<-
+    agg_df[,top_name]<-NA
+    agg_df[agg_df$rank_total<=n,top_name]<-
       agg_df[agg_df$rank_total<=n,col]
 
   } else{
@@ -1090,15 +1092,16 @@ label_top<-function(df,
     if("recent" %in% colnames(agg_df))
       stop("'recent' is a column in agg_df and that name is needed.")
 
-    agg_df$recent<-agg_df[,time]>=recent
+    agg_df$recent_weight<-ifelse(agg_df[,time]>=recent,agg_df[,weight],NA)
+    recent_weight<-"recent_weight"
 
     if(length(agg_list) == 1){
       agg_df <- agg_df %>%
         dplyr::group_by(!! as.name(agg_list)) %>%
         summarize_(
           agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(weight)),
-          agg_val_recent = lazyeval::interp(~sum(ifelse(recent,var,NA), na.rm = TRUE), var = as.name(weight)),
-          )
+          agg_val_recent = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(recent_weight))
+        )
       agg_df<- agg_df %>% mutate(
         rank_total=rank(desc(agg_val)),
         rank_recent=rank(desc(agg_val_recent))) %>%
@@ -1108,7 +1111,7 @@ label_top<-function(df,
         dplyr::group_by_(.dots = c(agg_list)) %>%
         summarize_(
           agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(weight)),
-          agg_val_recent = lazyeval::interp(~sum(ifelse(recent,var,NA), na.rm = TRUE), var = as.name(weight)))
+          agg_val_recent = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(recent_weight)))
       agg_df<- agg_df %>% dplyr::group_by_(.dots = c(group_list)) %>%
         mutate(
           rank_total=rank(desc(agg_val)),
@@ -1116,14 +1119,32 @@ label_top<-function(df,
         arrange(desc(agg_val))
 
     }
-    agg_df[,rank_name]<-NA
-    agg_df[agg_df$rank_total<=n|agg_df$rank_recent<=n ,rank_name]<-
+    agg_df[,top_name]<-NA
+    agg_df[agg_df$rank_total<=n|agg_df$rank_recent<=n ,top_name]<-
       agg_df[agg_df$rank_total<=n|agg_df$rank_recent<=n,col]
 
   }
 
 
-  df<-left_join(df,agg_df[,!colnames(agg_df) %in% c(weight,"rank_total","rank_name")],
+  if(retain_rank){
+    rank_total_name<-paste0(top_name,"_rank_total")
+    if(rank_total_name %in% colnames(df)){
+      warning(paste(rank_total_name,"already present in df, removing."))
+      df<-df[,colnames(df)!=rank_total_name]
+    }
+    colnames(agg_df)[colnames(agg_df)=="rank_total"]<-rank_total_name
+    if(!is.na(recent)){
+      rank_recent_name<-paste0(top_name,"_rank_recent")
+      if(rank_recent_name %in% colnames(df)){
+        warning(paste(rank_recent_name,"already present in df, removing."))
+        df<-df[,colnames(df)!=rank_recent_name]
+      }
+      colnames(agg_df)[colnames(agg_df)=="rank_recent"]<-rank_recent_name
+    }
+  }
+
+
+  df<-left_join(df,agg_df[,!colnames(agg_df) %in% c(weight,"rank_total","rank_recent")],
                 by=c(agg_list))
 
 
@@ -1135,7 +1156,7 @@ label_top<-function(df,
   #          # rank_2022=rank(desc(Action_Obligation_2022)))
   # agg_df %>% arrange(desc(Action_Obligation_OMB24_GDP22))
 
-  df[is.na(df[,rank_name]) & !is.na(df[,col]),rank_name]<-
+  df[is.na(df[,top_name]) & !is.na(df[,col]),top_name]<-
     "Other Labeled"
   df
 }
