@@ -1087,7 +1087,7 @@ label_top<-function(df,
   } else{
     #Recent
     agg_df<-df
-    if("recent" %in% agg_df)
+    if("recent" %in% colnames(agg_df))
       stop("'recent' is a column in agg_df and that name is needed.")
 
     agg_df$recent<-agg_df[,time]>=recent
@@ -1118,7 +1118,7 @@ label_top<-function(df,
     }
     agg_df[,rank_name]<-NA
     agg_df[agg_df$rank_total<=n|agg_df$rank_recent<=n ,rank_name]<-
-      agg_df[agg_df$rank_total<=n|agg_df$rank_recent<=n]
+      agg_df[agg_df$rank_total<=n|agg_df$rank_recent<=n,col]
 
   }
 
