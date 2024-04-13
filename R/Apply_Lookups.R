@@ -1022,6 +1022,7 @@ get_fiscal_year<-function(
 #' @param time The variable used for when considering recent top entries, by default Fiscal_Year
 #' @param recent Value used to give extra weight to recently top entries rather than just the overall period
 #' @param retain_rank Retain any ranked variables created in processing.
+#' @param write_file File name in which to record the calculations underlying the labeling. Default is not to record.
 #'
 #' @return The revised data frame with the new variable
 #'
@@ -1039,7 +1040,8 @@ label_top<-function(df,
                     group_list=NA,
                     time="Fiscal_Year",
                     recent=NA,
-                    retain_rank=FALSE){
+                    retain_rank=FALSE,
+                    write_file=NA){
 
 
   agg_list<-col
@@ -1143,6 +1145,7 @@ label_top<-function(df,
     }
   }
 
+  write_csv(agg_df,file=write_file)
 
   df<-left_join(df,agg_df[,!colnames(agg_df) %in% c(weight,"rank_total","rank_recent")],
                 by=c(agg_list))
