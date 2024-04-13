@@ -1832,7 +1832,7 @@ group_by_list<-function(x,key){
 #' @param excel_share=FALSE Include percent shares for the y_var for each of the facets
 #' @param excel_formulas=FALSE Create formulas to accompany the table
 #' @param hist_year=2015 Historical anchor to include in summary stats
-#' @param cur_year=2022 Most recent complete year to include in summary stats
+#' @param cur_year=2023 Most recent complete year to include in summary stats
 #' @param group_unlabeled_facets=FALSE Combine all unlabeled facet categories into a single line in the data.
 #'
 #'
@@ -1850,7 +1850,7 @@ log_plot2 <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                      csv_then_year=TRUE,
                      excel_then_year=TRUE,excel_y_var=FALSE,excel_share=FALSE,
                      excel_formulas=FALSE,
-                     hist_year=2015, cur_year=2022,
+                     hist_year=2020, cur_year=2023,
                      group_unlabeled_facets=FALSE
                      ) {
 

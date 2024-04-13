@@ -918,13 +918,19 @@ if (caption==TRUE)
 #' @param units Output measurement unit as per ggsave
 #' @param size New text size
 #' @param caption_fraction Ratio of caption to the rest of text
+#' @param path for output, defaults to NA for legacy reasons
+#' @param second_path for output, typically to save to sharepoint
 #' @return Does not return, outptus to file
 #'
 #' @import ggplot2
 #' @export
 ggsave600dpi<-function(filename,gg,width,height,units="in",size=12,lineheight=0.13,
-                       caption_fraction=10/12,...){
-  ggsave(filename, gg+
+                       caption_fraction=10/12,path=NA,
+                       second_path=NA,...){
+
+  if(!is.na(path)) path.file<-file.path(path,filename)
+  else path.file<-filename
+  ggsave(path.file, gg+
          theme(text=element_text(size=size,lineheight=lineheight),
                legend.spacing.x = unit(0.1, 'cm'),
                plot.caption = element_text(size=round(size * caption_fraction,0))
@@ -934,6 +940,9 @@ ggsave600dpi<-function(filename,gg,width,height,units="in",size=12,lineheight=0.
                  # font("legend.text", size = 45) +
                  # theme(text = element_text(size = 45+
                 width=width, height= height, units=units,dpi=600,...)
+  if(!is.na(second_path))
+    ggsave600dpi(filename,gg,width,height,units,size,lineheight,
+                           caption_fraction,path=second_path,...)
 }
 
 
