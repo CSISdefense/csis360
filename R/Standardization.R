@@ -1945,13 +1945,13 @@ log_plot2 <- function(plot, df,filename,xlsx,sheet,path="..\\output",
       if(excel_then_year){
         writeData(wb, then_year_df, sheet = sheet, startRow = startRow, startCol = startCol)
         for (c in 1:length(var_list))
-          openxlsx::writeFormula(wb,sheet,c(paste0(int2col(c+startCol-1),(startRow):(startRow+nrow(then_year_df)+1))),
+          openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(c+startCol-1),(startRow):(startRow+nrow(then_year_df)+1))),
                        startRow=startRow,startCol=c)
         gt<-data.frame(Total=c("Grand Total",rep("",length(var_list)-1),
 
-                               paste0("Sum(",int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list))),
+                               paste0("Sum(",openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list))),
                                       startRow+1,":",
-                                      int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list))),
+                                      openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list))),
                                       startRow+nrow(then_year_df),")")))
         gt$rn<-rownames(gt)
         gt<-as.data.frame(pivot_wider(gt,values_from=Total,names_from=rn))
@@ -1971,24 +1971,24 @@ log_plot2 <- function(plot, df,filename,xlsx,sheet,path="..\\output",
       if(excel_y_var){
         writeData(wb, y_var_df, sheet = sheet, startRow = startRow, startCol = startCol)
         for (c in 1:length(var_list))
-          openxlsx::writeFormula(wb,sheet,c(paste0(int2col(c+startCol-1),(startRow):(startRow+nrow(y_var_df)+1))),
+          openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(c+startCol-1),(startRow):(startRow+nrow(y_var_df)+1))),
                        startRow=startRow,startCol=c)
         if(excel_formulas){
           if(!hist_year %in% colnames(y_var_df))
             stop("hist_year not in provided data")
           #Historic year
           hist_col<-which(colnames(y_var_df)==hist_year)+startCol-1
-          openxlsx::writeFormula(wb,sheet,c(paste0(int2col(hist_col),(startRow):(startRow+nrow(y_var_df)+1))),
+          openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(hist_col),(startRow):(startRow+nrow(y_var_df)+1))),
                        startRow=startRow,startCol=length(var_list)+1)
           cur_col<-which(colnames(y_var_df)==cur_year)+startCol-1
           #Year before current
-          openxlsx::writeFormula(wb,sheet,c(paste0(int2col(cur_col-1),(startRow):(startRow+nrow(y_var_df)+1))),
+          openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(cur_col-1),(startRow):(startRow+nrow(y_var_df)+1))),
                        startRow=startRow,startCol=length(var_list)+2)
           #Current year
-          openxlsx::writeFormula(wb,sheet,c(paste0(int2col(cur_col),(startRow):(startRow+nrow(y_var_df)+1))),
+          openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(cur_col),(startRow):(startRow+nrow(y_var_df)+1))),
                        startRow=startRow,startCol=length(var_list)+3)
           #Incomplete year
-          openxlsx::writeFormula(wb,sheet,c(paste0(int2col(cur_col+1),(startRow):(startRow+nrow(y_var_df)+1))),
+          openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(cur_col+1),(startRow):(startRow+nrow(y_var_df)+1))),
                        startRow=startRow,startCol=length(var_list)+4)
 
 
@@ -1999,49 +1999,49 @@ log_plot2 <- function(plot, df,filename,xlsx,sheet,path="..\\output",
 
           #Year before current to current comparison
           openxlsx::writeFormula(wb,sheet,c(#Heading
-            paste0(int2col(cur_col-1),startRow,"&\"-\"&",int2col(cur_col),startRow),
+            paste0(openxlsx::int2col(cur_col-1),startRow,"&\"-\"&",openxlsx::int2col(cur_col),startRow),
             #Formulas
-            paste0(int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
-                   int2col(cur_col-1),(startRow+1):(startRow+nrow(y_var_df)+1),"-1")),
+            paste0(openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+                   openxlsx::int2col(cur_col-1),(startRow+1):(startRow+nrow(y_var_df)+1),"-1")),
             startRow=startRow,startCol=length(var_list)+5)
 
           #Historic year to current comparison
           openxlsx::writeFormula(wb,sheet,c(#Heading
-            paste0(int2col(hist_col),startRow,"&\"-\"&",int2col(cur_col),startRow),
+            paste0(openxlsx::int2col(hist_col),startRow,"&\"-\"&",openxlsx::int2col(cur_col),startRow),
             #Formulas
-            paste0(int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
-                   int2col(hist_col),(startRow+1):(startRow+nrow(y_var_df)+1),"-1")),
+            paste0(openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+                   openxlsx::int2col(hist_col),(startRow+1):(startRow+nrow(y_var_df)+1),"-1")),
             startRow=startRow,startCol=length(var_list)+6)
 
           #YTD over current comparison
           openxlsx::writeFormula(wb,sheet,c(#Heading
-            paste0(int2col(cur_col+1),startRow,"&\"/\"&",int2col(cur_col),startRow),
+            paste0(openxlsx::int2col(cur_col+1),startRow,"&\"/\"&",openxlsx::int2col(cur_col),startRow),
             #Formulas
-            paste0(int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
-                   int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1))),
+            paste0(openxlsx::int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+                   openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1))),
             startRow=startRow,startCol=length(var_list)+7)
 
           #Current year share
           openxlsx::writeFormula(wb,sheet,c(#Heading
-            paste0("\"Share \"&",int2col(cur_col),startRow),
+            paste0("\"Share \"&",openxlsx::int2col(cur_col),startRow),
             #Formulas
-            paste0(int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)),"/",
-                   "Sum(",int2col(cur_col),"$",(startRow),":",
-                   int2col(cur_col),"$",(startRow+nrow(y_var_df)),")"),
-            paste0("Sum(",int2col(length(var_list)+8),"$",(startRow),":",
-                   int2col(length(var_list)+8),"$",(startRow+nrow(y_var_df)),")")),
+            paste0(openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)),"/",
+                   "Sum(",openxlsx::int2col(cur_col),"$",(startRow),":",
+                   openxlsx::int2col(cur_col),"$",(startRow+nrow(y_var_df)),")"),
+            paste0("Sum(",openxlsx::int2col(length(var_list)+8),"$",(startRow),":",
+                   openxlsx::int2col(length(var_list)+8),"$",(startRow+nrow(y_var_df)),")")),
             startRow=startRow,startCol=length(var_list)+8)
 
           #YTD share
 
           openxlsx::writeFormula(wb,sheet,c(#Heading
-            paste0("\"Share \"&",int2col(cur_col+1),startRow),
+            paste0("\"Share \"&",openxlsx::int2col(cur_col+1),startRow),
             #Formulas
-            paste0(int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)),"/",
-                   "Sum(",int2col(cur_col+1),(startRow),":",
-                   int2col(cur_col+1),"$",(startRow+nrow(y_var_df)),")"),
-            paste0("Sum(",int2col(length(var_list)+9),"$",(startRow),":",
-                   int2col(length(var_list)+9),"$",(startRow+nrow(y_var_df)),")")),
+            paste0(openxlsx::int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)),"/",
+                   "Sum(",openxlsx::int2col(cur_col+1),(startRow),":",
+                   openxlsx::int2col(cur_col+1),"$",(startRow+nrow(y_var_df)),")"),
+            paste0("Sum(",openxlsx::int2col(length(var_list)+9),"$",(startRow),":",
+                   openxlsx::int2col(length(var_list)+9),"$",(startRow+nrow(y_var_df)),")")),
             startRow=startRow,startCol=length(var_list)+9)
 
           openxlsx::addStyle(wb, sheet, pstyle,gridExpand = T,
@@ -2050,9 +2050,9 @@ log_plot2 <- function(plot, df,filename,xlsx,sheet,path="..\\output",
 
           gt<-data.frame(Total=c("Grand Total",rep("",length(var_list)-1),
 
-                                 paste0("Sum(",int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
+                                 paste0("Sum(",openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
                                         startRow+1,":",
-                                        int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
+                                        openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
                                         startRow+nrow(y_var_df),")")))
           gt$rn<-rownames(gt)
           gt<-as.data.frame(pivot_wider(gt,values_from=Total,names_from=rn))
@@ -2213,7 +2213,8 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
       x_var<-"Delivery.year"
     if(excel_then_year | csv_then_year){
       #Add other constant dollar here variables
-      if(y_var %in% c("Then_Year_Dollars","Action_Obligation_Then_Year") &
+      if(y_var %in% c("Then_Year_Dollars","Action_Obligation_Then_Year",
+                      "TIV_delivery_value") &
          excel_y_var==FALSE)
         then_year_y_var<-y_var
       else if(y_var %in% c("Action_Obligation_OMB24_GDP22"))
@@ -2286,13 +2287,13 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
       if(excel_then_year){
         openxlsx::writeData(wb, then_year_df, sheet = sheet, startRow = startRow, startCol = startCol)
         for (c in 1:length(var_list))
-          openxlsx::writeFormula(wb,sheet,c(paste0(int2col(c+startCol-1),(startRow):(startRow+nrow(then_year_df)+1))),
+          openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(c+startCol-1),(startRow):(startRow+nrow(then_year_df)+1))),
                        startRow=startRow,startCol=c)
         gt<-data.frame(Total=c("Grand Total",rep("",length(var_list)-1),
 
-                               paste0("Sum(",int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list))),
+                               paste0("Sum(",openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list))),
                                       startRow+1,":",
-                                      int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list))),
+                                      openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list))),
                                       startRow+nrow(then_year_df),")")))
         gt$rn<-rownames(gt)
         gt<-as.data.frame(pivot_wider(gt,values_from=Total,names_from=rn))
@@ -2312,24 +2313,24 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
       if(excel_y_var){
         openxlsx::writeData(wb, y_var_df, sheet = sheet, startRow = startRow, startCol = startCol)
         for (c in 1:length(var_list))
-          openxlsx::writeFormula(wb,sheet,c(paste0(int2col(c+startCol-1),(startRow):(startRow+nrow(y_var_df)+1))),
+          openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(c+startCol-1),(startRow):(startRow+nrow(y_var_df)+1))),
                        startRow=startRow,startCol=c)
         if(excel_formulas){
           if(!hist_year %in% colnames(y_var_df))
             stop("hist_year not in provided data")
           #Historic year
           hist_col<-which(colnames(y_var_df)==hist_year)+startCol-1
-          writeFormula(wb,sheet,c(paste0(int2col(hist_col),(startRow):(startRow+nrow(y_var_df)+1))),
+          writeFormula(wb,sheet,c(paste0(openxlsx::int2col(hist_col),(startRow):(startRow+nrow(y_var_df)+1))),
                        startRow=startRow,startCol=length(var_list)+1)
           cur_col<-which(colnames(y_var_df)==cur_year)+startCol-1
           #Year before current
-          writeFormula(wb,sheet,c(paste0(int2col(cur_col-1),(startRow):(startRow+nrow(y_var_df)+1))),
+          writeFormula(wb,sheet,c(paste0(openxlsx::int2col(cur_col-1),(startRow):(startRow+nrow(y_var_df)+1))),
                        startRow=startRow,startCol=length(var_list)+2)
           #Current year
-          writeFormula(wb,sheet,c(paste0(int2col(cur_col),(startRow):(startRow+nrow(y_var_df)+1))),
+          writeFormula(wb,sheet,c(paste0(openxlsx::int2col(cur_col),(startRow):(startRow+nrow(y_var_df)+1))),
                        startRow=startRow,startCol=length(var_list)+3)
           #Incomplete year
-          writeFormula(wb,sheet,c(paste0(int2col(cur_col+1),(startRow):(startRow+nrow(y_var_df)+1))),
+          writeFormula(wb,sheet,c(paste0(openxlsx::int2col(cur_col+1),(startRow):(startRow+nrow(y_var_df)+1))),
                        startRow=startRow,startCol=length(var_list)+4)
 
 
@@ -2340,49 +2341,49 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
 
           #Year before current to current comparison
           writeFormula(wb,sheet,c(#Heading
-            paste0(int2col(cur_col-1),startRow,"&\"-\"&",int2col(cur_col),startRow),
+            paste0(openxlsx::int2col(cur_col-1),startRow,"&\"-\"&",openxlsx::int2col(cur_col),startRow),
             #Formulas
-            paste0(int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
-                   int2col(cur_col-1),(startRow+1):(startRow+nrow(y_var_df)+1),"-1")),
+            paste0(openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+                   openxlsx::int2col(cur_col-1),(startRow+1):(startRow+nrow(y_var_df)+1),"-1")),
             startRow=startRow,startCol=length(var_list)+5)
 
           #Historic year to current comparison
           writeFormula(wb,sheet,c(#Heading
-            paste0(int2col(hist_col),startRow,"&\"-\"&",int2col(cur_col),startRow),
+            paste0(openxlsx::int2col(hist_col),startRow,"&\"-\"&",openxlsx::int2col(cur_col),startRow),
             #Formulas
-            paste0(int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
-                   int2col(hist_col),(startRow+1):(startRow+nrow(y_var_df)+1),"-1")),
+            paste0(openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+                   openxlsx::int2col(hist_col),(startRow+1):(startRow+nrow(y_var_df)+1),"-1")),
             startRow=startRow,startCol=length(var_list)+6)
 
           #YTD over current comparison
           writeFormula(wb,sheet,c(#Heading
-            paste0(int2col(cur_col+1),startRow,"&\"/\"&",int2col(cur_col),startRow),
+            paste0(openxlsx::int2col(cur_col+1),startRow,"&\"/\"&",openxlsx::int2col(cur_col),startRow),
             #Formulas
-            paste0(int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
-                   int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1))),
+            paste0(openxlsx::int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+                   openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1))),
             startRow=startRow,startCol=length(var_list)+7)
 
           #Current year share
           writeFormula(wb,sheet,c(#Heading
-            paste0("\"Share \"&",int2col(cur_col),startRow),
+            paste0("\"Share \"&",openxlsx::int2col(cur_col),startRow),
             #Formulas
-            paste0(int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)),"/",
-                   "Sum(",int2col(cur_col),"$",(startRow),":",
-                   int2col(cur_col),"$",(startRow+nrow(y_var_df)),")"),
-            paste0("Sum(",int2col(length(var_list)+8),"$",(startRow),":",
-                   int2col(length(var_list)+8),"$",(startRow+nrow(y_var_df)),")")),
+            paste0(openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)),"/",
+                   "Sum(",openxlsx::int2col(cur_col),"$",(startRow),":",
+                   openxlsx::int2col(cur_col),"$",(startRow+nrow(y_var_df)),")"),
+            paste0("Sum(",openxlsx::int2col(length(var_list)+8),"$",(startRow),":",
+                   openxlsx::int2col(length(var_list)+8),"$",(startRow+nrow(y_var_df)),")")),
             startRow=startRow,startCol=length(var_list)+8)
 
           #YTD share
 
           writeFormula(wb,sheet,c(#Heading
-            paste0("\"Share \"&",int2col(cur_col+1),startRow),
+            paste0("\"Share \"&",openxlsx::int2col(cur_col+1),startRow),
             #Formulas
-            paste0(int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)),"/",
-                   "Sum(",int2col(cur_col+1),(startRow),":",
-                   int2col(cur_col+1),"$",(startRow+nrow(y_var_df)),")"),
-            paste0("Sum(",int2col(length(var_list)+9),"$",(startRow),":",
-                   int2col(length(var_list)+9),"$",(startRow+nrow(y_var_df)),")")),
+            paste0(openxlsx::int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)),"/",
+                   "Sum(",openxlsx::int2col(cur_col+1),(startRow),":",
+                   openxlsx::int2col(cur_col+1),"$",(startRow+nrow(y_var_df)),")"),
+            paste0("Sum(",openxlsx::int2col(length(var_list)+9),"$",(startRow),":",
+                   openxlsx::int2col(length(var_list)+9),"$",(startRow+nrow(y_var_df)),")")),
             startRow=startRow,startCol=length(var_list)+9)
 
           openxlsx::addStyle(wb, sheet, pstyle,gridExpand = T,
@@ -2391,9 +2392,9 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
 
           gt<-data.frame(Total=c("Grand Total",rep("",length(var_list)-1),
 
-                                 paste0("Sum(",int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
+                                 paste0("Sum(",openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
                                         startRow+1,":",
-                                        int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
+                                        openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
                                         startRow+nrow(y_var_df),")")))
           gt$rn<-rownames(gt)
           gt<-as.data.frame(pivot_wider(gt,values_from=Total,names_from=rn))
