@@ -1780,8 +1780,6 @@ group_by_list<-function(x,key){
 #' colnames(platpscintldef)[colnames(platpscintldef)=="Action_Obligation_Then_Year_Then_Year"]<-
 #'   "Action_Obligation_Then_Year"
 #'
-#' colnames(platpscintldef)[colnames(platpscintldef)=="Action_Obligation_Then_Year_OMB23_GDP21"]<-
-#'   "Action_Obligation_OMB24_GDP22"
 #'
 #' topplat<-platpscintldef %>% group_by (Project.Name,PlatformPortfolio) %>%
 #'   summarise(Action_Obligation_OMB24_GDP22=sum(Action_Obligation_OMB24_GDP22),
@@ -1878,6 +1876,10 @@ log_plot2 <- function(plot, df,filename,xlsx,sheet,path="..\\output",
       else if(y_var %in% c("Action_Obligation_OMB24_GDP22"))
         then_year_y_var<-"Action_Obligation_Then_Year"
       else if(y_var %in% c("Amount_OMB24_GDP22"))
+        then_year_y_var<-"Amount_Then_Year"
+      else if(y_var %in% c("Action_Obligation_OMB25_GDP23"))
+        then_year_y_var<-"Action_Obligation_Then_Year"
+      else if(y_var %in% c("Amount_OMB25_GDP23"))
         then_year_y_var<-"Amount_Then_Year"
       else if(y_var %in% c("delivery_BEA22"))
         then_year_y_var<-"delivery_Then_Year"
@@ -2220,6 +2222,10 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
       else if(y_var %in% c("Action_Obligation_OMB24_GDP22"))
         then_year_y_var<-"Action_Obligation_Then_Year"
       else if(y_var %in% c("Amount_OMB24_GDP22"))
+        then_year_y_var<-"Amount_Then_Year"
+      else if(y_var %in% c("Action_Obligation_OMB25_GDP23"))
+        then_year_y_var<-"Action_Obligation_Then_Year"
+      else if(y_var %in% c("Amount_OMB25_GDP23"))
         then_year_y_var<-"Amount_Then_Year"
       else if(y_var %in% c("delivery_BEA22"))
         then_year_y_var<-"delivery_Then_Year"
