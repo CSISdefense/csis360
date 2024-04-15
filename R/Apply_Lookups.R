@@ -843,13 +843,13 @@ deflate <- function(
     money_var = "Amount",
     fy_var = "Fiscal_Year",
     deflator_file = "Lookup_Deflators.csv",
-    deflator_var="OMB24_GDP22",
+    deflator_var="OMB25_GDP23",
     path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
     directory="economic/",
     deflator_dropped=TRUE
 ){
   #Default deflator if none passed.
-  if(is.null(deflator_var)) deflator_var<-"OMB24_GDP22"
+  if(is.null(deflator_var)) deflator_var<-"OMB25_GDP23"
 
   #Tibbles run into trouble with the [[]] new variable specifying.
   data<-as.data.frame(data)
@@ -1016,7 +1016,7 @@ get_fiscal_year<-function(
 #'
 #' @param df A data frame.
 #' @param col The column to be evaluated.
-#' @param weight The variable summed to determine top entries, by default Action_Obligation_OMB24_GDP22
+#' @param weight The variable summed to determine top entries, by default Action_Obligation_OMB25_GDP23
 #' @param top_name The new column that will include
 #' @param group Sub groupings by which to rank, by default not included
 #' @param time The variable used for when considering recent top entries, by default Fiscal_Year
@@ -1035,7 +1035,7 @@ get_fiscal_year<-function(
 label_top<-function(df,
                     col,
                     n=5,
-                    weight="Action_Obligation_OMB24_GDP22",
+                    weight="Action_Obligation_OMB25_GDP23",
                     top_name=NA,
                     group_list=NA,
                     time="Fiscal_Year",
@@ -1152,12 +1152,12 @@ label_top<-function(df,
 
 
   # agg_df<-df %>% group_by (Project.Name,PlatformPortfolio) %>%
-  #   summarise(Action_Obligation_OMB24_GDP22=sum(Action_Obligation_OMB24_GDP22),
   #             # Action_Obligation_2022=sum(if_else(Fiscal_Year>=2022,Action_Obligation_OMB24_GDP22,0)))%>%
+  #   summarise(Action_Obligation_OMB25_GDP23=sum(Action_Obligation_OMB25_GDP23),
   #   group_by (PlatformPortfolio) %>%
-  #   mutate(rank_total=rank(desc(Action_Obligation_OMB24_GDP22)),
+  #   mutate(rank_total=rank(desc(Action_Obligation_OMB25_GDP23)),
   #          # rank_2022=rank(desc(Action_Obligation_2022)))
-  # agg_df %>% arrange(desc(Action_Obligation_OMB24_GDP22))
+  # agg_df %>% arrange(desc(Action_Obligation_OMB25_GDP23))
 
   df[is.na(df[,top_name]) & !is.na(df[,col]),top_name]<-
     "Other Labeled"
@@ -1180,6 +1180,10 @@ label_top<-function(df,
 apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
                                   deflator_var=NULL){
 
+  if(path=="offline"){
+    warning("Using offline path")
+    path<-get_local_lookup_path()
+  }
   df<-standardize_variable_names(df)
 
   #Clear out blank/admin/error message rows at the end of the input file.
