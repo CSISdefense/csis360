@@ -16,7 +16,7 @@
 #' @import ggplot2
 #' @export
 jitter_binary<-function(a, jitt = 0.05){
-  ifelse(a==0,runif(length(a),0,jitt),runif(length(a),1-jitt,1))
+  if_else(a==0,runif(length(a),0,jitt),runif(length(a),1-jitt,1))
 }
 
 

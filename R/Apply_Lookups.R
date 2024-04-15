@@ -382,7 +382,7 @@ read_and_join<-function(
   lookup<-read.csv(
     file.path(pathdir,lookup_file),
     header=TRUE,
-    sep=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
+    sep=if_else(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
     na.strings=c("NA","NULL"),
     quote = "\"",#Necessary because there are some 's in the names.
     dec=".",
@@ -621,7 +621,7 @@ read_and_join_experiment<-function(
       lookup<-readr::read_delim(
         input,
         col_names=TRUE,
-        delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
+        delim=if_else(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
         na=c("NA","NULL"),
         trim_ws=TRUE,
         col_types=col_types
@@ -630,7 +630,7 @@ read_and_join_experiment<-function(
       lookup<-readr::read_delim(
         input,
         col_names=TRUE,
-        delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
+        delim=if_else(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
         na=c("NA","NULL"),
         trim_ws=TRUE,
         col_types=col_types,
@@ -1007,7 +1007,7 @@ text_to_bit<-function(x){
 get_fiscal_year<-function(
     x){
 
-  lubridate::year(x)+ifelse(lubridate::month(x)<10,0,+1)
+  lubridate::year(x)+if_else(lubridate::month(x)<10,0,+1)
   # ymd(paste(          ,"-10-1",sep=""))
 }
 
@@ -1094,7 +1094,7 @@ label_top<-function(df,
     if("recent" %in% colnames(agg_df))
       stop("'recent' is a column in agg_df and that name is needed.")
 
-    agg_df$recent_weight<-ifelse(agg_df[,time]>=recent,agg_df[,weight],NA)
+    agg_df$recent_weight<-if_else(agg_df[,time]>=recent,agg_df[,weight],NA)
     recent_weight<-"recent_weight"
 
     if(length(agg_list) == 1){
@@ -1145,7 +1145,7 @@ label_top<-function(df,
     }
   }
 
-  write_csv(agg_df,file=write_file)
+  write.csv(agg_df,file=write_file,row.names = FALSE)
 
   df<-left_join(df,agg_df[,!colnames(agg_df) %in% c(weight,"rank_total","rank_recent")],
                 by=c(agg_list))
@@ -1153,7 +1153,7 @@ label_top<-function(df,
 
   # agg_df<-df %>% group_by (Project.Name,PlatformPortfolio) %>%
   #   summarise(Action_Obligation_OMB24_GDP22=sum(Action_Obligation_OMB24_GDP22),
-  #             # Action_Obligation_2022=sum(ifelse(Fiscal_Year>=2022,Action_Obligation_OMB24_GDP22,0)))%>%
+  #             # Action_Obligation_2022=sum(if_else(Fiscal_Year>=2022,Action_Obligation_OMB24_GDP22,0)))%>%
   #   group_by (PlatformPortfolio) %>%
   #   mutate(rank_total=rank(desc(Action_Obligation_OMB24_GDP22)),
   #          # rank_2022=rank(desc(Action_Obligation_2022)))
@@ -1236,7 +1236,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df$Fiscal_YQ[!is.na(df$fiscal_quarter)]<-text_to_number(paste(df$Fiscal_Year[!is.na(df$fiscal_quarter)],
                                                                     text_to_number(df$fiscal_quarter[!is.na(df$fiscal_quarter)]),sep="."))
       df$Fiscal_YQ[is.na(df$Fiscal_YQ)]<-df$Fiscal_Year[is.na(df$Fiscal_YQ)]
-      df$YTD<-ifelse(df$Fiscal_Year==max(df$Fiscal_Year),"YTD","Full Year")
+      df$YTD<-if_else(df$Fiscal_Year==max(df$Fiscal_Year),"YTD","Full Year")
     }
     else if ("fiscal_quarter_YTD" %in% colnames(df)){
       df$Fiscal_YQ<-NA
@@ -1253,7 +1253,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df$fiscal_quarter<-lubridate::quarter(df$Fiscal_Year,fiscal_start = 10)
     df$Fiscal_YQ[!is.na(df$fiscal_quarter)]<-text_to_number(paste(df$Fiscal_Year[!is.na(df$fiscal_quarter)],
                                                                   text_to_number(df$fiscal_quarter[!is.na(df$fiscal_quarter)]),sep="."))
-    df$YTD<-ifelse(df$Fiscal_Year==max(df$Fiscal_Year),"YTD","Full Year")
+    df$YTD<-if_else(df$Fiscal_Year==max(df$Fiscal_Year),"YTD","Full Year")
 
     df$dFYear<-as.Date(paste("1/1/",as.character(df$Fiscal_Year),sep=""),"%m/%d/%Y")
   }
@@ -1459,8 +1459,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   {
 
     df<-df%>% mutate(derived_link=paste("https://www.usaspending.gov/award/CONT_AWD_",PIID,"_",agencyid,"_",
-                                        ifelse(is.na(idvpiid)|idvpiid=="","-NONE-",idvpiid),"_",
-                                        ifelse(is.na(idvagencyid)|idvagencyid=="","-NONE-",idvagencyid),"/",sep=""))
+                                        if_else(is.na(idvpiid)|idvpiid=="","-NONE-",idvpiid),"_",
+                                        if_else(is.na(idvagencyid)|idvagencyid=="","-NONE-",idvagencyid),"/",sep=""))
   }
 
   if("Contracting_Agency_ID" %in% names(df))
@@ -1626,7 +1626,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
   # Mechanism Type ####
   if("assistance_type_code" %in% names(df) ){
-    df<-df %>% mutate(cfda_num=ifelse(
+    df<-df %>% mutate(cfda_num=if_else(
       nchar(cfda_number)>6,
       round(text_to_number(cfda_number),3),
       cfda_number))
@@ -1866,7 +1866,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     }
     df$ProductOrServiceCode[df$ProductOrServiceCode==""]<-NA
 
-    df<-df %>% mutate(Fiscal_Year_gt_2020=ifelse(Fiscal_Year>2020,1,0))
+    df<-df %>% mutate(Fiscal_Year_gt_2020=if_else(Fiscal_Year>2020,1,0))
     df<-read_and_join_experiment(df,
                                           "PSCAtransition.csv",
                                           directory="ProductOrService/",
@@ -2602,12 +2602,12 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #   ){
   #
   #
-  #     df$ResidualOutlay.2013<-ifelse(is.na(df$OutlayNoOffsetAccount.2013)
+  #     df$ResidualOutlay.2013<-if_else(is.na(df$OutlayNoOffsetAccount.2013)
   #                                        ,0
   #                                        ,df$OutlayNoOffsetAccount.2013
   #     )
   #
-  #     df$ResidualOutlay.2013<-df$ResidualOutlay.2013-ifelse(is.na(df$ContractObligatedAmount.2013)
+  #     df$ResidualOutlay.2013<-df$ResidualOutlay.2013-if_else(is.na(df$ContractObligatedAmount.2013)
   #                                                                   ,0
   #                                                                   ,df$ContractObligatedAmount.2013
   #     )
@@ -2624,7 +2624,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #     if("Fed_Grant_Funding_Amount.2013" %in% names(df))
   #     {
   #
-  #       df$ResidualOutlay.2013<-df$ResidualOutlay.2013-ifelse(is.na(df$Fed_Grant_Funding_Amount.2013)
+  #       df$ResidualOutlay.2013<-df$ResidualOutlay.2013-if_else(is.na(df$Fed_Grant_Funding_Amount.2013)
   #                                                                     ,0
   #                                                                     ,df$Fed_Grant_Funding_Amount.2013
   #       )

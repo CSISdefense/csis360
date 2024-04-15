@@ -596,7 +596,7 @@ transform_contract<-function(
       levels(contract)<- list("Partial or Complete Termination"=c("Partial or Complete Termination","Terminated","1",1),
                                    "Unterminated"=c("Unterminated","0",0))
 
-    contract$b_Term<-ifelse(contract$Term %in% c("Partial or Complete Termination","Terminated",1),1,NA)
+    contract$b_Term<-if_else(contract$Term %in% c("Partial or Complete Termination","Terminated",1),1,NA)
     contract$b_Term[contract$Term %in% c("Unterminated",0)]<-0
     #Create a jittered version of Term for display purposes
     #Unlike geom_jitter, this caps values at 0 and 1
@@ -609,7 +609,7 @@ transform_contract<-function(
   #Ceiling Breach
   #b_CBre
   if("CBre" %in% colnames(contract)){
-    contract$b_CBre<-ifelse(contract$CBre=="Ceiling Breach",1,NA)
+    contract$b_CBre<-if_else(contract$CBre=="Ceiling Breach",1,NA)
     contract$b_CBre[contract$CBre=="None"]<-0
     #Create a jittered version of CBre for display purposes
     #Unlike geom_jitter, this caps values at 0 and 1
@@ -834,7 +834,7 @@ transform_contract<-function(
   if("UnmodifiedDays" %in% colnames(contract)){
 
     contract$UnmodifiedDays[contract$UnmodifiedDays<0]<-NA
-    contract$capped_UnmodifiedDays <- ifelse(contract$UnmodifiedDays > 3650, 3650, contract$UnmodifiedDays)
+    contract$capped_UnmodifiedDays <- if_else(contract$UnmodifiedDays > 3650, 3650, contract$UnmodifiedDays)
 
     contract$cln_Days<-arm::rescale(na_non_positive_log(contract$capped_UnmodifiedDays))
 
@@ -986,11 +986,11 @@ transform_contract<-function(
 
     #Urgency
     contract$b_Urg<-NA
-    contract$b_Urg<-ifelse(contract$Urg=="Urgency Except.",1,NA)
+    contract$b_Urg<-if_else(contract$Urg=="Urgency Except.",1,NA)
     contract$b_Urg[contract$Urg=="Not Urgency"]<-0
 
     contract$NoComp<-NA
-    contract$NoComp<-ifelse(contract$Urg=="Urgency Except.","Urgency",NA)
+    contract$NoComp<-if_else(contract$Urg=="Urgency Except.","Urgency",NA)
     contract$NoComp[contract$Urg=="Not Urgency"]<-"Other No"
     contract$NoComp[contract$b_Comp==1]<-"Any Comp."
     contract$NoComp<-factor(contract$NoComp,
@@ -1785,7 +1785,7 @@ group_by_list<-function(x,key){
 #'
 #' topplat<-platpscintldef %>% group_by (Project.Name,PlatformPortfolio) %>%
 #'   summarise(Action_Obligation_OMB24_GDP22=sum(Action_Obligation_OMB24_GDP22),
-#'             Action_Obligation_2020=sum(ifelse(Fiscal_Year==2020,Action_Obligation_OMB24_GDP22,0)))%>%
+#'             Action_Obligation_2020=sum(if_else(Fiscal_Year==2020,Action_Obligation_OMB24_GDP22,0)))%>%
 #'   group_by (PlatformPortfolio) %>%
 #'   mutate(rank_total=rank(desc(Action_Obligation_OMB24_GDP22)),
 #'          rank_2020=rank(desc(Action_Obligation_2020)))
@@ -1793,7 +1793,7 @@ group_by_list<-function(x,key){
 #'
 #'
 #' topplat$TopProject<-
-#'   ifelse(topplat$rank_2020<=7 | topplat$rank_total<=7,topplat$Project.Name,NA)
+#'   if_else(topplat$rank_2020<=7 | topplat$rank_total<=7,topplat$Project.Name,NA)
 #'
 #' platpscintldef<-left_join(platpscintldef,topplat %>% select(-Action_Obligation_OMB24_GDP22,Action_Obligation_2020),
 #'                           by=c("Project.Name","PlatformPortfolio"))
@@ -1920,10 +1920,10 @@ log_plot2 <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                             hist_year, cur_year,
                             group_unlabeled_facets){
     if (output_doc_svg==TRUE)
-      ggsave600dpi(plot+ifelse(suppress_text | is.na(suppress_text), labs(caption=NULL,title=NULL),labs()),
+      ggsave600dpi(plot+if_else(suppress_text | is.na(suppress_text), labs(caption=NULL,title=NULL),labs()),
                    file=file.path(path,paste(filename,".svg",sep="")),size=12,caption_fraction=8/12,lineheight=1, height =height, width=width)
     if (output_doc_png==TRUE)
-      ggsave600dpi(plot+ifelse(suppress_text & !is.na(suppress_text), labs(caption=NULL,title=NULL),labs()),
+      ggsave600dpi(plot+if_else(suppress_text & !is.na(suppress_text), labs(caption=NULL,title=NULL),labs()),
                    file=file.path(path,paste(filename,".png",sep="")),size=12,caption_fraction=8/12,lineheight=1, height =height+0.25, width=width)
 
     if(csv_then_year){
@@ -2262,10 +2262,10 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                             hist_year, cur_year,
                             group_unlabeled_facets){
     if (output_doc_svg==TRUE)
-      ggsave600dpi(plot+ifelse(suppress_text | is.na(suppress_text), labs(caption=NULL,title=NULL),labs()),
+      ggsave600dpi(plot+if_else(suppress_text | is.na(suppress_text), labs(caption=NULL,title=NULL),labs()),
                    file=file.path(path,paste(filename,".svg",sep="")),size=12,caption_fraction=8/12,lineheight=1, height =height, width=width)
     if (output_doc_png==TRUE)
-      ggsave600dpi(plot+ifelse(suppress_text & !is.na(suppress_text), labs(caption=NULL,title=NULL),labs()),
+      ggsave600dpi(plot+if_else(suppress_text & !is.na(suppress_text), labs(caption=NULL,title=NULL),labs()),
                    file=file.path(path,paste(filename,".png",sep="")),size=12,caption_fraction=8/12,lineheight=1, height =height+0.25, width=width)
 
     if(csv_then_year){

@@ -416,7 +416,7 @@ get_label <- function(
     }
     else
       title<-subset(column_key,column==var)$title
-    label<-ifelse(is.na(title),var,title)
+    label<-if_else(is.na(title),var,title)
   }
   return(label)
 
