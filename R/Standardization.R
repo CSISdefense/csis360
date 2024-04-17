@@ -2268,10 +2268,10 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                             hist_year, cur_year,
                             group_unlabeled_facets){
     if (output_doc_svg==TRUE)
-      ggsave600dpi(plot+if_else(suppress_text | is.na(suppress_text), labs(caption=NULL,title=NULL),labs()),
+      ggsave600dpi(plot+ifelse(suppress_text | is.na(suppress_text), labs(caption=NULL,title=NULL),labs()),
                    file=file.path(path,paste(filename,".svg",sep="")),size=12,caption_fraction=8/12,lineheight=1, height =height, width=width)
     if (output_doc_png==TRUE)
-      ggsave600dpi(plot+if_else(suppress_text & !is.na(suppress_text), labs(caption=NULL,title=NULL),labs()),
+      ggsave600dpi(plot+ifelse(suppress_text & !is.na(suppress_text), labs(caption=NULL,title=NULL),labs()),
                    file=file.path(path,paste(filename,".png",sep="")),size=12,caption_fraction=8/12,lineheight=1, height =height+0.25, width=width)
 
     if(csv_then_year){
