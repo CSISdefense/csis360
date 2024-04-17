@@ -40,8 +40,8 @@ log_plot2(
   excel_y_var = FALSE,
   excel_share = FALSE,
   excel_formulas = FALSE,
-  hist_year = 2015,
-  cur_year = 2022,
+  hist_year = 2020,
+  cur_year = 2023,
   group_unlabeled_facets = FALSE
 )
 }
@@ -96,7 +96,7 @@ log_plot2(
 
 \item{hist_year=2015}{Historical anchor to include in summary stats}
 
-\item{cur_year=2022}{Most recent complete year to include in summary stats}
+\item{cur_year=2023}{Most recent complete year to include in summary stats}
 
 \item{group_unlabeled_facets=FALSE}{Combine all unlabeled facet categories into a single line in the data.}
 }
@@ -108,12 +108,9 @@ colnames(platpscintldef)[colnames(platpscintldef)=="Action_Obligation_Then_Year_
   "Action_Obligation_Then_Year"
 }
 \details{
-colnames(platpscintldef)[colnames(platpscintldef)=="Action_Obligation_Then_Year_OMB23_GDP21"]<-
-  "Action_Obligation_OMB24_GDP22"
-
 topplat<-platpscintldef %>% group_by (Project.Name,PlatformPortfolio) %>%
   summarise(Action_Obligation_OMB24_GDP22=sum(Action_Obligation_OMB24_GDP22),
-            Action_Obligation_2020=sum(ifelse(Fiscal_Year==2020,Action_Obligation_OMB24_GDP22,0)))%>%
+            Action_Obligation_2020=sum(if_else(Fiscal_Year==2020,Action_Obligation_OMB24_GDP22,0)))%>%
   group_by (PlatformPortfolio) %>%
   mutate(rank_total=rank(desc(Action_Obligation_OMB24_GDP22)),
          rank_2020=rank(desc(Action_Obligation_2020)))
@@ -121,7 +118,7 @@ topplat %>% arrange(desc(Action_Obligation_OMB24_GDP22))
 
 
 topplat$TopProject<-
-  ifelse(topplat$rank_2020<=7 | topplat$rank_total<=7,topplat$Project.Name,NA)
+  if_else(topplat$rank_2020<=7 | topplat$rank_total<=7,topplat$Project.Name,NA)
 
 platpscintldef<-left_join(platpscintldef,topplat %>% select(-Action_Obligation_OMB24_GDP22,Action_Obligation_2020),
                           by=c("Project.Name","PlatformPortfolio"))

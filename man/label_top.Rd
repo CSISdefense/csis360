@@ -8,12 +8,13 @@ label_top(
   df,
   col,
   n = 5,
-  weight = "Action_Obligation_OMB24_GDP22",
+  weight = "Action_Obligation_OMB25_GDP23",
   top_name = NA,
   group_list = NA,
   time = "Fiscal_Year",
   recent = NA,
-  retain_rank = FALSE
+  retain_rank = FALSE,
+  write_file = NA
 )
 }
 \arguments{
@@ -21,7 +22,7 @@ label_top(
 
 \item{col}{The column to be evaluated.}
 
-\item{weight}{The variable summed to determine top entries, by default Action_Obligation_OMB24_GDP22}
+\item{weight}{The variable summed to determine top entries, by default Action_Obligation_OMB25_GDP23}
 
 \item{top_name}{The new column that will include}
 
@@ -30,6 +31,8 @@ label_top(
 \item{recent}{Value used to give extra weight to recently top entries rather than just the overall period}
 
 \item{retain_rank}{Retain any ranked variables created in processing.}
+
+\item{write_file}{File name in which to record the calculations underlying the labeling. Default is not to record.}
 
 \item{group}{Sub groupings by which to rank, by default not included}
 }

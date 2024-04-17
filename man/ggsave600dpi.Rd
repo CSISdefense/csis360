@@ -14,6 +14,8 @@ ggsave600dpi(
   size = 12,
   lineheight = 0.13,
   caption_fraction = 10/12,
+  path = NA,
+  second_path = NA,
   ...
 )
 }
@@ -31,6 +33,10 @@ ggsave600dpi(
 \item{size}{New text size}
 
 \item{caption_fraction}{Ratio of caption to the rest of text}
+
+\item{path}{for output, defaults to NA for legacy reasons}
+
+\item{second_path}{for output, typically to save to sharepoint}
 }
 \value{
 Does not return, outptus to file
