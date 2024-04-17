@@ -1944,11 +1944,11 @@ group_by_list<-function(x,key){
 #       }
 #       if(!sheet %in% wb_get_sheet_names(wb))
 #         wb$add_worksheet(sheet)
-#       bstyle<-openxlsx::createStyle(numFmt = "0.00,,,\"B\"")
+#       numstyle<-openxlsx::createStyle(numFmt = "0.00,,,\"B\"")
 #       pstyle<-openxlsx::createStyle(numFmt = "PERCENTAGE")
 #       if(excel_then_year){
 #         writeData(wb, then_year_df, sheet = sheet, startRow = startRow, startCol = startCol)
-#         if(length(var_list)>startCol)
+#         if(length(var_list)<startCol)
 #           for (c in 1:length(var_list))
 #             openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(c+startCol-1),(startRow):(startRow+nrow(then_year_df)+1))),
 #                                    startRow=startRow,startCol=c)
@@ -1968,14 +1968,14 @@ group_by_list<-function(x,key){
 #                   colNames=FALSE
 #         )
 #
-#         openxlsx::addStyle(wb, sheet, bstyle,gridExpand = T,
+#         openxlsx::addStyle(wb, sheet, numstyle,gridExpand = T,
 #                  rows=(startRow+1):(startRow+nrow(then_year_df)+1),
 #                  cols=(startCol+length(var_list)):(startCol+ncol(then_year_df)+2-length(var_list)))
 #         startRow<-startRow+nrow(then_year_df)+4 #Header row, total row, check_sum_row, blank row
 #       }
 #       if(excel_y_var){
 #         writeData(wb, y_var_df, sheet = sheet, startRow = startRow, startCol = startCol)
-#         if(length(var_list)>startCol)
+#         if(length(var_list)<startCol)
 #           for (c in 1:length(var_list))
 #             openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(c+startCol-1),(startRow):(startRow+nrow(y_var_df)+1))),
 #                                    startRow=startRow,startCol=c)
@@ -1998,7 +1998,7 @@ group_by_list<-function(x,key){
 #                        startRow=startRow,startCol=length(var_list)+4)
 #
 #
-#           openxlsx::addStyle(wb, sheet, bstyle,gridExpand = T,
+#           openxlsx::addStyle(wb, sheet, numstyle,gridExpand = T,
 #                    rows=(startRow+1):(startRow+nrow(y_var_df)+1),
 #                    cols=(length(var_list)+1):(length(var_list)+4))
 #
@@ -2073,7 +2073,7 @@ group_by_list<-function(x,key){
 #
 #
 #
-#         openxlsx::addStyle(wb, sheet, bstyle,gridExpand = T,
+#         openxlsx::addStyle(wb, sheet, numstyle,gridExpand = T,
 #                  rows=(startRow+1):(startRow+nrow(y_var_df)+1),
 #                  cols=(startCol+length(var_list)):(startCol+ncol(y_var_df)+2-length(var_list)))
 #
@@ -2178,9 +2178,11 @@ export_worksheet <- function(df,xlsx,sheet,path="..\\output",
 #' @param excel_y_var=FALSE Include the graphed y_var (or over)
 #' @param excel_share=FALSE Include percent shares for the y_var for each of the facets
 #' @param excel_formulas=FALSE Create formulas to accompany the table
-#' @param hist_year=2015 Historical anchor to include in summary stats
-#' @param cur_year=2022 Most recent complete year to include in summary stats
+#' @param hist_year=2020 Historical anchor to include in summary stats
+#' @param cur_year=2023 Most recent complete year to include in summary stats
+#' @param YTD=TRUE Include formulas for cur_year+1 if excel_formulas is true.
 #' @param group_unlabeled_facets=FALSE Combine all unlabeled facet categories into a single line in the data.
+#' @param num_format="0.00,,,\"B\"" How to format data values, default "0.00,,,\"B\""
 #'
 #'
 #' @return no value
@@ -2197,11 +2199,10 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                      csv_then_year=TRUE,
                      excel_then_year=TRUE,excel_y_var=FALSE,excel_share=FALSE,
                      excel_formulas=FALSE,
-                     hist_year=2015, cur_year=2022,
-                     group_unlabeled_facets=FALSE
+                     hist_year=2020, cur_year=2023,include_YTD=TRUE,
+                     group_unlabeled_facets=FALSE,
+                     num_format="0.00,,,\"B\""
 ) {
-
-
   if(format){
     #This may end up breaking with pivoted graphs. But lets cross that bridge when we come to it.
     if(is.na(y_var)) y_var<-plot$plot_env$y_var
@@ -2211,7 +2212,14 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
       var_list<-var_list[!var_list %in% y_var & !var_list %in% x_var &
                            !var_list %in% plot$plot_env$x_var & !var_list %in% "YTD"]
     }
-    if(is.na(startCol)) startCol<-10+length(var_list)
+    if(is.na(startCol)) startCol<-11+length(var_list)
+    #Why 11?
+    #(1) 1 indexed
+    #(4) Comparison year, prior year, current year, YTD | blank
+    #(3) Growth since comparison year; growth since last year; YTD/current | blank
+    #(2) Share current year, year last year
+    #(1) Blank column before actual data
+
     #Swap in Fiscal_Year for dFYear for ease of table readability
     if("dFYear"==x_var & "Fiscal_Year" %in% colnames(df))
       x_var<-"Fiscal_Year"
@@ -2294,13 +2302,13 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
       }
       if(!sheet %in% names(wb))
         openxlsx::addWorksheet(wb,sheet)
-      bstyle<-openxlsx::createStyle(numFmt = "0.00,,,\"B\"")
+      numstyle<-openxlsx::createStyle(numFmt = num_format)
       pstyle<-openxlsx::createStyle(numFmt = "PERCENTAGE")
       if(excel_then_year){
         openxlsx::writeData(wb, then_year_df, sheet = sheet, startRow = startRow, startCol = startCol)
 
         #If and only if there's a blank left on the left, fill in category name links in the first column.
-        if(length(var_list)>startCol)
+        if(length(var_list)<startCol)
           for (c in 1:length(var_list))
             openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(c+startCol-1),(startRow):(startRow+nrow(then_year_df)+1))),
                                    startRow=startRow,startCol=c)
@@ -2320,18 +2328,22 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                   colNames=FALSE
         )
 
-        openxlsx::addStyle(wb, sheet, bstyle,gridExpand = T,
+        openxlsx::addStyle(wb, sheet, numstyle,gridExpand = T,
                  rows=(startRow+1):(startRow+nrow(then_year_df)+1),
                  cols=(startCol+length(var_list)):(startCol+ncol(then_year_df)+2-length(var_list)))
         startRow<-startRow+nrow(then_year_df)+4 #Header row, total row, check_sum_row, blank row
       }
       if(excel_y_var){
         openxlsx::writeData(wb, y_var_df, sheet = sheet, startRow = startRow, startCol = startCol)
-        if(length(var_list)>startCol)
+        if(length(var_list)<startCol)
           for (c in 1:length(var_list))
             openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(c+startCol-1),(startRow):(startRow+nrow(y_var_df)+1))),
                                    startRow=startRow,startCol=c)
         if(excel_formulas){
+          if(startCol<10+length(var_list))
+            stop(paste("startCol",startCol,
+                       "is too small to have room to add an excel formula. Set excel_formula to false ,or increase StartCol>=",
+                       10+length(var_list)))
           if(!hist_year %in% colnames(y_var_df))
             stop("hist_year not in provided data")
           #Historic year
@@ -2345,12 +2357,15 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
           #Current year
           openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(cur_col),(startRow):(startRow+nrow(y_var_df)+1))),
                        startRow=startRow,startCol=length(var_list)+3)
+
+          if(include_YTD){
           #Incomplete year
           openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(cur_col+1),(startRow):(startRow+nrow(y_var_df)+1))),
                        startRow=startRow,startCol=length(var_list)+4)
+          }
 
 
-          openxlsx::addStyle(wb, sheet, bstyle,gridExpand = T,
+          openxlsx::addStyle(wb, sheet, numstyle,gridExpand = T,
                    rows=(startRow+1):(startRow+nrow(y_var_df)+1),
                    cols=(length(var_list)+1):(length(var_list)+4))
 
@@ -2371,13 +2386,15 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                    openxlsx::int2col(hist_col),(startRow+1):(startRow+nrow(y_var_df)+1),"-1")),
             startRow=startRow,startCol=length(var_list)+6)
 
-          #YTD over current comparison
-          openxlsx::writeFormula(wb,sheet,c(#Heading
-            paste0(openxlsx::int2col(cur_col+1),startRow,"&\"/\"&",openxlsx::int2col(cur_col),startRow),
-            #Formulas
-            paste0(openxlsx::int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
-                   openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1))),
-            startRow=startRow,startCol=length(var_list)+7)
+          if(include_YTD){
+            #YTD over current comparison
+            openxlsx::writeFormula(wb,sheet,c(#Heading
+              paste0(openxlsx::int2col(cur_col+1),startRow,"&\"/\"&",openxlsx::int2col(cur_col),startRow),
+              #Formulas
+              paste0(openxlsx::int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+                     openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1))),
+              startRow=startRow,startCol=length(var_list)+7)
+          }
 
           #Current year share
           openxlsx::writeFormula(wb,sheet,c(#Heading
@@ -2391,26 +2408,27 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
             startRow=startRow,startCol=length(var_list)+8)
 
           #YTD share
+          if(include_YTD){
 
-          openxlsx::writeFormula(wb,sheet,c(#Heading
-            paste0("\"Share \"&",openxlsx::int2col(cur_col+1),startRow),
-            #Formulas
-            paste0(openxlsx::int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)),"/",
-                   "Sum(",openxlsx::int2col(cur_col+1),(startRow),":",
-                   openxlsx::int2col(cur_col+1),"$",(startRow+nrow(y_var_df)),")"),
-            paste0("Sum(",openxlsx::int2col(length(var_list)+9),"$",(startRow),":",
-                   openxlsx::int2col(length(var_list)+9),"$",(startRow+nrow(y_var_df)),")")),
-            startRow=startRow,startCol=length(var_list)+9)
-
-          openxlsx::addStyle(wb, sheet, pstyle,gridExpand = T,
-                   rows=(startRow+1):(startRow+nrow(y_var_df)+1),
-                   cols=(length(var_list)+5):(length(var_list)+9))
+            openxlsx::writeFormula(wb,sheet,c(#Heading
+              paste0("\"Share \"&",openxlsx::int2col(cur_col+1),startRow),
+              #Formulas
+              paste0(openxlsx::int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)),"/",
+                     "Sum(",openxlsx::int2col(cur_col+1),(startRow),":",
+                     openxlsx::int2col(cur_col+1),"$",(startRow+nrow(y_var_df)),")"),
+              paste0("Sum(",openxlsx::int2col(length(var_list)+9),"$",(startRow),":",
+                     openxlsx::int2col(length(var_list)+9),"$",(startRow+nrow(y_var_df)),")")),
+              startRow=startRow,startCol=length(var_list)+9)
+          }
+            openxlsx::addStyle(wb, sheet, pstyle,gridExpand = T,
+                               rows=(startRow+1):(startRow+nrow(y_var_df)+1),
+                               cols=(length(var_list)+5):(length(var_list)+9))
 
           gt<-data.frame(Total=c("Grand Total",rep("",length(var_list)-1),
 
-                                 paste0("Sum(",openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
+                                 paste0("Sum(",openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list)+1)),
                                         startRow+1,":",
-                                        openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
+                                        openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list)+1)),
                                         startRow+nrow(y_var_df),")")))
           gt$rn<-rownames(gt)
           gt<-as.data.frame(pivot_wider(gt,values_from=Total,names_from=rn))
@@ -2425,7 +2443,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
 
 
 
-        openxlsx::addStyle(wb, sheet, bstyle,gridExpand = T,
+        openxlsx::addStyle(wb, sheet, numstyle,gridExpand = T,
                  rows=(startRow+1):(startRow+nrow(y_var_df)+1),
                  cols=(startCol+length(var_list)):(startCol+ncol(y_var_df)+2-length(var_list)))
 
