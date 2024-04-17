@@ -2231,6 +2231,10 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                       "TIV_delivery_value") &
          excel_y_var==FALSE)
         then_year_y_var<-y_var
+
+
+      else if(y_var %in% c("Dollars_OMB25_GDP23"))
+        then_year_y_var<-"Dollars_Then_Year"
       else if(y_var %in% c("Action_Obligation_OMB24_GDP22"))
         then_year_y_var<-"Action_Obligation_Then_Year"
       else if(y_var %in% c("Amount_OMB24_GDP22"))
@@ -2314,9 +2318,9 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                                    startRow=startRow,startCol=c)
         gt<-data.frame(Total=c("Grand Total",rep("",length(var_list)-1),
 
-                               paste0("Sum(",openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list))),
+                               paste0("Sum(",openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list)+1)),
                                       startRow+1,":",
-                                      openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list))),
+                                      openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list)+1)),
                                       startRow+nrow(then_year_df),")")))
         gt$rn<-rownames(gt)
         gt<-as.data.frame(pivot_wider(gt,values_from=Total,names_from=rn))
