@@ -1803,42 +1803,7 @@ group_by_list<-function(x,key){
 #' summary(factor(platpscintldef$TopProject))
 
 
-#' Save a copy of the plot, a current dollars csv, and an excel copy
-#'
-#' @param plot a ggplot object
-#' @param df the underlying data
-#' @param filename the name for the files, excluding extension
-#' @param xlsx the excel file to output to
-#' @param sheet the sheet to use in excel, typically shorter than the name
-#' @param path="..\\output\\" what directory for the output
-#' @param second_path=NA for saving to a second location to automatically
-#' @param width=6.5 Width for the plot in inches
-#' @param height=3.5 Height for the plot in inches
-#' @param output_doc_svg=TRUE GGsave a svg of the graph for a document?
-#' @param output_doc_png=FALSE GGsave a png of the graph for a document?
-#' @param suppress_text=NA Remove titles and captions. If unspecified, treated as TRUE for SVG and FALSE for PNG.
-#' @param startRow=1 Start row for excel output
-#' @param startCol=NA Start column for excel output
-#' @param format=TRUE Format the data rather then listing the df directl
-#' @param x_var=NA Override option for x_var
-#' @param y_var=NA Override option for y_var
-#' @param var_list=NA Override option for what variables to include in addition to x_var and y_var, also sets arrangement order.
-#' @param group_unlabeled_facets Whether to all unlabeled facets (but not colors) into a single line
-#' @param csv_then_year=TRUE Override the graphed y_var to include nominal dollars in csv output
-#' @param excel_then_year=TRUE Override the graphed y_var to include nominal dollars in excel output
-#' @param excel_y_var=FALSE Include the graphed y_var (or over)
-#' @param excel_share=FALSE Include percent shares for the y_var for each of the facets
-#' @param excel_formulas=FALSE Create formulas to accompany the table
-#' @param hist_year=2015 Historical anchor to include in summary stats
-#' @param cur_year=2023 Most recent complete year to include in summary stats
-#' @param group_unlabeled_facets=FALSE Combine all unlabeled facet categories into a single line in the data.
-#'
-#'
-#' @return no value
-#'
-#'
-#'
-#' @export
+
 # log_plot2 <- function(plot, df,filename,xlsx,sheet,path="..\\output",
 #                      second_path=NA,
 #                      width=6.5,height=3.5,output_doc_svg=TRUE,output_doc_png=FALSE,

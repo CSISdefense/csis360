@@ -28,9 +28,11 @@ log_plot(
   excel_y_var = FALSE,
   excel_share = FALSE,
   excel_formulas = FALSE,
-  hist_year = 2015,
-  cur_year = 2022,
-  group_unlabeled_facets = FALSE
+  hist_year = 2020,
+  cur_year = 2023,
+  include_YTD = TRUE,
+  group_unlabeled_facets = FALSE,
+  num_format = "0.00,,,\\"B\\""
 )
 }
 \arguments{
@@ -82,11 +84,15 @@ log_plot(
 
 \item{excel_formulas=FALSE}{Create formulas to accompany the table}
 
-\item{hist_year=2015}{Historical anchor to include in summary stats}
+\item{hist_year=2020}{Historical anchor to include in summary stats}
 
-\item{cur_year=2022}{Most recent complete year to include in summary stats}
+\item{cur_year=2023}{Most recent complete year to include in summary stats}
+
+\item{YTD=TRUE}{Include formulas for cur_year+1 if excel_formulas is true.}
 
 \item{group_unlabeled_facets=FALSE}{Combine all unlabeled facet categories into a single line in the data.}
+
+\item{num_format="0.00, , , \"B\""}{How to format data values, default "0.00,,,\"B\""}
 }
 \value{
 no value
