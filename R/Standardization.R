@@ -1763,45 +1763,6 @@ group_by_list<-function(x,key){
   x
 }
 
-#' #***********************Label Top
-#' #' Group By List
-#' #'
-#' #' @param df the data frame to be checked
-#' #' @param label_col The column from which to pull top entries
-#' #' @param value_col The column used to determine what counts as top
-#' #' @param n=7 The number of top
-#' #'
-#' #' @return Group_By using a list of quoted names.
-#' #'
-#' #' @details Replacement for group_by_ now that it has been depricated.
-#' #'
-#' #' @export
-#'
-#' colnames(platpscintldef)[colnames(platpscintldef)=="Action_Obligation_Then_Year_Then_Year"]<-
-#'   "Action_Obligation_Then_Year"
-#'
-#'
-#' topplat<-platpscintldef %>% group_by (Project.Name,PlatformPortfolio) %>%
-#'   summarise(Action_Obligation_OMB24_GDP22=sum(Action_Obligation_OMB24_GDP22),
-#'             Action_Obligation_2020=sum(if_else(Fiscal_Year==2020,Action_Obligation_OMB24_GDP22,0)))%>%
-#'   group_by (PlatformPortfolio) %>%
-#'   mutate(rank_total=rank(desc(Action_Obligation_OMB24_GDP22)),
-#'          rank_2020=rank(desc(Action_Obligation_2020)))
-#' topplat %>% arrange(desc(Action_Obligation_OMB24_GDP22))
-#'
-#'
-#' topplat$TopProject<-
-#'   if_else(topplat$rank_2020<=7 | topplat$rank_total<=7,topplat$Project.Name,NA)
-#'
-#' platpscintldef<-left_join(platpscintldef,topplat %>% select(-Action_Obligation_OMB24_GDP22,Action_Obligation_2020),
-#'                           by=c("Project.Name","PlatformPortfolio"))
-#'
-#' platpscintldef$TopProject[is.na(platpscintldef$TopProject) & !is.na(platpscintldef$Project.Name)]<-
-#'   "Other Labeled Project"
-#'
-#'
-#' summary(factor(platpscintldef$TopProject))
-
 
 
 # log_plot2 <- function(plot, df,filename,xlsx,sheet,path="..\\output",
@@ -2114,6 +2075,25 @@ export_worksheet <- function(df,xlsx,sheet,path="..\\output",
             df)
   saveWorkbook(wb,file=file.path(second_path,xlsx),overwrite = TRUE)
   }
+}
+
+
+
+#' Save a csv in two locations
+#'
+#' @param df a ggplot object
+#' @param first_path the primary storage path
+#' @param second_path the second path, typically sharepoint
+#' @param dir  what directory for the output
+#' @param file filename
+#'
+#' @return no value
+
+#'
+#' @export
+write_twice<-function(data,first_path,second_path,dir,file){
+  write_csv(file=file.path(first_path,dir,file),data)
+  write_csv(file=file.path(second_path,dir,file),data)
 }
 
 

@@ -1082,7 +1082,6 @@ label_top<-function(df,
         mutate(
           rank_total=rank(desc(agg_val))) %>%
         arrange(desc(agg_val))
-
     }
     agg_df[,top_name]<-NA
     agg_df[agg_df$rank_total<=n,top_name]<-
@@ -1145,7 +1144,8 @@ label_top<-function(df,
     }
   }
 
-  write.csv(agg_df,file=write_file,row.names = FALSE)
+  if(!is.na(write_file))
+    write.csv(agg_df,file=write_file,row.names = FALSE)
 
   df<-left_join(df,agg_df[,!colnames(agg_df) %in% c(weight,"rank_total","rank_recent")],
                 by=c(agg_list))
