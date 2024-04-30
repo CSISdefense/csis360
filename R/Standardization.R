@@ -1768,7 +1768,7 @@ group_by_list<-function(x,key){
 # log_plot2 <- function(plot, df,filename,xlsx,sheet,path="..\\output",
 #                      second_path=NA,
 #                      width=6.5,height=3.5,output_doc_svg=TRUE,output_doc_png=FALSE,
-#                      suppress_doc_text=NA,
+#                      suppress_doc_svg_text=NA,
 #                      startRow=1,startCol=NA,format=TRUE,
 #                      x_var=NA,y_var=NA,var_list=NA,
 #                      csv_then_year=TRUE,
@@ -1841,7 +1841,7 @@ group_by_list<-function(x,key){
 #   #is put together in one function.
 #   output_log_plot<-function(plot, then_year_df,y_var_df,
 #                             filename,xlsx,sheet,path,
-#                             width,height,output_doc_svg,output_doc_png,suppress_doc_text,
+#                             width,height,output_doc_svg,output_doc_png,suppress_doc_svg_text,
 #                             startRow,startCol,
 #                             x_var,y_var,var_list,
 #                             csv_then_year,
@@ -1850,10 +1850,10 @@ group_by_list<-function(x,key){
 #                             hist_year, cur_year,
 #                             group_unlabeled_facets){
 #     if (output_doc_svg==TRUE)
-#       ggsave600dpi(plot+ifelse(suppress_doc_text | is.na(suppress_doc_text), labs(caption=NULL,title=NULL),labs()),
+#       ggsave600dpi(plot+ifelse(suppress_doc_svg_text | is.na(suppress_doc_svg_text), labs(caption=NULL,title=NULL),labs()),
 #                    file=file.path(path,paste(filename,".svg",sep="")),size=12,caption_fraction=8/12,lineheight=1, height =height, width=width)
 #     if (output_doc_png==TRUE)
-#       ggsave600dpi(plot+ifelse(suppress_doc_text & !is.na(suppress_doc_text), labs(caption=NULL,title=NULL),labs()),
+#       ggsave600dpi(plot+ifelse(suppress_doc_svg_text & !is.na(suppress_doc_svg_text), labs(caption=NULL,title=NULL),labs()),
 #                    file=file.path(path,paste(filename,".png",sep="")),size=12,caption_fraction=8/12,lineheight=1, height =height+0.25, width=width)
 #
 #     if(csv_then_year){
@@ -2016,7 +2016,7 @@ group_by_list<-function(x,key){
 #            xlsx=xlsx,sheet=sheet,path=path,
 #            width=width,height=height,
 #            output_doc_svg=output_doc_svg,output_doc_png=output_doc_png,
-#            suppress_doc_text=suppress_doc_text,
+#            suppress_doc_svg_text=suppress_doc_svg_text,
 #            startRow=startRow,startCol=startCol,
 #            x_var=x_var,y_var=y_var,var_list=var_list,
 #            csv_then_year=csv_then_year,
@@ -2031,7 +2031,7 @@ group_by_list<-function(x,key){
 #              xlsx=xlsx,sheet=sheet,path=second_path,
 #              width=width,height=height,
 #              output_doc_svg=output_doc_svg,output_doc_png=output_doc_png,
-#              suppress_doc_text=suppress_doc_text,
+#              suppress_doc_svg_text=suppress_doc_svg_text,
 #              startRow=startRow,startCol=startCol,
 #              x_var=x_var,y_var=y_var,var_list=var_list,
 #              csv_then_year=csv_then_year,
@@ -2110,7 +2110,7 @@ write_twice<-function(data,first_path,second_path,dir,file){
 #' @param height=3.5 Height for the plot in inches
 #' @param output_doc_svg=TRUE GGsave a svg of the graph for a document?
 #' @param output_doc_png=FALSE GGsave a png of the graph for a document?
-#' @param suppress_doc_text=NA Specify which text to remove for output_doc plots "title" for titles, "caption" for captions, TRUE/"both" for both.
+#' @param suppress_doc_svg_text=NA Specify which text to remove for output_doc plots "title" for titles, "caption" for captions, TRUE/"both" for both.
 #' @param startRow=1 Start row for excel output
 #' @param startCol=NA Start column for excel output
 #' @param format=TRUE Format the data rather then listing the df directl
@@ -2139,7 +2139,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                      second_path=NA,
                      width=6.5,height=3.5,output_doc_svg=TRUE,output_doc_png=FALSE,
                      slide_width=13, slide_height=5.5,output_slide_svg=FALSE, output_slide_png=FALSE,
-                     suppress_doc_text=NA,
+                     suppress_doc_svg_text=NA,
                      startRow=1,startCol=NA,format=TRUE,
                      x_var=NA,y_var=NA,var_list=NA,
                      csv_then_year=TRUE,
@@ -2223,7 +2223,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
   #is put together in one function.
   output_log_plot<-function(plot, then_year_df,y_var_df,
                             filename,xlsx,sheet,path,
-                            width,height,output_doc_svg,output_doc_png,suppress_doc_text,
+                            width,height,output_doc_svg,output_doc_png,suppress_doc_svg_text,
                             slide_width, slide_height,output_slide_svg, output_slide_png,
                             startRow,startCol,
                             x_var,y_var,var_list,
@@ -2232,32 +2232,23 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                             excel_formulas,
                             hist_year, cur_year,
                             group_unlabeled_facets){
-    if (output_doc_svg==TRUE)
-      ggsave600dpi(plot+
-                     ifelse(
-                       tolower(suppress_doc_text) %in% c(TRUE,"both","title")|
-                         is.na(suppress_doc_text),
-                        labs(title=NULL),labs())+
-                     ifelse(
-                       tolower(suppress_doc_text) %in% c(TRUE,"both","caption")|
-                         is.na(suppress_doc_text),
-                       labs(caption=NULL),labs()),
-                   file=file.path(path,paste0(filename,".svg")),size=12,caption_fraction=8/12,lineheight=1, height =slide_height, width=width)
-    if (output_doc_png==TRUE)
-      ggsave600dpi(plot+
-                     ifelse(
-                       (tolower(suppress_doc_text) %in% c(TRUE,"both","title")) &
-                         !is.na(suppress_doc_text),
-                       labs(title=NULL),labs())+
-                     ifelse(
-                       (tolower(suppress_doc_text) %in% c(TRUE,"both","caption"))&
-                         !is.na(suppress_doc_text),
-                       labs(caption=NULL),labs()),,
-                   +ifelse(suppress_doc_text & !is.na(suppress_doc_text), labs(caption=NULL,title=NULL),labs()),
-                   file=file.path(path,paste0(filename,".png")),size=12,caption_fraction=8/12,lineheight=1, height =slide_height+0.25, width=width)
+    if (output_doc_svg==TRUE){
+      doc_svg_plot<-plot
+      if(tolower(suppress_doc_svg_text) %in% c("true","both","title")|
+         is.na(suppress_doc_svg_text))
+        doc_svg_plot<-doc_svg_plot+labs(title=NULL)
+      if(tolower(suppress_doc_svg_text) %in% c("true","both","caption")|
+                         is.na(suppress_doc_svg_text))
+        ggsave600dpi(doc_svg_plot,
+                   file=file.path(path,paste0(filename,".svg")),size=12,caption_fraction=8/12,lineheight=1, height =height, width=width)
+      rm(doc_svg_plot)
+    }
+      if (output_doc_png==TRUE)
+      ggsave600dpi(plot,
+                   file=file.path(path,paste0(filename,".png")),size=12,caption_fraction=8/12,lineheight=1, height =height+0.25, width=width)
     if (output_slide_svg==TRUE)
       ggsave600dpi(plot,
-                   file=file.path(path,paste0(filename,"_slide",".svg")),size=20,caption_fraction=8/12,lineheight=1, height =height, width=slide_width)
+                   file=file.path(path,paste0(filename,"_slide",".svg")),size=20,caption_fraction=8/12,lineheight=1, height =slide_height, width=slide_width)
     if (output_slide_png==TRUE)
       ggsave600dpi(plot,
                    file=file.path(path,paste0(filename,"_slide",".png")),size=20,caption_fraction=8/12,lineheight=1, height =slide_height, width=slide_width)
@@ -2437,7 +2428,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
            output_doc_svg=output_doc_svg,output_doc_png=output_doc_png,
            slide_width=slide_width, slide_height=slide_height,
            output_slide_svg=output_slide_svg, output_slide_png=output_slide_png,
-           suppress_doc_text=suppress_doc_text,
+           suppress_doc_svg_text=suppress_doc_svg_text,
            startRow=startRow,startCol=startCol,
            x_var=x_var,y_var=y_var,var_list=var_list,
            csv_then_year=csv_then_year,
@@ -2454,7 +2445,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
              output_doc_svg=output_doc_svg,output_doc_png=output_doc_png,
              slide_width=slide_width, slide_height=slide_height,
              output_slide_svg=output_slide_svg, output_slide_png=output_slide_png,
-             suppress_doc_text=suppress_doc_text,
+             suppress_doc_svg_text=suppress_doc_svg_text,
              startRow=startRow,startCol=startCol,
              x_var=x_var,y_var=y_var,var_list=var_list,
              csv_then_year=csv_then_year,
