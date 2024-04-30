@@ -2241,8 +2241,9 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
          is.na(suppress_doc_svg_text))
         doc_svg_plot<-doc_svg_plot+labs(title=NULL)
       if(tolower(suppress_doc_svg_text) %in% c("true","both","caption")|
-                         is.na(suppress_doc_svg_text))
-        ggsave600dpi(doc_svg_plot,
+         is.na(suppress_doc_svg_text))
+        doc_svg_plot<-doc_svg_plot+labs(caption=NULL)
+      ggsave600dpi(doc_svg_plot,
                    file=file.path(path,paste0(filename,".svg")),size=12,caption_fraction=8/12,lineheight=1, height =height, width=width)
       rm(doc_svg_plot)
     }
