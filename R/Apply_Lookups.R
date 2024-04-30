@@ -2400,6 +2400,18 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
   }
 
+  if("manufacturingorganizationtype" %in% colnames(df)){
+    df$manufacturingorganizationtext<-factor(df$manufacturingorganizationtype)
+
+
+    levels(df$manufacturingorganizationtext)<-list(
+      "U.S. Owned Business"='A',
+      "Foreign-Owned Business Incorporated in the U.S."='C',
+      "Foreign-Owned Business Not Incorporated in the U.S."='D',
+      "Other Entities (e.g. Governments)"=c("B","O")
+    )
+  }
+
   if("VendorAddressCountry" %in% colnames(df) & !"VendorAddressISOalpha3" %in% colnames(df)){
     if("ISOalpha3" %in% colnames(df))
       df<-subset(df,select=-c(ISOalpha3))
