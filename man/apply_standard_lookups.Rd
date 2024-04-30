@@ -7,7 +7,8 @@
 apply_standard_lookups(
   df,
   path = "https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
-  deflator_var = NULL
+  deflator_var = NULL,
+  call_add_alliance = FALSE
 )
 }
 \arguments{
@@ -15,6 +16,10 @@ apply_standard_lookups(
 
 \item{path}{The path or url for the column key.  By default, checks
 the CSISdefense Github lookups repository at CSISdefense/Lookup/master/}
+
+\item{deflator_var}{Specifying which deflator to use, if unspecified will pass NULL to use default of deflate function}
+
+\item{add_alliance=FALSE}{Should the function add alliance variables using country code variables? These are numerous, so left off by default.}
 }
 \value{
 The fiscal year of the date.
