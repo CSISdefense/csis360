@@ -2149,6 +2149,9 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                      group_unlabeled_facets=FALSE,
                      num_format="0.00,,,\"B\""
 ) {
+  if(length(grep("&",sheet))>0){
+    stop("Special characters in sheet names can corrupt excel files.")
+  }
   if(format){
     #This may end up breaking with pivoted graphs. But lets cross that bridge when we come to it.
     if(is.na(y_var)) y_var<-plot$plot_env$y_var
