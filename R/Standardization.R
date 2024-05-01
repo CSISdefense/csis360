@@ -2138,7 +2138,7 @@ write_twice<-function(data,first_path,second_path,dir,file){
 log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                      second_path=NA,
                      width=6.5,height=3.5,output_doc_svg=TRUE,output_doc_png=FALSE,
-                     slide_width=13, slide_height=5.5,output_slide_svg=FALSE, output_slide_png=FALSE,
+                     slide_width=13, slide_height=5.5,output_slide_svg=FALSE,slide_size=20, output_slide_png=FALSE,
                      suppress_doc_svg_text=NA,
                      startRow=1,startCol=NA,format=TRUE,
                      x_var=NA,y_var=NA,var_list=NA,
@@ -2227,7 +2227,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
   output_log_plot<-function(plot, then_year_df,y_var_df,
                             filename,xlsx,sheet,path,
                             width,height,output_doc_svg,output_doc_png,suppress_doc_svg_text,
-                            slide_width, slide_height,output_slide_svg, output_slide_png,
+                            slide_width, slide_height,output_slide_svg, slide_size, output_slide_png,
                             startRow,startCol,
                             x_var,y_var,var_list,
                             csv_then_year,
@@ -2252,10 +2252,10 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                    file=file.path(path,paste0(filename,".png")),size=12,caption_fraction=8/12,lineheight=1, height =height+0.25, width=width)
     if (output_slide_svg==TRUE)
       ggsave600dpi(plot,
-                   file=file.path(path,paste0(filename,"_slide",".svg")),size=20,caption_fraction=8/12,lineheight=1, height =slide_height, width=slide_width)
+                   file=file.path(path,paste0(filename,"_slide",".svg")),size=slide_size,caption_fraction=8/12,lineheight=1, height =slide_height, width=slide_width)
     if (output_slide_png==TRUE)
       ggsave600dpi(plot,
-                   file=file.path(path,paste0(filename,"_slide",".png")),size=20,caption_fraction=8/12,lineheight=1, height =slide_height, width=slide_width)
+                   file=file.path(path,paste0(filename,"_slide",".png")),size=slide_size,caption_fraction=8/12,lineheight=1, height =slide_height, width=slide_width)
 
     if(csv_then_year){
       if(!dir.exists(file.path(path,"then_year_csv")))
@@ -2430,7 +2430,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
            xlsx=xlsx,sheet=sheet,path=path,
            width=width,height=height,
            output_doc_svg=output_doc_svg,output_doc_png=output_doc_png,
-           slide_width=slide_width, slide_height=slide_height,
+           slide_width=slide_width, slide_height=slide_height,slide_size=slide_size,
            output_slide_svg=output_slide_svg, output_slide_png=output_slide_png,
            suppress_doc_svg_text=suppress_doc_svg_text,
            startRow=startRow,startCol=startCol,
@@ -2447,7 +2447,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
              xlsx=xlsx,sheet=sheet,path=second_path,
              width=width,height=height,
              output_doc_svg=output_doc_svg,output_doc_png=output_doc_png,
-             slide_width=slide_width, slide_height=slide_height,
+             slide_width=slide_width, slide_height=slide_height,slide_size=slide_size,
              output_slide_svg=output_slide_svg, output_slide_png=output_slide_png,
              suppress_doc_svg_text=suppress_doc_svg_text,
              startRow=startRow,startCol=startCol,
