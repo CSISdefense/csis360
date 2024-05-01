@@ -20,7 +20,7 @@ log_plot(
   slide_height = 5.5,
   output_slide_svg = FALSE,
   output_slide_png = FALSE,
-  suppress_doc_text = NA,
+  suppress_doc_svg_text = NA,
   startRow = 1,
   startCol = NA,
   format = TRUE,
@@ -64,7 +64,7 @@ log_plot(
 
 \item{output_doc_png=FALSE}{GGsave a png of the graph for a document?}
 
-\item{suppress_doc_text=NA}{Specify which text to remove for output_doc plots "title" for titles, "caption" for captions, TRUE/"both" for both.}
+\item{suppress_doc_svg_text=NA}{Specify which text to remove for output_doc plots "title" for titles, "caption" for captions, TRUE/"both" for both.}
 
 \item{startRow=1}{Start row for excel output}
 
