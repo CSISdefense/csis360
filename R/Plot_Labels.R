@@ -232,6 +232,150 @@ prepare_labels_and_colors<-function(data
   names.data
 }
 
+
+#' Add Labels And Colors
+#'
+#' @param df the data frame to be joined
+#' @param var The variables (column names) for which to add levels
+#' @param coloration.key=NULL The coloration.key to apply, if null use an existing one
+#' @param title The title to apply to apply in the column_key, for a new variable
+#' @param share.title The share.title to apply in the column_key, for a new variable
+#' @param share.title The share.title to apply in the column_key, for a new variable
+#' @return A new data frame built on the variable var. It will
+#' include colors, and order, and proper name labels.
+#'
+#' @details This function adds a new set of levels to the files used to track
+#' standard colors and orders. It first checks whether the var and coloration.key
+#' already exist in the column_key file, then it fills in any new levels to the
+#' Lookup_coloration.csv file. Users will need to first have cloned the lookup-tables
+#' repository. Typically manual adjustment of Lookup_coloration.csv will still be
+#' necessary, but should be less tedious
+#'
+#'
+#' @export add_labels_and_colors(space,var="SpaceArea",coloration.key="Area",title="Space Product or Service Area")
+
+add_labels_and_colors<-function(df,
+                                var,
+                                coloration.key=NULL,
+                                title="",
+                                share.title="",
+                                period.title=""
+)
+{
+
+  df<-as.data.frame(df)
+
+  #Confirm that the category is even available in the data set.
+  if(!is.null(var)){
+    if(!var %in% names(df)){
+      stop(paste(var,"column is not found in df."))
+    }
+  }
+
+  path<-file.path(get_local_lookup_path(),"style")
+
+  if(!file.exists(file.path(path,"Lookup_Coloration.csv")))
+    stop("Lookup_Coloration.csv not found. Have you cloned the lookups repository?")
+
+  #Read in coloration
+  coloration<-read.csv(
+    file.path(path,"Lookup_Coloration.csv"),
+    header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
+    stringsAsFactors=FALSE,encoding="UTF-8"
+  )
+
+  column_key_df<-read.csv(
+    file.path(path,"Lookup_Column_Key.csv"),
+    header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
+    stringsAsFactors=FALSE,encoding="UTF-8"
+  )
+
+  rbind_pos<-function(old_df,
+                      pos,
+                      add_df){
+    if(nrow(old_df)<pos)
+      stop(paste("pos",pos,"exceeds the number of rows in df",nrow(old_df)))
+    else if(nrow(old_df)==pos)
+      df<-rbind(old_df,add_df)
+    else
+      df<-rbind(old_df[1:pos,],
+                add_df,
+                old_df[(pos+1):nrow(old_df),])
+    df
+  }
+
+  #First manage coloration.key
+  if(var %in% column_key_df$column){
+    if(is.null(coloration.key))
+      coloration.key<-column_key_df$coloration.key[column_key_df$column==var]
+    else if(column_key_df$coloration.key[column_key_df$column==var]!=coloration.key)
+      stop(paste("coloration.key",coloration.key,"does not match current coloration.key",
+                 column_key_df$coloration.key[column_key_df$column==var]))
+  }
+  else{
+    if(is.null(coloration.key))
+      stop("var is not presently in Lookup_Column_Key.csv, you must assign a coloration.key")
+    if(!coloration.key %in% column_key_df$coloration.key){
+      warning(paste("Adding new column key:", coloration.key))
+      pos_ck<-nrow(column_key_df)
+    }
+    else
+      pos_ck<-max(which(coloration.key == column_key_df$coloration.key))
+
+    new_key<-data.frame(
+      column=var,
+      coloration.key=coloration.key,
+      title=title,
+      share.title=share.title,
+      period.title=period.title,
+      is.colon.split=FALSE
+    )
+    column_key_df<-rbind_pos(column_key_df,pos_ck,new_key)
+
+    write_csv(column_key_df,
+      file.path(path,"Lookup_Column_Key.csv"),
+      quote="needed",na=""
+    )
+
+  }
+  #Handle Lookup_coloration.csv
+  levels_list<-unique(df[,var])
+
+  new_levels<-data.frame(
+    coloration.key=coloration.key,
+    variable=levels_list,
+    Label=levels_list,
+    Display.Order=0,
+    Color="DIIG Secondary, Tangelo",
+    RGB="#e58846",
+    shape="",
+    size="",
+    alpha="",
+    text.color="default grey",
+    text.RGB="#554449",
+    abbreviation=""
+  )
+  #First handle an existing key
+  if(any(coloration.key %in% coloration$coloration.key)){
+    pos_lc<-max(which(coloration.key == coloration$coloration.key))
+    old_levels<-coloration[coloration$coloration.key==coloration.key,]
+    new_levels<-new_levels %>% filter(!variable %in% old_levels$variable)
+    if(nrow(new_levels)==0)
+      stop("No new levels to add")
+
+    coloration<-rbind_pos(coloration,pos_lc,new_levels)
+  }
+  else{ #For entirely new coloration.keys, add to the end of the file.
+    coloration<-rbind(coloration,new_levels)
+  }
+
+  write_csv(coloration,
+            file.path(path,"Lookup_Coloration.csv"),
+            quote="needed",na=""
+  )
+}
+
+
 #' Quickly assign yearly breaks to a chart
 #'
 #' @param start First year of break sequence
