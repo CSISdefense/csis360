@@ -19,6 +19,7 @@ log_plot(
   slide_width = 13,
   slide_height = 5.5,
   output_slide_svg = FALSE,
+  slide_size = 20,
   output_slide_png = FALSE,
   suppress_doc_svg_text = NA,
   startRow = 1,
