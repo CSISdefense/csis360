@@ -2198,6 +2198,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
         then_year_y_var<-"DefenseObligated_Then_Year"
       else if(y_var %in% c("value_2015"))
         then_year_y_var<-"value"
+
       else stop("Unrecognized y_var")
       if(any(lubridate::is.Date(df[,x_var]) & !is.na(df[,x_var]) & df[,x_var]==""))
         stop("Empty string values in x_var cause a pivot_wider error.")
