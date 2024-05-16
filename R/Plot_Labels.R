@@ -252,7 +252,7 @@ prepare_labels_and_colors<-function(data
 #' necessary, but should be less tedious
 #'
 #'
-#' @export add_labels_and_colors(space,var="SpaceArea",coloration.key="Area",title="Space Product or Service Area")
+#' @export
 
 add_labels_and_colors<-function(df,
                                 var,

@@ -2198,11 +2198,12 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
         then_year_y_var<-"DefenseObligated_Then_Year"
       else if(y_var %in% c("value_2015")){
         if("value" %in% colnames(df))
-        then_year_y_var<-"value"
+           then_year_y_var<-"value"
         else if ("VALUE_IN_EUROS" %in% colnames(df))
           then_year_y_var<-"VALUE_IN_EUROS"
-        else stop("Can't determine corresponding then_year for value_2015")
+        else stop("Unrecognized then year counterpart to value_2015")
       }
+
 
       else stop("Unrecognized y_var")
       if(any(lubridate::is.Date(df[,x_var]) & !is.na(df[,x_var]) & as.character(df[,x_var])==""))
