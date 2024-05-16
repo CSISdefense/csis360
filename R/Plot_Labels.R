@@ -360,9 +360,10 @@ add_labels_and_colors<-function(df,
     pos_lc<-max(which(coloration.key == coloration$coloration.key))
     old_levels<-coloration[coloration$coloration.key==coloration.key,]
     new_levels<-new_levels %>% filter(!variable %in% old_levels$variable)
-    if(nrow(new_levels)==0)
-      stop("No new levels to add")
-
+    if(nrow(new_levels)==0){
+      warning("No new levels to add")
+      return()
+    }
     coloration<-rbind_pos(coloration,pos_lc,new_levels)
   }
   else{ #For entirely new coloration.keys, add to the end of the file.
