@@ -540,7 +540,8 @@ read_and_join_experiment<-function(
     create_lookup_rdata=FALSE,
     lookup_char_as_factor=FALSE,
     guess_max=NULL,
-    join_type="left"
+    join_type="left",
+    prefix=""
 ){
   if(!is.null(names(by)))
     left_by<-names(by)
@@ -637,6 +638,15 @@ read_and_join_experiment<-function(
         guess_max =guess_max
       )
     }
+    if(prefix!=""){
+      if (is.null(by))
+        names(lookup)<-paste0(prefix,names(lookup))
+      else
+        names(lookup)[!names(lookup) %in% by]<-
+          paste0(prefix,names(lookup)[!names(lookup) %in% by])
+      add_var<-paste0(prefix,add_var)
+    }
+
 
     #Convert character strings to factors
     if (lookup_char_as_factor==TRUE){
