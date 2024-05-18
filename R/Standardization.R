@@ -153,7 +153,10 @@ group_data_for_plot <-function(
     if(grepl(" ", breakout[3])) breakout[3] <- paste0("`", breakout[3], "`")
     if(!breakout[3] %in% colnames(data)) stop(paste("breakout[3]: ",breakout[3],"is missing from data."))
   }
-
+  if(length(breakout) == 4){
+    if(grepl(" ", breakout[4])) breakout[4] <- paste0("`", breakout[4], "`")
+    if(!breakout[4] %in% colnames(data)) stop(paste("breakout[4]: ",breakout[4],"is missing from data."))
+  }
   data<-data %>% filter(!is.na(!! as.name(y_var)))
 
   # aggregate to the level of [fiscal year x breakout]
@@ -253,13 +256,13 @@ format_data_for_plot <- function(data, fy_var,
       breakout
     )
   }
-
   if(!is.null(invert_bool)){
-    if(any(shown_data$y_var<0))
+    if(any(shown_data[,y_var]<0))
       stop("Negative y_var, which not allowed when setting an invert_bool")
     shown_data[shown_data[,invert_bool]==TRUE,y_var]<-
       shown_data[shown_data[,invert_bool]==TRUE,y_var]*-1
   }
+
   shown_data<-as.data.frame(shown_data)
   if(!is.na(start_fy) & !is.na(end_fy)){
     # filter by year - see https://tinyurl.com/lm2u8xs
@@ -292,7 +295,7 @@ format_data_for_plot <- function(data, fy_var,
     if (color_var != "None"){
 
       # share_vars indicates which columns are being used to calculate the shares.
-      share_list <- c(facet_var,second_var)
+      share_list <- c(facet_var,second_var,invert_bool)
       if(color_var!="None") #For histograms or the like, fy_var (really x_var) should not be included in grouping
         share_list <- c(share_list,fy_var)
 
@@ -358,6 +361,13 @@ format_data_for_plot <- function(data, fy_var,
       shown_data <- shown_data[which(names(shown_data) != y_var)]
       names(shown_data)[which(names(shown_data) == "total")] <- y_var
     }
+  }
+  #Invert the portion that will appear below x-axis zero (need to be post share)
+  if(!is.null(invert_bool)){
+    if(any(shown_data[,y_var]<0))
+      stop("Negative y_var, which not allowed when setting an invert_bool")
+    shown_data[shown_data[,invert_bool]==TRUE,y_var]<-
+      shown_data[shown_data[,invert_bool]==TRUE,y_var]*-1
   }
 
   shown_data<-as.data.frame(shown_data)
