@@ -123,6 +123,8 @@ get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
 #' @param format If TRUE, summarize the data.frame
 #' @param ytextposition If TRUE, add ytextposition to allow for geom_text overlays.
 #' @param reverse_color If TRUE, the order of the color variable is flipped
+#' @param alpha_var Variable for setting the transparency of bars or line type of lines, coded to be used with year to ate.
+#' @param invert_bool Used to create population pyramid or import/export charts, specifies when to show data in the negative space of the y-axis.
 #'
 #'
 #'
@@ -153,7 +155,8 @@ build_plot <- function(
   format=FALSE,
   ytextposition=FALSE,
   reverse_color=FALSE,
-  alpha_var=NULL
+  alpha_var=NULL,
+  invert_bool=NULL
 ){
   if(all(!is.null(second_var),facet_var==second_var | second_var=="None")) second_var<-NULL
   #To add, check for missing labels and colors
@@ -168,6 +171,8 @@ build_plot <- function(
                                  facet_var=facet_var,
                                  second_var=second_var,
                                  alpha_var=alpha_var,
+                                 invert_var=invert_var,
+                                 invert_bool=invert_bool,
                                  labels_and_colors=labels_and_colors,
                                  add_ytextposition=ytextposition)
 
