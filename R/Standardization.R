@@ -209,6 +209,8 @@ group_data_for_plot <-function(
 #' @param   color_var Coloration variable, as string
 #' @param   facet_var Facet variable, as string
 #' @param   second_var Facet variable, as string
+#' @param alpha_var Variable for setting the transparency of bars or line type of lines, coded to be used with year to ate.
+#' @param invert_bool Used to create population pyramid or import/export charts, specifies when to show data in the negative space of the y-axis.
 #' @param   labels_and_colors A csis360 lookup data.frame with factor information
 #' @param   group If TRUE aggregate
 #' @param   drop_missing_labels If TRUE, drop levels to avoid residual levels from labels_and_colors.
@@ -226,6 +228,7 @@ format_data_for_plot <- function(data, fy_var,
                                  facet_var="None",
                                  second_var=NULL,
                                  alpha_var=NULL,
+                                 invert_bool=NULL,
                                  labels_and_colors=NULL,
                                  group=TRUE,
                                  drop_missing_labels=TRUE,
@@ -237,7 +240,7 @@ format_data_for_plot <- function(data, fy_var,
   if(all(!is.null(second_var),facet_var==second_var | second_var=="None")) second_var<-NULL
   if(all(!is.null(alpha_var),facet_var==alpha_var | alpha_var=="None")) alpha_var<-NULL
 
-  breakout <- c(color_var, facet_var, second_var, alpha_var)
+  breakout <- c(color_var, facet_var, second_var, alpha_var, invert_bool)
   breakout <- breakout[breakout != "None"]
   breakout <- breakout[!is.null(breakout)]
   breakout <- breakout[!duplicated(breakout)]
@@ -251,7 +254,12 @@ format_data_for_plot <- function(data, fy_var,
     )
   }
 
-
+  if(!is.null(invert_bool)){
+    if(any(shown_data$y_var<0))
+      stop("Negative y_var, which not allowed when setting an invert_bool")
+    shown_data[shown_data[,invert_bool]==TRUE,y_var]<-
+      shown_data[shown_data[,invert_bool]==TRUE,y_var]*-1
+  }
   shown_data<-as.data.frame(shown_data)
   if(!is.na(start_fy) & !is.na(end_fy)){
     # filter by year - see https://tinyurl.com/lm2u8xs

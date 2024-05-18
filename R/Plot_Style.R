@@ -171,7 +171,6 @@ build_plot <- function(
                                  facet_var=facet_var,
                                  second_var=second_var,
                                  alpha_var=alpha_var,
-                                 invert_var=invert_var,
                                  invert_bool=invert_bool,
                                  labels_and_colors=labels_and_colors,
                                  add_ytextposition=ytextposition)
@@ -313,6 +312,9 @@ if(is.null(x_var)) x_var<-names(data)[1]
             theme(axis.text.x = element_text(margin = margin(t = 1, unit = "pt")))
         }
       }
+    }
+    if(!is.null(invert_bool)){
+      mainplot<-mainplot+geom_hline(yintercept=0, colour = 'black', size=0.5, linetype='solid')
     }
   }
 
