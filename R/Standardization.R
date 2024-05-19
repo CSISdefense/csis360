@@ -364,8 +364,8 @@ format_data_for_plot <- function(data, fy_var,
   }
   #Invert the portion that will appear below x-axis zero (need to be post share)
   if(!is.null(invert_bool)){
-    if(any(shown_data[,y_var]<0))
-      stop("Negative y_var, which not allowed when setting an invert_bool")
+    # if(any(shown_data[,y_var]<0))
+    #   stop("Negative y_var, which not allowed when setting an invert_bool")
     shown_data[shown_data[,invert_bool]==TRUE,y_var]<-
       shown_data[shown_data[,invert_bool]==TRUE,y_var]*-1
   }
