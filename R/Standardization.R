@@ -1775,9 +1775,9 @@ fill_derived<-function(x,key,derived_col){
 #' @export
 group_by_list<-function(x,key){
   if(all(key=="") | length(key)==0) return(group_by(x))
-  x<-x %>% group_by(!!as.name(key[1]),add=FALSE)
+  x<-x %>% group_by(!!as.name(key[1]),.add=FALSE)
   for(i in 2:length(key))
-    x<-x %>% group_by(!!as.name(key[i]),add=TRUE)
+    x<-x %>% group_by(!!as.name(key[i]),.add=TRUE)
   x
 }
 

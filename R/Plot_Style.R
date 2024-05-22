@@ -154,7 +154,7 @@ build_plot <- function(
   column_key=NULL,
   format=FALSE,
   ytextposition=FALSE,
-  reverse_color=FALSE,
+  first_color_on_bottom=TRUE,
   alpha_var=NULL,
   invert_bool=NULL
 ){
@@ -188,8 +188,8 @@ build_plot <- function(
     labels_and_colors$Display.Order<-as.numeric(as.character(labels_and_colors$Display.Order))
     labels_and_colors<-labels_and_colors[order(labels_and_colors$column,labels_and_colors$Display.Order),]
   }
-  #Primarily for bar plots, sometimes we want the first in order on the bottom so it is easier to track movements.
-  if(reverse_color){
+  #Primarily for bar plots, we want the first in order on the bottom so it is easier to track movements.
+  if(first_color_on_bottom){
     labels_and_colors$Display.Order[labels_and_colors$column==color_var]<-
       -1*labels_and_colors$Display.Order[labels_and_colors$column==color_var]
     labels_and_colors<-labels_and_colors[order(labels_and_colors$column,labels_and_colors$Display.Order),]
