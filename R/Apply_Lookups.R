@@ -1082,7 +1082,7 @@ label_top<-function(df,
           agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), weight = as.name(weight)))
       agg_df<- agg_df %>% mutate(
         rank_total=rank(desc(agg_val))) %>%
-        arrange(desc(agg_value))
+        arrange(desc(agg_val))
     } else {
       agg_df <- df %>%
         dplyr::group_by_(.dots = c(agg_list)) %>%
@@ -1116,7 +1116,7 @@ label_top<-function(df,
       agg_df<- agg_df %>% mutate(
         rank_total=rank(desc(agg_val)),
         rank_recent=rank(desc(agg_val_recent))) %>%
-        arrange(desc(agg_value))
+        arrange(desc(agg_val))
     } else {
       agg_df <- agg_df %>%
         dplyr::group_by_(.dots = c(agg_list)) %>%
@@ -2013,11 +2013,11 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df$PricingUCA.sum<-factor(df$PricingUCA)
     df<-replace_nas_with_unlabeled(df,"PricingUCA.sum")
     levels(df$PricingUCA.sum)<-
-      list("FFP"="FFP",
-           "Less Common"=c("Other FP","T&M/LH/FPLOE"),
+      list("Fixed-Price (Except Incentive)"=c("FFP","Other FP"),
            "Incentive"="Incentive",
-           "Other CB"="Other CB",
+           "Cost-Based (Except Incentive)"=c("Other CB"),
            "UCA"="UCA",
+           "Effort-Based"=c("T&M/LH/FPLOE"),
            "Unclear"=c("Combination/Other","Unlabeled"))
   }
 
