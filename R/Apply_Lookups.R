@@ -2015,7 +2015,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df$PricingUCA[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)]<-
         df$PricingFee[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)]
       df$PricingUCA.sum<-as.character(df$Pricing.sum)
-      df$PricingUCA.sum[df$PricingUCA=="UCA"]<-"Crosscutting"
+      df$PricingUCA.sum[df$PricingUCA=="UCA"|is.na(df$PricingUCA)]<-"Crosscutting"
       df$PricingUCA<-factor(df$PricingUCA)
       df$PricingUCA.sum<-factor(df$PricingUCA.sum)
 
