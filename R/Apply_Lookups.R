@@ -1992,12 +1992,15 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
 
   if("TypeOfContractPricing" %in% names(df) ){
+    if("PricingMechanism" %in% names(df))
+      df<-df %>% select(-PricingMechanism)
 
     df<-read_and_join_experiment(data=df
                                  ,"contract.TypeOfContractPricing.csv"
                                  ,path=path
                                  ,directory="contract/"
-                                 ,add_var = c("PricingInflation","TypeOfContractPricingText")
+                                 ,add_var = c("TypeOfContractPricingText","PricingFee",
+                                              "PricingInflation","Pricing.sum")
                                  ,skip_check_var = c("PricingInflation","TypeOfContractPricingText")
                                  # ,by=c("informationtechnologycommercialitemcategory"="informationtechnologycommercialitemcategory")
                                  # ,new_var_checked=FALSE
@@ -2006,6 +2009,17 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
     df$PricingInflation<-factor(df$PricingInflation)
     df$TypeOfContractPricingText<-factor(df$TypeOfContractPricingText)
+
+    if("PricingUCA" %in% names(df)){
+      df$PricingUCA<-as.character(df$PricingUCA)
+      df$PricingUCA[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)]<-
+        df$PricingFee[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)]
+      df$PricingUCA.sum<-as.character(df$Pricing.sum)
+      df$PricingUCA.sum[df$PricingUCA=="UCA"]<-"Crosscutting"
+      df$PricingUCA<-factor(df$PricingUCA)
+      df$PricingUCA.sum<-factor(df$PricingUCA.sum)
+
+    }
   }
 
   if("PricingUCA" %in% names(df) & !"PricingUCA.sum" %in% names(df) ){
@@ -2013,12 +2027,10 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df$PricingUCA.sum<-factor(df$PricingUCA)
     df<-replace_nas_with_unlabeled(df,"PricingUCA.sum")
     levels(df$PricingUCA.sum)<-
-      list("Fixed-Price (Except Incentive)"=c("FFP","Other FP"),
-           "Incentive"="Incentive",
-           "Cost-Based (Except Incentive)"=c("Other CB"),
-           "UCA"="UCA",
-           "Effort-Based"=c("T&M/LH/FPLOE"),
-           "Unclear"=c("Combination/Other","Unlabeled"))
+      list("Fixed-Price"=c("FFP","Other FP","FP-Econ. Price Adj."),
+           "Incentive"=c("Incentive","FP-Incentive","CB-Incentive"),
+           "Cost or Effort-Based"=c("Other CB","T&M/LH/FPLOE"),
+           "Crosscutting"=c("UCA","Combination or Other","Unlabeled"))
   }
 
   if("informationtechnologycommercialitemcategory" %in% names(df)){
