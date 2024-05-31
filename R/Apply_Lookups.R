@@ -1221,7 +1221,7 @@ add_alliance<-function(df,isoAlpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
     colnames(df)[colnames(df)==isoAlpha3_col]<-"alpha-3"
     df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                 dir="location/",
-                                add_var = c("name", "StateRegion","NATOyear",	"MajorNonNATOyear",	"SEATOendYear",	"RioTreatyStartYear","RioTreatyEndYear"	,"FiveEyes"	,"NTIByear"	,"OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),#"USAID region",
+                                add_var = c("name", "StateRegion","NATOyear",	"MajorNonNATOyear",	"SEATOendYear",	"RioTreatyStartYear","RioTreatyEndYear"	,"FiveEyes"	,"NTIByear"	,"OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),#"USAIDregion",
                                 by="alpha-3",
                                 skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),
                                 missing_file="missing_DSCA_iso.csv"
@@ -2735,9 +2735,10 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df<-read_and_join_experiment(df,
                                           "Location_PlaceOfManufacture.csv",
                                           by="PlaceOfManufacture",
-                                          add_var=c("PlaceOfManufactureText","PlaceOfManufacture_Sum"),
+                                          add_var=c("PlaceOfManufactureText","PlaceOfManufacture_Sum",
+                                                    "MFGorPerformIsForeign","MFGisForeign"),
                                           skip_check_var = c("PlaceOfManufactureText","PlaceOfManufacture_Sum",
-                                                             "MFGorPerformIsForeign"),
+                                                             "MFGorPerformIsForeign","MFGisForeign"),
                                           path=path,
                                           directory="location/",
                                           case_sensitive = FALSE
@@ -2750,9 +2751,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  "ManufacturingOrganizationType.csv",
                                  by="ManufacturingOrganizationType",
                                  add_var=c("ManufacturingOrganizationText","ManufacturingOrganizationText_sum",
-                                           "ParentHQisForeign"),
+                                           "ManufacturingOrganizationParentHQisForeign"),
                                  skip_check_var = c("ManufacturingOrganizationText","ManufacturingOrganizationText_sum",
-                                                    "ParentHQisForeign"),
+                                                    "ManufacturingOrganizationParentHQisForeign"),
                                  path="offline",
                                  directory="location/",
                                  case_sensitive = FALSE
@@ -2783,7 +2784,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     else{
       df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                    path=path,directory="location/",
-                                   add_var = c("isforeign"),#"USAID region",
+                                   add_var = c("isforeign"),#"USAIDregion",
                                    by=c("PlaceISOalpha3"="alpha-3"),
                                    # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
                                    missing_file="missing_DSCA_iso.csv")
@@ -2801,19 +2802,26 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     else{
       df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                    path=path,directory="location/",
-                                   add_var = c("isforeign"),#"USAID region",
+                                   add_var = c("isforeign"),#"USAIDregion",
                                    by=c("OriginISOalpha3"="alpha-3"),
                                    # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
                                    missing_file="missing_DSCA_iso.csv")
       colnames(df)[colnames(df)=="isforeign"]<-"OriginIsForeign"
     }
-    if("MFGorPerformIsForeign" %in% colnames(df)){
-      df <- mutate(MFGorPerformIsForeign=case_when(
-        MFGorPerformIsForeign==1~1,
-        OriginIsForeign=1~1,
-        TRUE~MFGorPerformIsForeign
-      ))
-    }
+    # if("MFGorPerformIsForeign" %in% colnames(df)){
+    #   df <- df %>% mutate(MFGorPerformIsForeign=case_when(
+    #     MFGorPerformIsForeign==1~1,
+    #     OriginIsForeign=1~1,
+    #     TRUE~MFGorPerformIsForeign
+    #   ))
+    # }
+    # if("MFGisForeign" %in% colnames(df)){
+    #   df <- mutate(MFGisForeign=case_when(
+    #     ~is.na(MFGisForeign)==1~1,
+    #     OriginIsForeign=1~1,
+    #     TRUE~MFGorPerformIsForeign
+    #   ))
+    # }
   }
 
 
@@ -2827,44 +2835,19 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     } else {
       df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                    path=path,directory="location/",
-                                   add_var = c("isforeign"),#"USAID region",
+                                   add_var = c("isforeign"),#"USAIDregion",
                                    by=c("VendorISOalpha3"="alpha-3"),
                                    # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
                                    missing_file="missing_DSCA_iso.csv")
       colnames(df)[colnames(df)=="isforeign"]<-"VendorIsForeign"
     }
-    if("ParentHQisForeign" %in% colnames(df)){
-      df <- mutate(ParentHQisForeign=case_when(
-        ParentHQisForeign==1~1,
-        VendorIsForeign==1~1,
-        TRUE~ParentHQisForeign
-      ))
-    }
-  }
-
-  if("VendorISOalpha3" %in% colnames(df)){
-    if("VendorIsForeign" %in% colnames(df))
-      df<-subset(df,select=-c(VendorIsForeign))
-    df$VendorISOalpha3[df$VendorISOalpha3=="~NJ"]<-NA
-    if(call_add_alliance){
-      df %<>% add_alliance(isoAlpha3_col= "VendorISOalpha3", drop_col = TRUE,prefix="Vendor")
-    } else {
-      df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
-                                   path=path,directory="location/",
-                                   add_var = c("isforeign"),#"USAID region",
-                                   by=c("VendorISOalpha3"="alpha-3"),
-                                   # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
-                                   missing_file="missing_DSCA_iso.csv")
-      colnames(df)[colnames(df)=="isforeign"]<-"VendorIsForeign"
-    }
-
-    if("ParentHQisForeign" %in% colnames(df)){
-      df <- mutate(ParentHQisForeign=case_when(
-        ParentHQisForeign==1~1,
-        VendorIsForeign==1~1,
-        TRUE~ParentHQisForeign
-      ))
-    }
+    # if("ParentHQisForeign" %in% colnames(df)){
+    #   df <- mutate(ParentHQisForeign=case_when(
+    #     ParentHQisForeign==1~1,
+    #     VendorIsForeign==1~1,
+    #     TRUE~ParentHQisForeign
+    #   ))
+    # }
   }
 
   if("VendorAddressISOalpha3" %in% colnames(df)){
@@ -2875,19 +2858,19 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     } else {
       df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                    path=path,directory="location/",
-                                   add_var = c("isforeign"),#"USAID region",
+                                   add_var = c("isforeign"),#"USAIDregion",
                                    by=c("VendorAddressISOalpha3"="alpha-3"),
                                    # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
                                    missing_file="missing_iso.csv")
       colnames(df)[colnames(df)=="isforeign"]<-"VendorAddressIsForeign"
     }
-    if("ParentHQisForeign" %in% colnames(df)){
-      df <- mutate(MFGorPerformIsForeign=case_when(
-        ParentHQisForeign==1~1,
-        VendorAddressIsForeign==1~1,
-        TRUE~ParentHQisForeign
-      ))
-    }
+    # if("ParentHQisForeign" %in% colnames(df)){
+    #   df <- mutate(MFGorPerformIsForeign=case_when(
+    #     ParentHQisForeign==1~1,
+    #     VendorAddressIsForeign==1~1,
+    #     TRUE~ParentHQisForeign
+    #   ))
+    #}
   }
 
   if ("Shiny.VendorSize" %in% colnames(df) & "VendorIsForeign" %in% colnames(df)){

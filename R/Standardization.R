@@ -2104,14 +2104,22 @@ export_worksheet <- function(df,xlsx,sheet,path="..\\output",
 #' @param second_path the second path, typically sharepoint
 #' @param dir  what directory for the output
 #' @param file filename
+#' @param write_csv=TRUE Use write_csv by default, write.csv otherwise
+#' @param ... allow for other parameters
 #'
 #' @return no value
 
 #'
 #' @export
-write_twice<-function(data,first_path,second_path,dir,file){
-  write_csv(file=file.path(first_path,dir,file),data)
-  write_csv(file=file.path(second_path,dir,file),data)
+write_twice<-function(data,first_path,second_path,dir,file,write_csv=TRUE,...){
+  if(write_csv){
+    write_csv(file=file.path(first_path,dir,file),data,...)
+    write_csv(file=file.path(second_path,dir,file),data,...)
+  }
+  else{
+    write.csv(file=file.path(first_path,dir,file),data,...,row.names = FALSE)
+    write.csv(file=file.path(second_path,dir,file),data,...,row.names = FALSE)
+  }
 }
 
 
