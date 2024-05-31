@@ -1178,7 +1178,7 @@ label_top<-function(df,
 #' Add column variants, including summaries, and deflated dollars, to a contract dataset.
 #'
 #' @param df A data frame.
-#' @param isoAlpha3_col="ISOalpha3" The column with country codes in 3 letter ISO format
+#' @param ISOalpha3_col="ISOalpha3" The column with country codes in 3 letter ISO format
 #' @param drop_col=FALSE If true drop many of the supporting columns, by default FALSE.
 #' @param prefix=NULL If provided, add to the start of all the added variables (e.g. Place, Vendor, Origin). Default NULL.
 #' @param purge_unprefixed=FALSE If TRUE, drop all columns previously added by this function that lack a prefix. Used to avoid adding the same columns repeatedly.
@@ -1193,7 +1193,7 @@ label_top<-function(df,
 #'
 #'
 #' @export
-add_alliance<-function(df,isoAlpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL,purge_unprefixed=FALSE,skip_name=FALSE,
+add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL,purge_unprefixed=FALSE,skip_name=FALSE,
                        path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/"){
 
   if(!file.exists(file.path(path,"location/","SOSA.csv")) || path=="offline"){
@@ -1213,12 +1213,12 @@ add_alliance<-function(df,isoAlpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
   if("MutualDefense" %in%  colnames(df)) stop("Add Alliance has already been run on the data.frame")
 
   if(any(duplicated(colnames(df)))) stop("Duplicate Column Names")
-  #Add isoAlpha3 column if it does not already exist
-  if(!is.null(isoAlpha3_col)){
-    if(!isoAlpha3_col %in% colnames(df)) stop(paste("isoAlpha3_col,",isoAlpha3_col,"is missing."))
+  #Add ISOalpha3 column if it does not already exist
+  if(!is.null(ISOalpha3_col)){
+    if(!ISOalpha3_col %in% colnames(df)) stop(paste("ISOalpha3_col,",ISOalpha3_col,"is missing."))
     if("alpha-3" %in% colnames(df)) stop("Already alpha-3 in column names")
     if(!is.null(prefix)) if(prefix %in% colnames(df) & !skip_name) stop(paste("Already",prefix,"in column names"))
-    colnames(df)[colnames(df)==isoAlpha3_col]<-"alpha-3"
+    colnames(df)[colnames(df)==ISOalpha3_col]<-"alpha-3"
     df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                 dir="location/",
                                 add_var = c("name", "StateRegion","NATOyear",	"MajorNonNATOyear",	"SEATOendYear",	"RioTreatyStartYear","RioTreatyEndYear"	,"FiveEyes"	,"NTIByear"	,"OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),#"USAIDregion",
@@ -1226,7 +1226,7 @@ add_alliance<-function(df,isoAlpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
                                 skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),
                                 missing_file="missing_DSCA_iso.csv"
     )
-    colnames(df)[colnames(df)=="alpha-3"]<-isoAlpha3_col
+    colnames(df)[colnames(df)=="alpha-3"]<-ISOalpha3_col
     if(skip_name) df %<>% dplyr::select(-name)
     else if(!is.null(prefix)) colnames(df)[colnames(df)=="name"]<-prefix
     else if("CountryName" %in% colnames(df)) stop(paste("Already CountryName in column names"))
@@ -1256,7 +1256,7 @@ add_alliance<-function(df,isoAlpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
     group_by(ISOalpha3) %>%
     dplyr::summarise(RDPyear=min(lubridate::year(Agreement_Start)))
   rdp_by<-"ISOalpha3"
-  names(rdp_by)<-isoAlpha3_col
+  names(rdp_by)<-ISOalpha3_col
   df<-left_join(df,rdp_qa,by=rdp_by)
 
   if(any(duplicated(colnames(df)))) stop(paste("Duplicate Column Names",colnames(df)[duplicated(colnames(df))]))
@@ -1270,7 +1270,7 @@ add_alliance<-function(df,isoAlpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
     group_by(ISOalpha3) %>%
     dplyr::summarise(SOSAyear=min(lubridate::year(Agreement_Start)))
   sosa_by<-"ISOalpha3"
-  names(sosa_by)<-isoAlpha3_col
+  names(sosa_by)<-ISOalpha3_col
   df<-left_join(df,sosa,by=sosa_by)
 
   if(any(duplicated(colnames(df)))) stop(paste("Duplicate Column Names",colnames(df)[duplicated(colnames(df))]))
@@ -1323,13 +1323,13 @@ add_alliance<-function(df,isoAlpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
               (is.na(df$EUexitYear) | df$EUexitYear>compare_year)]<- "EU"
   # df$EUtrade[is.na(df$EUtrade) & !is.na(df$EUentryYear)&
   #             df$EUentryYear>compare_year]<- "Future EU"
-  # df$EUtrade[is.na(df$EUtrade) & df[,isoAlpha3_col] %in% c("GBR")]<-"Post-Brexit UK"
-  df$EUtrade[is.na(df$EUtrade) & (df$AcquisitionCooperation=="NATO" | df[,isoAlpha3_col] %in% c("GBR","CAN"))]<-"Other NATO"
-  df$EUtrade[is.na(df$EUtrade) & df[,isoAlpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN",,"TWN"
-  df$EUtrade[is.na(df$EUtrade) & df[,isoAlpha3_col] %in% c("RUS","CHN")]<-"PRC and Russia"
-  # df$EUtrade[is.na(df$EUtrade) & df[,isoAlpha3_col] %in% c("UKR")]<-"Ukraine"
-  df$EUtrade[is.na(df$EUtrade) & df[,isoAlpha3_col] %in% c("USA")]<-"United States"
-  df$EUtrade[is.na(df$EUtrade) & df[,isoAlpha3_col] %in% c("@QW","@QZ","@QS")]<-"Unspecified extra-union"
+  # df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("GBR")]<-"Post-Brexit UK"
+  df$EUtrade[is.na(df$EUtrade) & (df$AcquisitionCooperation=="NATO" | df[,ISOalpha3_col] %in% c("GBR","CAN"))]<-"Other NATO"
+  df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN",,"TWN"
+  df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("RUS","CHN")]<-"PRC and Russia"
+  # df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("UKR")]<-"Ukraine"
+  df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("USA")]<-"United States"
+  df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("@QW","@QZ","@QS")]<-"Unspecified extra-union"
   df$EUtrade[is.na(df$EUtrade) & (is.na(df$StateRegion)|df$StateRegion=="Unlabeled")]<-"Unlabeled"
   df$EUtrade[is.na(df$EUtrade)]<-"Rest of World"
 
@@ -1343,18 +1343,18 @@ add_alliance<-function(df,isoAlpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
                  ]<- "EU & NATO"
   # df$NATOtrade[is.na(df$NATOtrade) & !is.na(df$EUentryYear)&
   #             df$EUentryYear>compare_year]<- "Future EU"
-  # df$NATOtrade[is.na(df$NATOtrade) & df[,isoAlpha3_col] %in% c("GBR")]<-"Post-Brexit UK"
-  df$NATOtrade[is.na(df$NATOtrade) & (df$AcquisitionCooperation=="NATO" | df[,isoAlpha3_col] %in% c("GBR","CAN"))]<-"Other NATO"
+  # df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("GBR")]<-"Post-Brexit UK"
+  df$NATOtrade[is.na(df$NATOtrade) & (df$AcquisitionCooperation=="NATO" | df[,ISOalpha3_col] %in% c("GBR","CAN"))]<-"Other NATO"
   df$NATOtrade[!is.na(df$EUentryYear)&
                  df$EUentryYear<=compare_year &
                  (is.na(df$EUexitYear) | df$EUexitYear>compare_year)&
                  (df$AcquisitionCooperation!="NATO" & !is.na(df$AcquisitionCooperation))
   ]<- "EU Outside NATO"
-  df$NATOtrade[is.na(df$NATOtrade) & df[,isoAlpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN",,"TWN"
-  # df$NATOtrade[is.na(df$NATOtrade) & df[,isoAlpha3_col] %in% c("RUS","CHN")]<-"PRC and Russia"
-  df$NATOtrade[is.na(df$NATOtrade) & df[,isoAlpha3_col] %in% c("UKR")]<-"Ukraine"
-  df$NATOtrade[is.na(df$NATOtrade) & df[,isoAlpha3_col] %in% c("USA")]<-"United States"
-  df$NATOtrade[is.na(df$NATOtrade) & df[,isoAlpha3_col] %in% c("@QW","@QZ","@QS")]<-"Unspecified extra-union"
+  df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN",,"TWN"
+  # df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("RUS","CHN")]<-"PRC and Russia"
+  df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("UKR")]<-"Ukraine"
+  df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("USA")]<-"United States"
+  df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("@QW","@QZ","@QS")]<-"Unspecified extra-union"
   df$NATOtrade[is.na(df$NATOtrade) & (is.na(df$StateRegion)|df$StateRegion=="Unlabeled")]<-"Unlabeled"
   df$NATOtrade[is.na(df$NATOtrade)]<-"Rest of World"
 
@@ -1386,9 +1386,9 @@ add_alliance<-function(df,isoAlpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
 
   #Mutual Defense Categories
   if(any(!complete.cases(df %>% dplyr::filter(!StateRegion %in% "Non-Regional" & !is.na(StateRegion)) %>%
-                         dplyr::select(isoAlpha3_col,"AcquisitionCooperation"))))
+                         dplyr::select(ISOalpha3_col,"AcquisitionCooperation"))))
     stop(paste("Missing AcquisitionCooperation:",
-               paste(unique(df$Country[!complete.cases(df %>% dplyr::filter(StateRegion !="Non-Regional") %>% dplyr::select(isoAlpha3_col,"AcquisitionCooperation"))]),
+               paste(unique(df$Country[!complete.cases(df %>% dplyr::filter(StateRegion !="Non-Regional") %>% dplyr::select(ISOalpha3_col,"AcquisitionCooperation"))]),
                      collapse=", ")
     ))
 
@@ -1427,9 +1427,9 @@ add_alliance<-function(df,isoAlpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
   summary(factor(df$MutualDefense))
 
   #Mutual Defense Categories
-  if(any(!complete.cases(df %>% dplyr::filter(!StateRegion %in% c("Non-Regional") & !is.na(StateRegion)) %>% dplyr::select(isoAlpha3_col,"MutualDefense"))))
+  if(any(!complete.cases(df %>% dplyr::filter(!StateRegion %in% c("Non-Regional") & !is.na(StateRegion)) %>% dplyr::select(ISOalpha3_col,"MutualDefense"))))
     stop(paste("Missing MutualDefense:",
-               paste(unique(df$Country[!complete.cases(df %>% dplyr::filter(StateRegion !="Non-Regional") %>% dplyr::select(isoAlpha3_col,"MutualDefense"))]),
+               paste(unique(df$Country[!complete.cases(df %>% dplyr::filter(StateRegion !="Non-Regional") %>% dplyr::select(ISOalpha3_col,"MutualDefense"))]),
                      collapse=", ")
     ))
 
@@ -1464,9 +1464,9 @@ add_alliance<-function(df,isoAlpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
 
 
   #Mutual Acquisition Categories
-  if(any(!complete.cases(df %>% dplyr::filter(!StateRegion %in% c("Non-Regional") & !is.na(StateRegion)) %>% dplyr::select(isoAlpha3_col,"MutualAcquisition"))))
+  if(any(!complete.cases(df %>% dplyr::filter(!StateRegion %in% c("Non-Regional") & !is.na(StateRegion)) %>% dplyr::select(ISOalpha3_col,"MutualAcquisition"))))
     stop(paste("Missing MutualAcquisition:",
-               paste(unique(df$Country[!complete.cases(df %>% dplyr::filter(StateRegion !="Non-Regional") %>% dplyr::select(isoAlpha3_col,"MutualAcquisition"))]),
+               paste(unique(df$Country[!complete.cases(df %>% dplyr::filter(StateRegion !="Non-Regional") %>% dplyr::select(ISOalpha3_col,"MutualAcquisition"))]),
                      collapse=", ")
     ))
 
@@ -2780,7 +2780,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df<-subset(df,select=-c(PlaceIsForeign))
 
     if(call_add_alliance)
-      df %<>% add_alliance(isoAlpha3_col= "PlaceISOalpha3", drop_col = TRUE,prefix="Place")
+      df %<>% add_alliance(ISOalpha3_col= "PlaceISOalpha3", drop_col = TRUE,prefix="Place")
     else{
       df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                    path=path,directory="location/",
@@ -2797,7 +2797,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df<-subset(df,select=-c(OriginIsForeign))
     if(call_add_alliance){
       df$OriginISOalpha3[df$OriginISOalpha3=="~NJ"]<-NA
-      df %<>% add_alliance(isoAlpha3_col= "OriginISOalpha3", drop_col = TRUE,prefix="Origin")
+      df %<>% add_alliance(ISOalpha3_col= "OriginISOalpha3", drop_col = TRUE,prefix="Origin")
     }
     else{
       df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
@@ -2831,7 +2831,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
     df$VendorISOalpha3[df$VendorISOalpha3=="~NJ"]<-NA
     if(call_add_alliance){
-      df %<>% add_alliance(isoAlpha3_col= "VendorISOalpha3", drop_col = TRUE,prefix="Vendor")
+      df %<>% add_alliance(ISOalpha3_col= "VendorISOalpha3", drop_col = TRUE,prefix="Vendor")
     } else {
       df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                    path=path,directory="location/",
@@ -2854,7 +2854,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     if("VendorAddressIsForeign" %in% colnames(df))
       df<-subset(df,select=-c(VendorIsForeign))
     if(call_add_alliance){
-      full_data %<>% add_alliance(isoAlpha3_col= "VendorAddressISOalpha3", drop_col = TRUE,prefix="VendorAddress")
+      full_data %<>% add_alliance(ISOalpha3_col= "VendorAddressISOalpha3", drop_col = TRUE,prefix="VendorAddress")
     } else {
       df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                    path=path,directory="location/",
