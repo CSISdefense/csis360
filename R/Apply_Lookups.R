@@ -1358,6 +1358,36 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
   df$NATOtrade[is.na(df$NATOtrade) & (is.na(df$StateRegion)|df$StateRegion=="Unlabeled")]<-"Unlabeled"
   df$NATOtrade[is.na(df$NATOtrade)]<-"Rest of World"
 
+  # NTIB
+  df$NTIBtrade<-NA
+  df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("USA")]<-"United States"
+  df$NTIBtrade[!is.na(df$EUentryYear)&
+                 df$EUentryYear<=compare_year &
+                 (is.na(df$NTIByear) | df$NTIByearWill>compare_year)&
+                 (df$AcquisitionCooperation=="NATO" & !is.na(df$AcquisitionCooperation))
+  ]<- "EU & NATO"
+
+  df$NTIBtrade[!is.na(df$EUentryYear)&
+                 df$EUentryYear<=compare_year &
+                 (is.na(df$EUexitYear) | df$EUexitYear>compare_year)&
+                 (df$AcquisitionCooperation=="NATO" & !is.na(df$AcquisitionCooperation))
+  ]<- "EU & NATO"
+  # df$NTIBtrade[is.na(df$NTIBtrade) & !is.na(df$EUentryYear)&
+  #             df$EUentryYear>compare_year]<- "Future EU"
+  # df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("GBR")]<-"Post-Brexit UK"
+  df$NTIBtrade[is.na(df$NTIBtrade) & (df$AcquisitionCooperation=="NATO" | df[,ISOalpha3_col] %in% c("GBR","CAN"))]<-"Other NATO"
+  df$NTIBtrade[!is.na(df$EUentryYear)&
+                 df$EUentryYear<=compare_year &
+                 (is.na(df$EUexitYear) | df$EUexitYear>compare_year)&
+                 (df$AcquisitionCooperation!="NATO" & !is.na(df$AcquisitionCooperation))
+  ]<- "EU Outside NATO"
+  df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN",,"TWN"
+  # df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("RUS","CHN")]<-"PRC and Russia"
+  df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("UKR")]<-"Ukraine"
+
+  df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("@QW","@QZ","@QS")]<-"Unspecified extra-union"
+  df$NTIBtrade[is.na(df$NTIBtrade) & (is.na(df$StateRegion)|df$StateRegion=="Unlabeled")]<-"Unlabeled"
+  df$NTIBtrade[is.na(df$NTIBtrade)]<-"Rest of World"
 
   #RDPsosa
   df$RDPsosa<-NA
@@ -1476,7 +1506,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
   if(!is.null(prefix)){
     renamelist<-c("NATOyear","MajorNonNATOyear","NTIByear","SEATOendYear","RioTreatyEndYear",
                   "FiveEyes","OtherTreatyName","OtherTreatyStartYear","OtherTreatyEndYear",
-                  "RDPyear","SOSAyear","RDPsosa","EUtrade","NATOtrade")
+                  "RDPyear","SOSAyear","RDPsosa","EUtrade","NATOtrade","NATOtrade")
     colnames(df)[colnames(df)%in% renamelist]<-
       paste(prefix,colnames(df)[colnames(df)%in%renamelist],sep="")
     colnames(df)[colnames(df)=="StateRegion"]<-paste(prefix,"StateRegion",sep="")
