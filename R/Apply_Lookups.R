@@ -1204,7 +1204,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
 
   if(purge_unprefixed)
     df<-df[,!colnames(df) %in%
-           c("NATOyear","MajorNonNATOyear","NTIByear","SEATOendYear","RioTreatyEndYear",
+           c("NATOyear","MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear","SEATOendYear","RioTreatyEndYear",
              "FiveEyes","OtherTreatyName","OtherTreatyStartYear","OtherTreatyEndYear",
              "RDPyear","SOSAyear","RDPsosa",
              "StateRegion","AcquisitionCooperation","MutualDefense","MutualAcquisition",
@@ -1221,9 +1221,9 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
     colnames(df)[colnames(df)==ISOalpha3_col]<-"alpha-3"
     df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                 dir="location/",
-                                add_var = c("name", "StateRegion","NATOyear",	"MajorNonNATOyear",	"SEATOendYear",	"RioTreatyStartYear","RioTreatyEndYear"	,"FiveEyes"	,"NTIByear"	,"OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),#"USAIDregion",
+                                add_var = c("name", "StateRegion","NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear",	"SEATOendYear",	"RioTreatyStartYear","RioTreatyEndYear"	,"FiveEyes"	,"NTIByear"	,"OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),#"USAIDregion",
                                 by="alpha-3",
-                                skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),
+                                skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),
                                 missing_file="missing_DSCA_iso.csv"
     )
     colnames(df)[colnames(df)=="alpha-3"]<-ISOalpha3_col
@@ -1241,7 +1241,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
   else if("Fiscal_Year" %in% colnames(df)) compare_year<-df$Fiscal_Year
   else stop("Unkown comparison year")
 
-  if(!all(c("MajorNonNATOyear","NATOyear","NTIByear") %in% colnames(df))) stop("Missing Columns. Run Read And Join")
+  if(!all(c("MajorNonNATOentryYear","MajorNonNATOexitYear","NATOyear","NTIByear") %in% colnames(df))) stop("Missing Columns. Run Read And Join")
 
 
   ###### defense acquisition cooperation
@@ -1279,7 +1279,10 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
 
   df$AcquisitionCooperation<-NA
   df$AcquisitionCooperation[!is.na(df$MajorNonNATOyear)&
-                             df$MajorNonNATOyear<=compare_year] <- "Major Non-NATO"
+                             df$MajorNonNATOyear<=compare_year&
+                              (is.na(df$MajorNonNATOyear)|
+                                 df$MajorNonNATOyear>compare_year)
+                              ] <- "Major Non-NATO"
 
   if("Buyer" %in% colnames(df)){
     if("dtDelivYear" %in% colnames(df))
@@ -1325,7 +1328,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
   #             df$EUentryYear>compare_year]<- "Future EU"
   # df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("GBR")]<-"Post-Brexit UK"
   df$EUtrade[is.na(df$EUtrade) & (df$AcquisitionCooperation=="NATO" | df[,ISOalpha3_col] %in% c("GBR","CAN"))]<-"Other NATO"
-  df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN",,"TWN"
+  df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN","TWN"
   df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("RUS","CHN")]<-"PRC and Russia"
   # df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("UKR")]<-"Ukraine"
   df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("USA")]<-"United States"
@@ -1350,7 +1353,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
                  (is.na(df$EUexitYear) | df$EUexitYear>compare_year)&
                  (df$AcquisitionCooperation!="NATO" & !is.na(df$AcquisitionCooperation))
   ]<- "EU Outside NATO"
-  df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN",,"TWN"
+  df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN","TWN"
   # df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("RUS","CHN")]<-"PRC and Russia"
   df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("UKR")]<-"Ukraine"
   df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("USA")]<-"United States"
@@ -1381,7 +1384,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
                  (is.na(df$EUexitYear) | df$EUexitYear>compare_year)&
                  (df$AcquisitionCooperation!="NATO" & !is.na(df$AcquisitionCooperation))
   ]<- "EU Outside NATO"
-  df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN",,"TWN"
+  df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN","TWN"
   # df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("RUS","CHN")]<-"PRC and Russia"
   df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("UKR")]<-"Ukraine"
 
@@ -1504,9 +1507,9 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
     df %<>% dplyr::select(-NATOyear,-EUentryYear,-EUexitYear,	-MajorNonNATOyear,-NTIByear	,-SEATOendYear,-RioTreatyEndYear,-FiveEyes,-OtherTreatyName	,-OtherTreatyStartYear,-OtherTreatyEndYear)
 
   if(!is.null(prefix)){
-    renamelist<-c("NATOyear","MajorNonNATOyear","NTIByear","SEATOendYear","RioTreatyEndYear",
+    renamelist<-c("NATOyear","MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear","SEATOendYear","RioTreatyEndYear",
                   "FiveEyes","OtherTreatyName","OtherTreatyStartYear","OtherTreatyEndYear",
-                  "RDPyear","SOSAyear","RDPsosa","EUtrade","NATOtrade","NATOtrade")
+                  "RDPyear","SOSAyear","EUentrYear","EUexitYear","RDPsosa","EUtrade","NATOtrade","NTIBtrade")
     colnames(df)[colnames(df)%in% renamelist]<-
       paste(prefix,colnames(df)[colnames(df)%in%renamelist],sep="")
     colnames(df)[colnames(df)=="StateRegion"]<-paste(prefix,"StateRegion",sep="")
@@ -2797,7 +2800,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  path=path,directory="location/",
                                  add_var = c("ISOalpha3"),
                                  by=c("VendorAddressCountry"="CountryName"),
-                                 # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                 # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
                                  missing_file="missing_VendorAddressCountry.csv",
                                  case_sensitive = FALSE)
     colnames(df)[colnames(df)=="ISOalpha3"]<-"VendorAddressISOalpha3"
@@ -2816,7 +2819,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                    path=path,directory="location/",
                                    add_var = c("isforeign"),#"USAIDregion",
                                    by=c("PlaceISOalpha3"="alpha-3"),
-                                   # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                   # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
                                    missing_file="missing_DSCA_iso.csv")
       colnames(df)[colnames(df)=="isforeign"]<-"PlaceIsForeign"
     }
@@ -2834,7 +2837,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                    path=path,directory="location/",
                                    add_var = c("isforeign"),#"USAIDregion",
                                    by=c("OriginISOalpha3"="alpha-3"),
-                                   # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                   # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
                                    missing_file="missing_DSCA_iso.csv")
       colnames(df)[colnames(df)=="isforeign"]<-"OriginIsForeign"
     }
@@ -2867,7 +2870,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                    path=path,directory="location/",
                                    add_var = c("isforeign"),#"USAIDregion",
                                    by=c("VendorISOalpha3"="alpha-3"),
-                                   # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                   # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
                                    missing_file="missing_DSCA_iso.csv")
       colnames(df)[colnames(df)=="isforeign"]<-"VendorIsForeign"
     }
@@ -2890,7 +2893,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                    path=path,directory="location/",
                                    add_var = c("isforeign"),#"USAIDregion",
                                    by=c("VendorAddressISOalpha3"="alpha-3"),
-                                   # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                   # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
                                    missing_file="missing_iso.csv")
       colnames(df)[colnames(df)=="isforeign"]<-"VendorAddressIsForeign"
     }
