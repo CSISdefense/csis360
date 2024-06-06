@@ -6,7 +6,7 @@
 \usage{
 add_alliance(
   df,
-  isoAlpha3_col = "ISOalpha3",
+  ISOalpha3_col = "ISOalpha3",
   drop_col = FALSE,
   prefix = NULL,
   purge_unprefixed = FALSE,
@@ -20,7 +20,7 @@ add_alliance(
 \item{path}{The path or url for the column key.  By default, checks
 the CSISdefense Github lookups repository at CSISdefense/Lookup/master/}
 
-\item{isoAlpha3_col="ISOalpha3"}{The column with country codes in 3 letter ISO format}
+\item{ISOalpha3_col="ISOalpha3"}{The column with country codes in 3 letter ISO format}
 
 \item{drop_col=FALSE}{If true drop many of the supporting columns, by default FALSE.}
 

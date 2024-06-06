@@ -22,7 +22,8 @@ read_and_join_experiment(
   create_lookup_rdata = FALSE,
   lookup_char_as_factor = FALSE,
   guess_max = NULL,
-  join_type = "left"
+  join_type = "left",
+  prefix = ""
 )
 }
 \arguments{

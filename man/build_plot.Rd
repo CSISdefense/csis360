@@ -19,8 +19,9 @@ build_plot(
   column_key = NULL,
   format = FALSE,
   ytextposition = FALSE,
-  reverse_color = FALSE,
-  alpha_var = NULL
+  first_color_on_bottom = TRUE,
+  alpha_var = NULL,
+  invert_bool = NULL
 )
 }
 \arguments{
@@ -51,6 +52,10 @@ build_plot(
 \item{format}{If TRUE, summarize the data.frame}
 
 \item{ytextposition}{If TRUE, add ytextposition to allow for geom_text overlays.}
+
+\item{alpha_var}{Variable for setting the transparency of bars or line type of lines, coded to be used with year to ate.}
+
+\item{invert_bool}{Used to create population pyramid or import/export charts, specifies when to show data in the negative space of the y-axis.}
 
 \item{reverse_color}{If TRUE, the order of the color variable is flipped}
 }

@@ -4,7 +4,7 @@
 \alias{write_twice}
 \title{Save a csv in two locations}
 \usage{
-write_twice(data, first_path, second_path, dir, file)
+write_twice(data, first_path, second_path, dir, file, write_csv = TRUE, ...)
 }
 \arguments{
 \item{first_path}{the primary storage path}
@@ -15,7 +15,11 @@ write_twice(data, first_path, second_path, dir, file)
 
 \item{file}{filename}
 
+\item{...}{allow for other parameters}
+
 \item{df}{a ggplot object}
+
+\item{write_csv=TRUE}{Use write_csv by default, write.csv otherwise}
 }
 \value{
 no value
