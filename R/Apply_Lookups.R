@@ -645,6 +645,7 @@ read_and_join_experiment<-function(
         names(lookup)[!names(lookup) %in% by]<-
           paste0(prefix,names(lookup)[!names(lookup) %in% by])
       add_var<-paste0(prefix,add_var)
+      skip_check_var<-paste0(prefix,skip_check_var)
     }
 
 
@@ -1330,7 +1331,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
   df$EUtrade[is.na(df$EUtrade) & (df$AcquisitionCooperation=="NATO" | df[,ISOalpha3_col] %in% c("GBR","CAN"))]<-"Other NATO"
   df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN","TWN"
   df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("RUS","CHN")]<-"PRC and Russia"
-  # df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("UKR")]<-"Ukraine"
+  df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("UKR")]<-"Ukraine"
   df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("USA")]<-"United States"
   df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("@QW","@QZ","@QS")]<-"Unspecified extra-union"
   df$EUtrade[is.na(df$EUtrade) & (is.na(df$StateRegion)|df$StateRegion=="Unlabeled")]<-"Unlabeled"
@@ -1418,10 +1419,12 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
 
 
   #Mutual Defense Categories
-  if(any(!complete.cases(df %>% dplyr::filter(!StateRegion %in% "Non-Regional" & !is.na(StateRegion)) %>%
+  if(any(!complete.cases(df %>% dplyr::filter(!StateRegion %in% "Non-Regional" & !is.na(StateRegion)) %>% group_by() %>%
                          dplyr::select(ISOalpha3_col,"AcquisitionCooperation"))))
     stop(paste("Missing AcquisitionCooperation:",
-               paste(unique(df$Country[!complete.cases(df %>% dplyr::filter(StateRegion !="Non-Regional") %>% dplyr::select(ISOalpha3_col,"AcquisitionCooperation"))]),
+               paste(unique(df[df$StateRegion !="Non-Regional" & !complete.cases(df %>% group_by() %>%
+                                                         dplyr::select(ISOalpha3_col,"AcquisitionCooperation")),
+                               ISOalpha3_col]),
                      collapse=", ")
     ))
 
@@ -1460,9 +1463,12 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
   summary(factor(df$MutualDefense))
 
   #Mutual Defense Categories
-  if(any(!complete.cases(df %>% dplyr::filter(!StateRegion %in% c("Non-Regional") & !is.na(StateRegion)) %>% dplyr::select(ISOalpha3_col,"MutualDefense"))))
+  if(any(!complete.cases(df %>% dplyr::filter(!StateRegion %in% c("Non-Regional") & !is.na(StateRegion)) %>%
+                         group_by %>% dplyr::select(ISOalpha3_col,"MutualDefense"))))
     stop(paste("Missing MutualDefense:",
-               paste(unique(df$Country[!complete.cases(df %>% dplyr::filter(StateRegion !="Non-Regional") %>% dplyr::select(ISOalpha3_col,"MutualDefense"))]),
+               paste(unique(df[df$StateRegion !="Non-Regional" & !complete.cases(df %>% group_by() %>%
+                                                                                   dplyr::select(ISOalpha3_col,"MutualDefense")),
+                               ISOalpha3_col]),
                      collapse=", ")
     ))
 
@@ -1497,9 +1503,12 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
 
 
   #Mutual Acquisition Categories
-  if(any(!complete.cases(df %>% dplyr::filter(!StateRegion %in% c("Non-Regional") & !is.na(StateRegion)) %>% dplyr::select(ISOalpha3_col,"MutualAcquisition"))))
+  if(any(!complete.cases(df %>% dplyr::filter(!StateRegion %in% c("Non-Regional") & !is.na(StateRegion)) %>% group_by() %>%
+                         dplyr::select(ISOalpha3_col,"MutualAcquisition"))))
     stop(paste("Missing MutualAcquisition:",
-               paste(unique(df$Country[!complete.cases(df %>% dplyr::filter(StateRegion !="Non-Regional") %>% dplyr::select(ISOalpha3_col,"MutualAcquisition"))]),
+               paste(unique(df[df$StateRegion !="Non-Regional" & !complete.cases(df %>% group_by() %>%
+                                                                                   dplyr::select(ISOalpha3_col,"MutualAcquisition")),
+                               ISOalpha3_col]),
                      collapse=", ")
     ))
 
