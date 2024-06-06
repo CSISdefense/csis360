@@ -1196,7 +1196,7 @@ label_top<-function(df,
 #' @export
 add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL,purge_unprefixed=FALSE,skip_name=FALSE,
                        path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/"){
-
+  df<-as.data.frame(df)
   if(!file.exists(file.path(path,"location/","SOSA.csv")) || path=="offline"){
     warning("Using offline path")
     path<-get_local_lookup_path()
