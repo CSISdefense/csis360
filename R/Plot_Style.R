@@ -125,6 +125,7 @@ get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
 #' @param reverse_color If TRUE, the order of the color variable is flipped
 #' @param alpha_var Variable for setting the transparency of bars or line type of lines, coded to be used with year to ate.
 #' @param invert_bool Used to create population pyramid or import/export charts, specifies when to show data in the negative space of the y-axis.
+#' @param suppress_x_var_newline For categorical x-axis variables, remove any new line from the character string
 #'
 #'
 #'
@@ -156,7 +157,8 @@ build_plot <- function(
   ytextposition=FALSE,
   first_color_on_bottom=TRUE,
   alpha_var=NULL,
-  invert_bool=NULL
+  invert_bool=NULL,
+  suppress_x_var_newline=TRUE
 ){
   if(all(!is.null(second_var),facet_var==second_var | second_var=="None")) second_var<-NULL
   #To add, check for missing labels and colors
@@ -173,7 +175,8 @@ build_plot <- function(
                                  alpha_var=alpha_var,
                                  invert_bool=invert_bool,
                                  labels_and_colors=labels_and_colors,
-                                 add_ytextposition=ytextposition)
+                                 add_ytextposition=ytextposition,
+                                 suppress_x_var_newline=suppress_x_var_newline)
 
   #Nested if because its evaluating the second statement even if the first is false.
   if(color_var!="None")
@@ -197,7 +200,7 @@ build_plot <- function(
   data<-as.data.frame(data)
   mainplot <- ggplot(data = data)
   #Assume 1st row if no x_var provided.
-if(is.null(x_var)) x_var<-names(data)[1]
+  if(is.null(x_var)) x_var<-names(data)[1]
 
   # add a line layer, broken out by color if requested
   if(chart_geom == "Line Chart"){

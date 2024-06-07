@@ -218,6 +218,7 @@ group_data_for_plot <-function(
 #' @param   group If TRUE aggregate
 #' @param   drop_missing_labels If TRUE, drop levels to avoid residual levels from labels_and_colors.
 #' @param add_ytextposition If TRUE, add a ytextposition numerical position to aid in adding text to a graph
+#' @param suppress_x_var_newline For categorical x-axis variables, remove any new line from the character string
 #'
 #' @return Returns a tibble of formatted data
 #'
@@ -235,7 +236,8 @@ format_data_for_plot <- function(data, fy_var,
                                  labels_and_colors=NULL,
                                  group=TRUE,
                                  drop_missing_labels=TRUE,
-                                 add_ytextposition=FALSE
+                                 add_ytextposition=FALSE,
+                                 suppress_x_var_newline=FALSE
                                 #wide=FALSE #' @param wide If TRUE, pivot_wider using the fy_var and arrange for table output
                                 ){
 
@@ -408,11 +410,18 @@ format_data_for_plot <- function(data, fy_var,
        !fy_var %in% c(color_var,facet_var,second_var)){
       if(length(subset(labels_and_colors,column==fy_var)$variable)==0)
         stop(paste("label_and_colors is missing values for x_var:",fy_var))
-      shown_data[,colnames(shown_data)==fy_var]<-
-        ordered(shown_data[,colnames(shown_data)==fy_var],
-                levels=subset(labels_and_colors,column==fy_var)$variable,
-                labels=c(subset(labels_and_colors,column==fy_var)$Label)
-        )
+      if(suppress_x_var_newline)
+        shown_data[,colnames(shown_data)==fy_var]<-
+          ordered(shown_data[,colnames(shown_data)==fy_var],
+                  levels=subset(labels_and_colors,column==fy_var)$variable,
+                  labels=c(gsub("\n"," ",subset(labels_and_colors,column==fy_var)$Label))
+          )
+      else
+        shown_data[,colnames(shown_data)==fy_var]<-
+          ordered(shown_data[,colnames(shown_data)==fy_var],
+                  levels=subset(labels_and_colors,column==fy_var)$variable,
+                  labels=c(subset(labels_and_colors,column==fy_var)$Label)
+          )
     }
     if(drop_missing_labels==TRUE)
       shown_data<-droplevels(shown_data)

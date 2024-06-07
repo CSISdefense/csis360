@@ -1329,7 +1329,8 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
   #             df$EUentryYear>compare_year]<- "Future EU"
   # df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("GBR")]<-"Post-Brexit UK"
   df$EUtrade[is.na(df$EUtrade) & (df$AcquisitionCooperation=="NATO" | df[,ISOalpha3_col] %in% c("GBR","CAN"))]<-"Other NATO"
-  df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN","TWN"
+  # df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN","TWN"
+  df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("KOR")]<-"South Korea" #"JPN","TWN"
   df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("RUS","CHN")]<-"PRC and Russia"
   df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("UKR")]<-"Ukraine"
   df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("USA")]<-"United States"
@@ -1354,7 +1355,8 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
                  (is.na(df$EUexitYear) | df$EUexitYear>compare_year)&
                  (df$AcquisitionCooperation!="NATO" & !is.na(df$AcquisitionCooperation))
   ]<- "EU Outside NATO"
-  df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN","TWN"
+  # df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN","TWN"
+  df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("KOR")]<-"South Korea" #"JPN","TWN"
   # df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("RUS","CHN")]<-"PRC and Russia"
   df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("UKR")]<-"Ukraine"
   df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("USA")]<-"United States"
