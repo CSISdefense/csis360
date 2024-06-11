@@ -19,7 +19,8 @@ format_data_for_plot(
   labels_and_colors = NULL,
   group = TRUE,
   drop_missing_labels = TRUE,
-  add_ytextposition = FALSE
+  add_ytextposition = FALSE,
+  suppress_x_var_newline = FALSE
 )
 }
 \arguments{
@@ -52,6 +53,8 @@ format_data_for_plot(
 \item{drop_missing_labels}{If TRUE, drop levels to avoid residual levels from labels_and_colors.}
 
 \item{add_ytextposition}{If TRUE, add a ytextposition numerical position to aid in adding text to a graph}
+
+\item{suppress_x_var_newline}{For categorical x-axis variables, remove any new line from the character string}
 }
 \value{
 Returns a tibble of formatted data
