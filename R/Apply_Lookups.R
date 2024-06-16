@@ -1518,9 +1518,10 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
     df %<>% dplyr::select(-NATOyear,-EUentryYear,-EUexitYear,	-MajorNonNATOyear,-NTIByear	,-SEATOendYear,-RioTreatyEndYear,-FiveEyes,-OtherTreatyName	,-OtherTreatyStartYear,-OtherTreatyEndYear)
 
   if(!is.null(prefix)){
-    renamelist<-c("NATOyear","MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear","SEATOendYear","RioTreatyEndYear",
-                  "FiveEyes","OtherTreatyName","OtherTreatyStartYear","OtherTreatyEndYear",
-                  "RDPyear","SOSAyear","EUentrYear","EUexitYear","RDPsosa","EUtrade","NATOtrade","NTIBtrade")
+    renamelist<-c("NATOyear","MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear","SEATOendYear",
+                  "RioTreatyStartYear","RioTreatyEndYear","FiveEyes",
+                  "OtherTreatyName","OtherTreatyStartYear","OtherTreatyEndYear",
+                  "RDPyear","SOSAyear","EUentryYear","EUexitYear","RDPsosa","EUtrade","NATOtrade","NTIBtrade")
     colnames(df)[colnames(df)%in% renamelist]<-
       paste(prefix,colnames(df)[colnames(df)%in%renamelist],sep="")
     colnames(df)[colnames(df)=="StateRegion"]<-paste(prefix,"StateRegion",sep="")
