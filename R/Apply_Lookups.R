@@ -1279,10 +1279,10 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
 
 
   df$AcquisitionCooperation<-NA
-  df$AcquisitionCooperation[!is.na(df$MajorNonNATOyear)&
-                             df$MajorNonNATOyear<=compare_year&
-                              (is.na(df$MajorNonNATOyear)|
-                                 df$MajorNonNATOyear>compare_year)
+  df$AcquisitionCooperation[!is.na(df$MajorNonNATOentryYear)&
+                             df$MajorNonNATOentryYear<=compare_year&
+                              (is.na(df$MajorNonNATOexitYear)|
+                                 df$MajorNonNATOexitYear>compare_year)
                               ] <- "Major Non-NATO"
 
   if("Buyer" %in% colnames(df)){
@@ -1489,12 +1489,16 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
 
 
   df$MutualAcquisition[df$MutualAcquisition=="Other Treaty Ally" &
-                        !is.na(df$MajorNonNATOyear)&
-                        df$MajorNonNATOyear<=compare_year] <- "Major Non-NATO & Treaty Ally"
+                         !is.na(df$MajorNonNATOentryYear)&
+                         df$MajorNonNATOentryYear<=compare_year&
+                         (is.na(df$MajorNonNATOexitYear)|
+                            df$MajorNonNATOexitYear>compare_year)] <- "Major Non-NATO & Treaty Ally"
 
   df$MutualAcquisition[df$MutualAcquisition=="Rest of World" &
-                        !is.na(df$MajorNonNATOyear)&
-                        df$MajorNonNATOyear<=compare_year] <- "Other Major Non-NATO"
+                         !is.na(df$MajorNonNATOentryYear)&
+                         df$MajorNonNATOentryYear<=compare_year&
+                         (is.na(df$MajorNonNATOexitYear)|
+                            df$MajorNonNATOexitYear>compare_year)] <- "Other Major Non-NATO"
 
 
   df$MutualAcquisition<-factor(df$MutualAcquisition,
@@ -1515,7 +1519,9 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
     ))
 
   if(drop_col==TRUE)
-    df %<>% dplyr::select(-NATOyear,-EUentryYear,-EUexitYear,	-MajorNonNATOyear,-NTIByear	,-SEATOendYear,-RioTreatyEndYear,-FiveEyes,-OtherTreatyName	,-OtherTreatyStartYear,-OtherTreatyEndYear)
+    df %<>% dplyr::select(-NATOyear,-EUentryYear,-EUexitYear,	-MajorNonNATOentryYear,	-MajorNonNATOexitYear,
+                          -NTIByear	,-SEATOendYear,-RioTreatyEndYear,-FiveEyes,
+                          -OtherTreatyName	,-OtherTreatyStartYear,-OtherTreatyEndYear)
 
   if(!is.null(prefix)){
     renamelist<-c("NATOyear","MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear","SEATOendYear","RioTreatyEndYear",
