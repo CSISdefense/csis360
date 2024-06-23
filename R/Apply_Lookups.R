@@ -1228,7 +1228,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
                                 missing_file="missing_DSCA_iso.csv"
     )
     colnames(df)[colnames(df)=="alpha-3"]<-ISOalpha3_col
-    if(skip_name) df %<>% dplyr::select(-name)
+    if(skip_name) df <- df %>% dplyr::select(-name)
     else if(!is.null(prefix)) colnames(df)[colnames(df)=="name"]<-prefix
     else if("CountryName" %in% colnames(df)) stop(paste("Already CountryName in column names"))
     else colnames(df)[colnames(df)=="name"]<-"CountryName"
@@ -1519,7 +1519,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
     ))
 
   if(drop_col==TRUE)
-    df %<>% dplyr::select(-NATOyear,-EUentryYear,-EUexitYear,	-MajorNonNATOentryYear,	-MajorNonNATOexitYear,
+    df <- df %>% dplyr::select(-NATOyear,-EUentryYear,-EUexitYear,	-MajorNonNATOentryYear,	-MajorNonNATOexitYear,
                           -NTIByear	,-SEATOendYear,-RioTreatyEndYear,-FiveEyes,
                           -OtherTreatyName	,-OtherTreatyStartYear,-OtherTreatyEndYear)
 
@@ -2830,7 +2830,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df<-subset(df,select=-c(PlaceIsForeign))
 
     if(call_add_alliance)
-      df %<>% add_alliance(ISOalpha3_col= "PlaceISOalpha3", drop_col = TRUE,prefix="Place")
+      df <- df %>% add_alliance(ISOalpha3_col= "PlaceISOalpha3", drop_col = TRUE,prefix="Place")
     else{
       df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                    path=path,directory="location/",
@@ -2847,7 +2847,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df<-subset(df,select=-c(OriginIsForeign))
     if(call_add_alliance){
       df$OriginISOalpha3[df$OriginISOalpha3=="~NJ"]<-NA
-      df %<>% add_alliance(ISOalpha3_col= "OriginISOalpha3", drop_col = TRUE,prefix="Origin")
+      df <- df %>% add_alliance(ISOalpha3_col= "OriginISOalpha3", drop_col = TRUE,prefix="Origin")
     }
     else{
       df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
@@ -2881,7 +2881,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
     df$VendorISOalpha3[df$VendorISOalpha3=="~NJ"]<-NA
     if(call_add_alliance){
-      df %<>% add_alliance(ISOalpha3_col= "VendorISOalpha3", drop_col = TRUE,prefix="Vendor")
+      df <- df %>% add_alliance(ISOalpha3_col= "VendorISOalpha3", drop_col = TRUE,prefix="Vendor")
     } else {
       df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                    path=path,directory="location/",
@@ -2904,7 +2904,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     if("VendorAddressIsForeign" %in% colnames(df))
       df<-subset(df,select=-c(VendorIsForeign))
     if(call_add_alliance){
-      full_data %<>% add_alliance(ISOalpha3_col= "VendorAddressISOalpha3", drop_col = TRUE,prefix="VendorAddress")
+      df <- df %>% add_alliance(ISOalpha3_col= "VendorAddressISOalpha3", drop_col = TRUE,prefix="VendorAddress")
     } else {
       df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                    path=path,directory="location/",
