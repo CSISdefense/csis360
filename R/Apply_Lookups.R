@@ -1251,6 +1251,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
 
   rdp_qa<-as.data.frame(readr::read_csv(file.path(
     path,"location/","RDP_QA.csv")))
+  rdp_qa$Agreement_Start<-as.Date(rdp_qa$Agreement_Start,format="%m/%d/%Y")
   if(any(is.na(rdp_qa$Agreement_Start)))
     stop("NA Agreement_Start after import in location/RDO_QA.csv")
   rdp_qa<-rdp_qa %>% filter(IsRDP==TRUE) %>%
@@ -1267,6 +1268,8 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
   sosa<-as.data.frame(readr::read_csv(file.path(
     path,"location/","SOSA.csv")))
   sosa$Agreement_Start<-as.Date(sosa$Agreement_Start,format="%m/%d/%Y")
+  if(any(is.na(sosa$Agreement_Start)))
+    stop("NA Agreement_Start after import in location/SOSA.csv")
   sosa<-sosa %>%
     group_by(ISOalpha3) %>%
     dplyr::summarise(SOSAyear=min(lubridate::year(Agreement_Start)))
