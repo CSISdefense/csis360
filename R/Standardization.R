@@ -119,7 +119,7 @@ standardize_variable_names<- function(data,
 #'
 #' @return A tibble of formatted data
 #'
-#' @details
+#' @details Transforms data by summarizing on key display variable
 #'
 #'
 #'
@@ -153,7 +153,10 @@ group_data_for_plot <-function(
     if(grepl(" ", breakout[3])) breakout[3] <- paste0("`", breakout[3], "`")
     if(!breakout[3] %in% colnames(data)) stop(paste("breakout[3]: ",breakout[3],"is missing from data."))
   }
-
+  if(length(breakout) == 4){
+    if(grepl(" ", breakout[4])) breakout[4] <- paste0("`", breakout[4], "`")
+    if(!breakout[4] %in% colnames(data)) stop(paste("breakout[4]: ",breakout[4],"is missing from data."))
+  }
   data<-data %>% filter(!is.na(!! as.name(y_var)))
 
   # aggregate to the level of [fiscal year x breakout]
@@ -209,10 +212,13 @@ group_data_for_plot <-function(
 #' @param   color_var Coloration variable, as string
 #' @param   facet_var Facet variable, as string
 #' @param   second_var Facet variable, as string
+#' @param alpha_var Variable for setting the transparency of bars or line type of lines, coded to be used with year to ate.
+#' @param invert_bool Used to create population pyramid or import/export charts, specifies when to show data in the negative space of the y-axis.
 #' @param   labels_and_colors A csis360 lookup data.frame with factor information
 #' @param   group If TRUE aggregate
 #' @param   drop_missing_labels If TRUE, drop levels to avoid residual levels from labels_and_colors.
 #' @param add_ytextposition If TRUE, add a ytextposition numerical position to aid in adding text to a graph
+#' @param suppress_x_var_newline For categorical x-axis variables, remove any new line from the character string
 #'
 #' @return Returns a tibble of formatted data
 #'
@@ -225,19 +231,24 @@ format_data_for_plot <- function(data, fy_var,
                                  color_var="None",
                                  facet_var="None",
                                  second_var=NULL,
+                                 alpha_var=NULL,
+                                 invert_bool=NULL,
                                  labels_and_colors=NULL,
                                  group=TRUE,
                                  drop_missing_labels=TRUE,
-                                 add_ytextposition=FALSE
+                                 add_ytextposition=FALSE,
+                                 suppress_x_var_newline=FALSE
                                 #wide=FALSE #' @param wide If TRUE, pivot_wider using the fy_var and arrange for table output
                                 ){
 
   shown_data <- data
   if(all(!is.null(second_var),facet_var==second_var | second_var=="None")) second_var<-NULL
+  if(all(!is.null(alpha_var),facet_var==alpha_var | alpha_var=="None")) alpha_var<-NULL
 
-  breakout <- c(color_var, facet_var, second_var)
+  breakout <- c(color_var, facet_var, second_var, alpha_var, invert_bool)
   breakout <- breakout[breakout != "None"]
   breakout <- breakout[!is.null(breakout)]
+  breakout <- breakout[!duplicated(breakout)]
 
   if(group){
     shown_data<-group_data_for_plot(
@@ -247,7 +258,6 @@ format_data_for_plot <- function(data, fy_var,
       breakout
     )
   }
-
 
   shown_data<-as.data.frame(shown_data)
   if(!is.na(start_fy) & !is.na(end_fy)){
@@ -281,7 +291,7 @@ format_data_for_plot <- function(data, fy_var,
     if (color_var != "None"){
 
       # share_vars indicates which columns are being used to calculate the shares.
-      share_list <- c(facet_var,second_var)
+      share_list <- c(facet_var,second_var,invert_bool)
       if(color_var!="None") #For histograms or the like, fy_var (really x_var) should not be included in grouping
         share_list <- c(share_list,fy_var)
 
@@ -348,6 +358,13 @@ format_data_for_plot <- function(data, fy_var,
       names(shown_data)[which(names(shown_data) == "total")] <- y_var
     }
   }
+  #Invert the portion that will appear below x-axis zero (need to be post share)
+  if(!is.null(invert_bool)){
+    if(any(shown_data[,y_var]<0))
+      warning("Negative y_var, which is a complicationwhen setting an invert_bool")
+    shown_data[shown_data[,invert_bool]==TRUE,y_var]<-
+      shown_data[shown_data[,invert_bool]==TRUE,y_var]*-1
+  }
 
   shown_data<-as.data.frame(shown_data)
   if(!is.null(labels_and_colors)){
@@ -393,11 +410,18 @@ format_data_for_plot <- function(data, fy_var,
        !fy_var %in% c(color_var,facet_var,second_var)){
       if(length(subset(labels_and_colors,column==fy_var)$variable)==0)
         stop(paste("label_and_colors is missing values for x_var:",fy_var))
-      shown_data[,colnames(shown_data)==fy_var]<-
-        ordered(shown_data[,colnames(shown_data)==fy_var],
-                levels=subset(labels_and_colors,column==fy_var)$variable,
-                labels=c(subset(labels_and_colors,column==fy_var)$Label)
-        )
+      if(suppress_x_var_newline)
+        shown_data[,colnames(shown_data)==fy_var]<-
+          ordered(shown_data[,colnames(shown_data)==fy_var],
+                  levels=subset(labels_and_colors,column==fy_var)$variable,
+                  labels=c(gsub("\n"," ",subset(labels_and_colors,column==fy_var)$Label))
+          )
+      else
+        shown_data[,colnames(shown_data)==fy_var]<-
+          ordered(shown_data[,colnames(shown_data)==fy_var],
+                  levels=subset(labels_and_colors,column==fy_var)$variable,
+                  labels=c(subset(labels_and_colors,column==fy_var)$Label)
+          )
     }
     if(drop_missing_labels==TRUE)
       shown_data<-droplevels(shown_data)
@@ -593,7 +617,7 @@ transform_contract<-function(
       levels(contract)<- list("Partial or Complete Termination"=c("Partial or Complete Termination","Terminated","1",1),
                                    "Unterminated"=c("Unterminated","0",0))
 
-    contract$b_Term<-ifelse(contract$Term %in% c("Partial or Complete Termination","Terminated",1),1,NA)
+    contract$b_Term<-if_else(contract$Term %in% c("Partial or Complete Termination","Terminated",1),1,NA)
     contract$b_Term[contract$Term %in% c("Unterminated",0)]<-0
     #Create a jittered version of Term for display purposes
     #Unlike geom_jitter, this caps values at 0 and 1
@@ -606,7 +630,7 @@ transform_contract<-function(
   #Ceiling Breach
   #b_CBre
   if("CBre" %in% colnames(contract)){
-    contract$b_CBre<-ifelse(contract$CBre=="Ceiling Breach",1,NA)
+    contract$b_CBre<-if_else(contract$CBre=="Ceiling Breach",1,NA)
     contract$b_CBre[contract$CBre=="None"]<-0
     #Create a jittered version of CBre for display purposes
     #Unlike geom_jitter, this caps values at 0 and 1
@@ -831,7 +855,7 @@ transform_contract<-function(
   if("UnmodifiedDays" %in% colnames(contract)){
 
     contract$UnmodifiedDays[contract$UnmodifiedDays<0]<-NA
-    contract$capped_UnmodifiedDays <- ifelse(contract$UnmodifiedDays > 3650, 3650, contract$UnmodifiedDays)
+    contract$capped_UnmodifiedDays <- if_else(contract$UnmodifiedDays > 3650, 3650, contract$UnmodifiedDays)
 
     contract$cln_Days<-arm::rescale(na_non_positive_log(contract$capped_UnmodifiedDays))
 
@@ -983,11 +1007,11 @@ transform_contract<-function(
 
     #Urgency
     contract$b_Urg<-NA
-    contract$b_Urg<-ifelse(contract$Urg=="Urgency Except.",1,NA)
+    contract$b_Urg<-if_else(contract$Urg=="Urgency Except.",1,NA)
     contract$b_Urg[contract$Urg=="Not Urgency"]<-0
 
     contract$NoComp<-NA
-    contract$NoComp<-ifelse(contract$Urg=="Urgency Except.","Urgency",NA)
+    contract$NoComp<-if_else(contract$Urg=="Urgency Except.","Urgency",NA)
     contract$NoComp[contract$Urg=="Not Urgency"]<-"Other No"
     contract$NoComp[contract$b_Comp==1]<-"Any Comp."
     contract$NoComp<-factor(contract$NoComp,
@@ -1644,8 +1668,6 @@ update_sample_col_CSIScontractID<-function(smp,
 #' unique identifiers. This is often particularly valuable before merging two
 #' sets of tables, though it has a variety of other uses.
 #'
-#' @examples
-#'
 #' @export
 check_key<-function(x,key){
   if(!all(key %in% colnames(x))){
@@ -1676,8 +1698,6 @@ check_key<-function(x,key){
 #' a trivially easy way of just checking for duplicates in primary keys rather
 #' than all rows, this function covers both.
 #'
-#' @examples
-#'
 #' @export
 all_duplicate<-function(x,key=NULL){
   if(is.null(key)) key<-colnames(x)
@@ -1698,8 +1718,6 @@ all_duplicate<-function(x,key=NULL){
 #'
 #' @details A derived column is one that could be consolidated only to the primary keys
 #' and the derived column
-#'
-#' @examples
 #'
 #' @export
 
@@ -1733,8 +1751,6 @@ check_derived<-function(x,key,derived_col,na.rm=FALSE){
 #' and the derived column (with any nas removed). If that criteria is met, this function
 #' then fills in the nas with those derived alues.
 #'
-#' @examples
-#'
 #' @export
 
 fill_derived<-function(x,key,derived_col){
@@ -1759,15 +1775,730 @@ fill_derived<-function(x,key,derived_col){
 #'
 #' @details Replacement for group_by_ now that it has been depricated.
 #'
-#' @examples
-#'
 #' @export
 group_by_list<-function(x,key){
   if(all(key=="") | length(key)==0) return(group_by(x))
-  x<-x %>% group_by(!!as.name(key[1]),add=FALSE)
+  x<-x %>% group_by(!!as.name(key[1]),.add=FALSE)
   for(i in 2:length(key))
-    x<-x %>% group_by(!!as.name(key[i]),add=TRUE)
+    x<-x %>% group_by(!!as.name(key[i]),.add=TRUE)
   x
+}
+
+
+
+# log_plot2 <- function(plot, df,filename,xlsx,sheet,path="..\\output",
+#                      second_path=NA,
+#                      width=6.5,height=3.5,output_doc_svg=TRUE,output_doc_png=FALSE,
+#                      suppress_doc_svg_text=NA,
+#                      startRow=1,startCol=NA,format=TRUE,
+#                      x_var=NA,y_var=NA,var_list=NA,
+#                      csv_then_year=TRUE,
+#                      excel_then_year=TRUE,excel_y_var=FALSE,excel_share=FALSE,
+#                      excel_formulas=FALSE,
+#                      hist_year=2020, cur_year=2023,
+#                      group_unlabeled_facets=FALSE
+#                      ) {
+#
+#
+#   if(format){
+#     #This may end up breaking with pivoted graphs. But lets cross that bridge when we come to it.
+#     if(is.na(y_var)) y_var<-plot$plot_env$y_var
+#     if(is.na(x_var)) x_var<-plot$plot_env$x_var
+#     if(all(is.na(var_list))){
+#       var_list<-colnames(plot$data)
+#       var_list<-var_list[!var_list %in% y_var & !var_list %in% x_var &
+#                            !var_list %in% plot$plot_env$x_var & !var_list %in% "YTD"]
+#     }
+#     if(is.na(startCol)) startCol<-10+length(var_list)
+#     #Swap in Fiscal_Year for dFYear for ease of table readability
+#     if("dFYear"==x_var & "Fiscal_Year" %in% colnames(df))
+#       x_var<-"Fiscal_Year"
+#     if("dtDelivYear"==x_var & "Delivery.year" %in% colnames(df))
+#       x_var<-"Delivery.year"
+#     if(excel_then_year | csv_then_year){
+#       #Add other constant dollar here variables
+#       if(y_var %in% c("Then_Year_Dollars","Action_Obligation_Then_Year") &
+#          excel_y_var==FALSE)
+#         then_year_y_var<-y_var
+#       else if(y_var %in% c("Action_Obligation_OMB24_GDP22"))
+#         then_year_y_var<-"Action_Obligation_Then_Year"
+#       else if(y_var %in% c("Amount_OMB24_GDP22"))
+#         then_year_y_var<-"Amount_Then_Year"
+#       else if(y_var %in% c("Action_Obligation_OMB25_GDP23"))
+#         then_year_y_var<-"Action_Obligation_Then_Year"
+#       else if(y_var %in% c("Amount_OMB25_GDP23"))
+#         then_year_y_var<-"Amount_Then_Year"
+#       else if(y_var %in% c("delivery_BEA22"))
+#         then_year_y_var<-"delivery_Then_Year"
+#       else if(y_var %in% c("DefenseObligated_OMB25_GDP23"))
+#         then_year_y_var<-"DefenseObligated_Then_Year"
+#       else stop("Unrecognized y_var")
+#       if(any(is.Date(df[,x_var]) & !is.na(df[,x_var]) & df[,x_var]==""))
+#         stop("Empty string values in x_var cause a pivot_wider error.")
+#       then_year_df<-group_data_for_plot(df,x_var=x_var, y_var=then_year_y_var, breakout=var_list) %>%
+#         arrange(!!as.name(x_var))%>%
+#         pivot_wider(names_from=!!as.name(x_var),
+#                     values_from=!!as.name(then_year_y_var)) %>%
+#         arrange(.by_group = TRUE)
+#     }
+#     if (excel_y_var)
+#       y_var_df<-group_data_for_plot(df,x_var=x_var, y_var=y_var, breakout=var_list) %>%
+#         arrange(!!as.name(x_var))%>%
+#         pivot_wider(names_from=!!as.name(x_var),
+#                     values_from=!!as.name(y_var)) %>%
+#         arrange(.by_group = TRUE)
+#     # I probably should switch to format_data_for_plot to do this
+#     # if(excel_shared)
+#     #   shared_df<--group_data_for_plot(df,x_var=x_var, y_var=y_var, breakout=var_list) %>%
+#     #     arrange(!!as.name(x_var))%>%
+#     #     pivot_wider(names_from=!!as.name(x_var),
+#     #                 values_from=!!as.name(y_var)) %>%
+#     #     arrange(.by_group = TRUE)
+#
+#   }
+#   #Now that formatting is done, we can efficiently call for a second log path
+#
+#   #To allow for efficient output to two paths, all of the post-formatting output
+#   #is put together in one function.
+#   output_log_plot<-function(plot, then_year_df,y_var_df,
+#                             filename,xlsx,sheet,path,
+#                             width,height,output_doc_svg,output_doc_png,suppress_doc_svg_text,
+#                             startRow,startCol,
+#                             x_var,y_var,var_list,
+#                             csv_then_year,
+#                             excel_then_year,excel_y_var,excel_share,
+#                             excel_formulas,
+#                             hist_year, cur_year,
+#                             group_unlabeled_facets){
+#     if (output_doc_svg==TRUE)
+#       ggsave600dpi(plot+ifelse(suppress_doc_svg_text | is.na(suppress_doc_svg_text), labs(caption=NULL,title=NULL),labs()),
+#                    file=file.path(path,paste(filename,".svg",sep="")),size=12,caption_fraction=8/12,lineheight=1, height =height, width=width)
+#     if (output_doc_png==TRUE)
+#       ggsave600dpi(plot+ifelse(suppress_doc_svg_text & !is.na(suppress_doc_svg_text), labs(caption=NULL,title=NULL),labs()),
+#                    file=file.path(path,paste(filename,".png",sep="")),size=12,caption_fraction=8/12,lineheight=1, height =height+0.25, width=width)
+#
+#     if(csv_then_year){
+#       if(!dir.exists(file.path(path,"then_year_csv")))
+#         dir.create(file.path(path,"then_year_csv"))
+#       write.csv(then_year_df,file=file.path(path,"then_year_csv",paste(filename,".csv",sep="")),row.names = FALSE, na = "")
+#     }
+#     if(excel_then_year | excel_y_var | excel_share){
+#       if(file.exists(file.path(path,xlsx))){
+#         wb <- openxlsx::loadWorkbook(file.path(path,xlsx))
+#       }
+#       else{
+#         wb<-wb_workbook()
+#       }
+#       if(!sheet %in% wb_get_sheet_names(wb))
+#         wb$add_worksheet(sheet)
+#       numstyle<-openxlsx::createStyle(numFmt = "0.00,,,\"B\"")
+#       pstyle<-openxlsx::createStyle(numFmt = "PERCENTAGE")
+#       if(excel_then_year){
+#         writeData(wb, then_year_df, sheet = sheet, startRow = startRow, startCol = startCol)
+#         if(length(var_list)<startCol)
+#           for (c in 1:length(var_list))
+#             openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(c+startCol-1),(startRow):(startRow+nrow(then_year_df)+1))),
+#                                    startRow=startRow,startCol=c)
+#         gt<-data.frame(Total=c("Grand Total",rep("",length(var_list)-1),
+#
+#                                paste0("Sum(",openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list))),
+#                                       startRow+1,":",
+#                                       openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list))),
+#                                       startRow+nrow(then_year_df),")")))
+#         gt$rn<-rownames(gt)
+#         gt<-as.data.frame(pivot_wider(gt,values_from=Total,names_from=rn))
+#         for (i in colnames(gt)[(length(var_list)+1):ncol(gt)]) class(gt[,i])<-c(class(gt[,i]),"formula")
+#         writeData(wb,sheet=sheet,
+#                   gt,
+#                   startRow=startRow+nrow(then_year_df)+1,
+#                   startCol=startCol,
+#                   colNames=FALSE
+#         )
+#
+#         openxlsx::addStyle(wb, sheet, numstyle,gridExpand = T,
+#                  rows=(startRow+1):(startRow+nrow(then_year_df)+1),
+#                  cols=(startCol+length(var_list)):(startCol+ncol(then_year_df)+2-length(var_list)))
+#         startRow<-startRow+nrow(then_year_df)+4 #Header row, total row, check_sum_row, blank row
+#       }
+#       if(excel_y_var){
+#         writeData(wb, y_var_df, sheet = sheet, startRow = startRow, startCol = startCol)
+#         if(length(var_list)<startCol)
+#           for (c in 1:length(var_list))
+#             openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(c+startCol-1),(startRow):(startRow+nrow(y_var_df)+1))),
+#                                    startRow=startRow,startCol=c)
+#         if(excel_formulas){
+#           if(!hist_year %in% colnames(y_var_df))
+#             stop("hist_year not in provided data")
+#           #Historic year
+#           hist_col<-which(colnames(y_var_df)==hist_year)+startCol-1
+#           openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(hist_col),(startRow):(startRow+nrow(y_var_df)+1))),
+#                        startRow=startRow,startCol=length(var_list)+1)
+#           cur_col<-which(colnames(y_var_df)==cur_year)+startCol-1
+#           #Year before current
+#           openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(cur_col-1),(startRow):(startRow+nrow(y_var_df)+1))),
+#                        startRow=startRow,startCol=length(var_list)+2)
+#           #Current year
+#           openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(cur_col),(startRow):(startRow+nrow(y_var_df)+1))),
+#                        startRow=startRow,startCol=length(var_list)+3)
+#           #Incomplete year
+#           openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(cur_col+1),(startRow):(startRow+nrow(y_var_df)+1))),
+#                        startRow=startRow,startCol=length(var_list)+4)
+#
+#
+#           openxlsx::addStyle(wb, sheet, numstyle,gridExpand = T,
+#                    rows=(startRow+1):(startRow+nrow(y_var_df)+1),
+#                    cols=(length(var_list)+1):(length(var_list)+4))
+#
+#
+#           #Year before current to current comparison
+#           openxlsx::writeFormula(wb,sheet,c(#Heading
+#             paste0(openxlsx::int2col(cur_col-1),startRow,"&\"-\"&",openxlsx::int2col(cur_col),startRow),
+#             #Formulas
+#             paste0(openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+#                    openxlsx::int2col(cur_col-1),(startRow+1):(startRow+nrow(y_var_df)+1),"-1")),
+#             startRow=startRow,startCol=length(var_list)+5)
+#
+#           #Historic year to current comparison
+#           openxlsx::writeFormula(wb,sheet,c(#Heading
+#             paste0(openxlsx::int2col(hist_col),startRow,"&\"-\"&",openxlsx::int2col(cur_col),startRow),
+#             #Formulas
+#             paste0(openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+#                    openxlsx::int2col(hist_col),(startRow+1):(startRow+nrow(y_var_df)+1),"-1")),
+#             startRow=startRow,startCol=length(var_list)+6)
+#
+#           #YTD over current comparison
+#           openxlsx::writeFormula(wb,sheet,c(#Heading
+#             paste0(openxlsx::int2col(cur_col+1),startRow,"&\"/\"&",openxlsx::int2col(cur_col),startRow),
+#             #Formulas
+#             paste0(openxlsx::int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+#                    openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1))),
+#             startRow=startRow,startCol=length(var_list)+7)
+#
+#           #Current year share
+#           openxlsx::writeFormula(wb,sheet,c(#Heading
+#             paste0("\"Share \"&",openxlsx::int2col(cur_col),startRow),
+#             #Formulas
+#             paste0(openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)),"/",
+#                    "Sum(",openxlsx::int2col(cur_col),"$",(startRow),":",
+#                    openxlsx::int2col(cur_col),"$",(startRow+nrow(y_var_df)),")"),
+#             paste0("Sum(",openxlsx::int2col(length(var_list)+8),"$",(startRow),":",
+#                    openxlsx::int2col(length(var_list)+8),"$",(startRow+nrow(y_var_df)),")")),
+#             startRow=startRow,startCol=length(var_list)+8)
+#
+#           #YTD share
+#
+#           openxlsx::writeFormula(wb,sheet,c(#Heading
+#             paste0("\"Share \"&",openxlsx::int2col(cur_col+1),startRow),
+#             #Formulas
+#             paste0(openxlsx::int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)),"/",
+#                    "Sum(",openxlsx::int2col(cur_col+1),(startRow),":",
+#                    openxlsx::int2col(cur_col+1),"$",(startRow+nrow(y_var_df)),")"),
+#             paste0("Sum(",openxlsx::int2col(length(var_list)+9),"$",(startRow),":",
+#                    openxlsx::int2col(length(var_list)+9),"$",(startRow+nrow(y_var_df)),")")),
+#             startRow=startRow,startCol=length(var_list)+9)
+#
+#           openxlsx::addStyle(wb, sheet, pstyle,gridExpand = T,
+#                    rows=(startRow+1):(startRow+nrow(y_var_df)+1),
+#                    cols=(length(var_list)+5):(length(var_list)+9))
+#
+#           gt<-data.frame(Total=c("Grand Total",rep("",length(var_list)-1),
+#
+#                                  paste0("Sum(",openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
+#                                         startRow+1,":",
+#                                         openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list))),
+#                                         startRow+nrow(y_var_df),")")))
+#           gt$rn<-rownames(gt)
+#           gt<-as.data.frame(pivot_wider(gt,values_from=Total,names_from=rn))
+#           for (i in colnames(gt)[(length(var_list)+1):ncol(gt)]) class(gt[,i])<-c(class(gt[,i]),"formula")
+#           writeData(wb,sheet=sheet,
+#                     gt,
+#                     startRow=startRow+nrow(y_var_df)+1,
+#                     startCol=startCol,
+#                     colNames=FALSE
+#           )
+#         }
+#
+#
+#
+#         openxlsx::addStyle(wb, sheet, numstyle,gridExpand = T,
+#                  rows=(startRow+1):(startRow+nrow(y_var_df)+1),
+#                  cols=(startCol+length(var_list)):(startCol+ncol(y_var_df)+2-length(var_list)))
+#
+#
+#         startRow<-startRow+nrow(y_var_df)+4 #Header row, total row, check_sum_row, blank row
+#       }
+#       openxlsx::freezePane(wb,sheet,firstActiveRow = 2,firstActiveCol = 1+length(var_list))
+#
+#       openxlsx::saveWorkbook(wb,file=(file.path(path,xlsx)),overwrite = TRUE)
+#       rm(wb)
+#     }
+#   }
+#   output_log_plot(plot=plot,  then_year_df,y_var_df,filename=filename,
+#            xlsx=xlsx,sheet=sheet,path=path,
+#            width=width,height=height,
+#            output_doc_svg=output_doc_svg,output_doc_png=output_doc_png,
+#            suppress_doc_svg_text=suppress_doc_svg_text,
+#            startRow=startRow,startCol=startCol,
+#            x_var=x_var,y_var=y_var,var_list=var_list,
+#            csv_then_year=csv_then_year,
+#            excel_then_year=excel_then_year,
+#            excel_y_var=excel_y_var,excel_share=excel_share,
+#            excel_formulas=excel_formulas,
+#            hist_year=hist_year, cur_year=cur_year,
+#            group_unlabeled_facets=group_unlabeled_facets
+#   )
+#   if (!is.na(second_path))
+#     output_log_plot(plot=plot,  then_year_df,y_var_df,filename=filename,
+#              xlsx=xlsx,sheet=sheet,path=second_path,
+#              width=width,height=height,
+#              output_doc_svg=output_doc_svg,output_doc_png=output_doc_png,
+#              suppress_doc_svg_text=suppress_doc_svg_text,
+#              startRow=startRow,startCol=startCol,
+#              x_var=x_var,y_var=y_var,var_list=var_list,
+#              csv_then_year=csv_then_year,
+#              excel_then_year=excel_then_year,
+#              excel_y_var=excel_y_var,excel_share=excel_share,
+#              excel_formulas=excel_formulas,
+#              hist_year=hist_year, cur_year=cur_year,
+#              group_unlabeled_facets=group_unlabeled_facets
+#     )
+# }
+
+
+#' Save a copy of the plot, a current dollars csv, and an excel copy
+#'
+#' @param df the underlying data
+#' @param xlsx the excel file to output to
+#' @param sheet the sheet to use in excel, typically shorter than the name
+#' @param path="..\\output\\" what directory for the output
+#' @param second_path=NA for saving to a second location to automatically
+#' @param startRow=1 Start row for excel output
+#' @param startCol=NA Start column for excel output
+#'
+#'
+#' @return no value
+#'
+#'
+#'
+#' @export
+export_worksheet <- function(df,xlsx,sheet,path="..\\output",
+                     second_path=NA,
+                     startRow=1,startCol=1
+) {
+
+  wb <- loadWorkbook(file.path(path,xlsx))
+  writeData(wb, sheet = sheet, startRow = startRow, startCol = startCol,
+            df)
+  saveWorkbook(wb,file=file.path(path,xlsx),overwrite = TRUE)
+  if(!is.na(second_path)){
+  wb <- loadWorkbook(file.path(second_path,xlsx))
+  writeData(wb, sheet = sheet, startRow = startRow, startCol = startCol,
+            df)
+  saveWorkbook(wb,file=file.path(second_path,xlsx),overwrite = TRUE)
+  }
+}
+
+
+
+#' Save a csv in two locations
+#'
+#' @param df a ggplot object
+#' @param first_path the primary storage path
+#' @param second_path the second path, typically sharepoint
+#' @param dir  what directory for the output
+#' @param file filename
+#' @param write_csv=TRUE Use write_csv by default, write.csv otherwise
+#' @param ... allow for other parameters
+#'
+#' @return no value
+
+#'
+#' @export
+write_twice<-function(data,first_path,second_path,dir,file,write_csv=TRUE,...){
+  if(write_csv){
+    write_csv(file=file.path(first_path,dir,file),data,...)
+    write_csv(file=file.path(second_path,dir,file),data,...)
+  }
+  else{
+    write.csv(file=file.path(first_path,dir,file),data,...,row.names = FALSE)
+    write.csv(file=file.path(second_path,dir,file),data,...,row.names = FALSE)
+  }
+}
+
+
+#' Save a copy of the plot, a current dollars csv, and an excel copy
+#'
+#' @param plot a ggplot object
+#' @param df the underlying data
+#' @param filename the name for the files, excluding extension
+#' @param xlsx the excel file to output to
+#' @param sheet the sheet to use in excel, typically shorter than the name
+#' @param path="..\\output\\" what directory for the output
+#' @param second_path=NA for saving to a second location to automatically
+#' @param width=6.5 Width for the plot in inches
+#' @param height=3.5 Height for the plot in inches
+#' @param output_doc_svg=TRUE GGsave a svg of the graph for a document?
+#' @param output_doc_png=FALSE GGsave a png of the graph for a document?
+#' @param suppress_doc_svg_text=NA Specify which text to remove for output_doc plots "title" for titles, "caption" for captions, TRUE/"both" for both.
+#' @param startRow=1 Start row for excel output
+#' @param startCol=NA Start column for excel output
+#' @param format=TRUE Format the data rather then listing the df directl
+#' @param x_var=NA Override option for x_var
+#' @param y_var=NA Override option for y_var
+#' @param var_list=NA Override option for what variables to include in addition to x_var and y_var, also sets arrangement order.
+#' @param group_unlabeled_facets Whether to all unlabeled facets (but not colors) into a single line
+#' @param csv_then_year=TRUE Override the graphed y_var to include nominal dollars in csv output
+#' @param excel_then_year=TRUE Override the graphed y_var to include nominal dollars in excel output
+#' @param excel_y_var=FALSE Include the graphed y_var (or over)
+#' @param excel_share=FALSE Include percent shares for the y_var for each of the facets
+#' @param excel_formulas=FALSE Create formulas to accompany the table
+#' @param hist_year=2020 Historical anchor to include in summary stats
+#' @param cur_year=2023 Most recent complete year to include in summary stats
+#' @param YTD=TRUE Include formulas for cur_year+1 if excel_formulas is true.
+#' @param group_unlabeled_facets=FALSE Combine all unlabeled facet categories into a single line in the data.
+#' @param num_format="0.00,,,\"B\"" How to format data values, default "0.00,,,\"B\""
+#'
+#'
+#' @return no value
+#'
+#'
+#'
+#' @export
+log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
+                     second_path=NA,
+                     width=6.5,height=3.5,output_doc_svg=TRUE,output_doc_png=FALSE,
+                     slide_width=13, slide_height=5.5,output_slide_svg=FALSE,slide_size=20, output_slide_png=FALSE,
+                     suppress_doc_svg_text=NA,
+                     startRow=1,startCol=NA,format=TRUE,
+                     x_var=NA,y_var=NA,var_list=NA,
+                     csv_then_year=TRUE,
+                     excel_then_year=TRUE,excel_y_var=FALSE,excel_share=FALSE,
+                     excel_formulas=FALSE,
+                     hist_year=2020, cur_year=2023,include_YTD=TRUE,
+                     group_unlabeled_facets=FALSE,
+                     num_format="0.00,,,\"B\""
+) {
+  if(length(grep("&",sheet))>0){
+    stop("Special characters in sheet names can corrupt excel files.")
+  }
+  if(format){
+    #This may end up breaking with pivoted graphs. But lets cross that bridge when we come to it.
+    if(is.na(y_var)) y_var<-plot$plot_env$y_var
+    if(is.na(x_var)) x_var<-plot$plot_env$x_var
+    if(all(is.na(var_list))){
+      var_list<-colnames(plot$data)
+      var_list<-var_list[!var_list %in% y_var & !var_list %in% x_var &
+                           !var_list %in% plot$plot_env$x_var & !var_list %in% "YTD"]
+    }
+    if(is.na(startCol)) startCol<-11+length(var_list)
+    #Why 11?
+    #(1) 1 indexed
+    #(4) Comparison year, prior year, current year, YTD | blank
+    #(3) Growth since comparison year; growth since last year; YTD/current | blank
+    #(2) Share current year, year last year
+    #(1) Blank column before actual data
+
+    #Swap in Fiscal_Year for dFYear for ease of table readability
+    if("dFYear"==x_var & "Fiscal_Year" %in% colnames(df))
+      x_var<-"Fiscal_Year"
+    if("dtDelivYear"==x_var & "Delivery.year" %in% colnames(df))
+      x_var<-"Delivery.year"
+    if(excel_then_year | csv_then_year){
+      #Add other constant dollar here variables
+      if(y_var %in% c("Then_Year_Dollars","Action_Obligation_Then_Year",
+                      "TIV_delivery_value") &
+         excel_y_var==FALSE)
+        then_year_y_var<-y_var
+
+
+      else if(y_var %in% c("Dollars_OMB25_GDP23"))
+        then_year_y_var<-"Dollars_Then_Year"
+      else if(y_var %in% c("Action_Obligation_OMB24_GDP22"))
+        then_year_y_var<-"Action_Obligation_Then_Year"
+      else if(y_var %in% c("Amount_OMB24_GDP22"))
+        then_year_y_var<-"Amount_Then_Year"
+      else if(y_var %in% c("Action_Obligation_OMB25_GDP23"))
+        then_year_y_var<-"Action_Obligation_Then_Year"
+      else if(y_var %in% c("Amount_OMB25_GDP23"))
+        then_year_y_var<-"Amount_Then_Year"
+      else if(y_var %in% c("delivery_BEA22"))
+        then_year_y_var<-"delivery_Then_Year"
+      else if(y_var %in% c("delivery_BEA23"))
+        then_year_y_var<-"delivery_Then_Year"
+      else if(y_var %in% c("DefenseObligated_OMB25_GDP23"))
+        then_year_y_var<-"DefenseObligated_Then_Year"
+      else if(y_var %in% c("value_2015")){
+        if("value" %in% colnames(df))
+           then_year_y_var<-"value"
+        else if ("VALUE_IN_EUROS" %in% colnames(df))
+          then_year_y_var<-"VALUE_IN_EUROS"
+        else stop("Unrecognized then year counterpart to value_2015")
+      }
+
+
+      else stop("Unrecognized y_var")
+      if(any(lubridate::is.Date(df[,x_var]) & !is.na(df[,x_var]) & as.character(df[,x_var])==""))
+        stop("Empty string values in x_var cause a pivot_wider error.")
+      then_year_df<-group_data_for_plot(df,x_var=x_var, y_var=then_year_y_var, breakout=var_list) %>%
+        arrange(!!as.name(x_var))%>%
+        pivot_wider(names_from=!!as.name(x_var),
+                    values_from=!!as.name(then_year_y_var)) %>%
+        arrange(.by_group = TRUE)
+    }
+    if (excel_y_var)
+      y_var_df<-group_data_for_plot(df,x_var=x_var, y_var=y_var, breakout=var_list) %>%
+        arrange(!!as.name(x_var))%>%
+        pivot_wider(names_from=!!as.name(x_var),
+                    values_from=!!as.name(y_var)) %>%
+        arrange(.by_group = TRUE)
+    # I probably should switch to format_data_for_plot to do this
+    # if(excel_shared)
+    #   shared_df<--group_data_for_plot(df,x_var=x_var, y_var=y_var, breakout=var_list) %>%
+    #     arrange(!!as.name(x_var))%>%
+    #     pivot_wider(names_from=!!as.name(x_var),
+    #                 values_from=!!as.name(y_var)) %>%
+    #     arrange(.by_group = TRUE)
+
+  }
+  #Now that formatting is done, we can efficiently call for a second log path
+
+  #To allow for efficient output to two paths, all of the post-formatting output
+  #is put together in one function.
+  output_log_plot<-function(plot, then_year_df,y_var_df,
+                            filename,xlsx,sheet,path,
+                            width,height,output_doc_svg,output_doc_png,suppress_doc_svg_text,
+                            slide_width, slide_height,output_slide_svg, slide_size, output_slide_png,
+                            startRow,startCol,
+                            x_var,y_var,var_list,
+                            csv_then_year,
+                            excel_then_year,excel_y_var,excel_share,
+                            excel_formulas,
+                            hist_year, cur_year,
+                            group_unlabeled_facets){
+    if (output_doc_svg==TRUE){
+      doc_svg_plot<-plot
+      if(tolower(suppress_doc_svg_text) %in% c("true","both","title")|
+         is.na(suppress_doc_svg_text))
+        doc_svg_plot<-doc_svg_plot+labs(title=NULL)
+      if(tolower(suppress_doc_svg_text) %in% c("true","both","caption")|
+         is.na(suppress_doc_svg_text))
+        doc_svg_plot<-doc_svg_plot+labs(caption=NULL)
+      ggsave600dpi(doc_svg_plot,
+                   file=file.path(path,paste0(filename,".svg")),size=12,caption_fraction=8/12,lineheight=1, height =height, width=width)
+      rm(doc_svg_plot)
+    }
+      if (output_doc_png==TRUE)
+      ggsave600dpi(plot,
+                   file=file.path(path,paste0(filename,".png")),size=12,caption_fraction=8/12,lineheight=1, height =height+0.25, width=width)
+    if (output_slide_svg==TRUE)
+      ggsave600dpi(plot,
+                   file=file.path(path,paste0(filename,"_slide",".svg")),size=slide_size,caption_fraction=8/12,lineheight=1, height =slide_height, width=slide_width)
+    if (output_slide_png==TRUE)
+      ggsave600dpi(plot,
+                   file=file.path(path,paste0(filename,"_slide",".png")),size=slide_size,caption_fraction=8/12,lineheight=1, height =slide_height, width=slide_width)
+
+    if(csv_then_year){
+      if(!dir.exists(file.path(path,"then_year_csv")))
+        dir.create(file.path(path,"then_year_csv"))
+      write.csv(then_year_df,file=file.path(path,"then_year_csv",paste(filename,".csv",sep="")),row.names = FALSE, na = "")
+    }
+    if(excel_then_year | excel_y_var | excel_share){
+      if(file.exists(file.path(path,xlsx))){
+        wb <- openxlsx::loadWorkbook(file.path(path,xlsx))
+      }
+      else{
+        wb<-openxlsx::createWorkbook(file.path(path,xlsx))
+      }
+      if(!sheet %in% names(wb))
+        openxlsx::addWorksheet(wb,sheet)
+      numstyle<-openxlsx::createStyle(numFmt = num_format)
+      pstyle<-openxlsx::createStyle(numFmt = "PERCENTAGE")
+      if(excel_then_year){
+        openxlsx::writeData(wb, then_year_df, sheet = sheet, startRow = startRow, startCol = startCol)
+
+        #If and only if there's a blank left on the left, fill in category name links in the first column.
+        if(length(var_list)<startCol)
+          for (c in 1:length(var_list))
+            openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(c+startCol-1),(startRow):(startRow+nrow(then_year_df)+1))),
+                                   startRow=startRow,startCol=c)
+        gt<-data.frame(Total=c("Grand Total",rep("",length(var_list)-1),
+
+                               paste0("Sum(",openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list)+1)),
+                                      startRow+1,":",
+                                      openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(then_year_df)-length(var_list)+1)),
+                                      startRow+nrow(then_year_df),")")))
+        gt$rn<-rownames(gt)
+        gt<-as.data.frame(pivot_wider(gt,values_from=Total,names_from=rn))
+        for (i in colnames(gt)[(length(var_list)+1):ncol(gt)]) class(gt[,i])<-c(class(gt[,i]),"formula")
+        openxlsx::writeData(wb,sheet=sheet,
+                  gt,
+                  startRow=startRow+nrow(then_year_df)+1,
+                  startCol=startCol,
+                  colNames=FALSE
+        )
+
+        openxlsx::addStyle(wb, sheet, numstyle,gridExpand = T,
+                 rows=(startRow+1):(startRow+nrow(then_year_df)+1),
+                 cols=(startCol+length(var_list)):(startCol+ncol(then_year_df)+2-length(var_list)))
+        startRow<-startRow+nrow(then_year_df)+4 #Header row, total row, check_sum_row, blank row
+      }
+      if(excel_y_var){
+        openxlsx::writeData(wb, y_var_df, sheet = sheet, startRow = startRow, startCol = startCol)
+        if(length(var_list)<startCol)
+          for (c in 1:length(var_list))
+            openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(c+startCol-1),(startRow):(startRow+nrow(y_var_df)+1))),
+                                   startRow=startRow,startCol=c)
+        if(excel_formulas){
+          if(startCol<10+length(var_list))
+            stop(paste("startCol",startCol,
+                       "is too small to have room to add an excel formula. Set excel_formula to false ,or increase StartCol>=",
+                       10+length(var_list)))
+          if(!hist_year %in% colnames(y_var_df))
+            stop("hist_year not in provided data")
+          #Historic year
+          hist_col<-which(colnames(y_var_df)==hist_year)+startCol-1
+          openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(hist_col),(startRow):(startRow+nrow(y_var_df)+1))),
+                       startRow=startRow,startCol=length(var_list)+1)
+          cur_col<-which(colnames(y_var_df)==cur_year)+startCol-1
+          #Year before current
+          openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(cur_col-1),(startRow):(startRow+nrow(y_var_df)+1))),
+                       startRow=startRow,startCol=length(var_list)+2)
+          #Current year
+          openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(cur_col),(startRow):(startRow+nrow(y_var_df)+1))),
+                       startRow=startRow,startCol=length(var_list)+3)
+
+          if(include_YTD){
+          #Incomplete year
+          openxlsx::writeFormula(wb,sheet,c(paste0(openxlsx::int2col(cur_col+1),(startRow):(startRow+nrow(y_var_df)+1))),
+                       startRow=startRow,startCol=length(var_list)+4)
+          }
+
+
+          openxlsx::addStyle(wb, sheet, numstyle,gridExpand = T,
+                   rows=(startRow+1):(startRow+nrow(y_var_df)+1),
+                   cols=(length(var_list)+1):(length(var_list)+4))
+
+
+          #Year before current to current comparison
+          openxlsx::writeFormula(wb,sheet,c(#Heading
+            paste0(openxlsx::int2col(cur_col-1),startRow,"&\"-\"&",openxlsx::int2col(cur_col),startRow),
+            #Formulas
+            paste0(openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+                   openxlsx::int2col(cur_col-1),(startRow+1):(startRow+nrow(y_var_df)+1),"-1")),
+            startRow=startRow,startCol=length(var_list)+5)
+
+          #Historic year to current comparison
+          openxlsx::writeFormula(wb,sheet,c(#Heading
+            paste0(openxlsx::int2col(hist_col),startRow,"&\"-\"&",openxlsx::int2col(cur_col),startRow),
+            #Formulas
+            paste0(openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+                   openxlsx::int2col(hist_col),(startRow+1):(startRow+nrow(y_var_df)+1),"-1")),
+            startRow=startRow,startCol=length(var_list)+6)
+
+          if(include_YTD){
+            #YTD over current comparison
+            openxlsx::writeFormula(wb,sheet,c(#Heading
+              paste0(openxlsx::int2col(cur_col+1),startRow,"&\"/\"&",openxlsx::int2col(cur_col),startRow),
+              #Formulas
+              paste0(openxlsx::int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)+1),"/",
+                     openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)+1))),
+              startRow=startRow,startCol=length(var_list)+7)
+          }
+
+          #Current year share
+          openxlsx::writeFormula(wb,sheet,c(#Heading
+            paste0("\"Share \"&",openxlsx::int2col(cur_col),startRow),
+            #Formulas
+            paste0(openxlsx::int2col(cur_col),(startRow+1):(startRow+nrow(y_var_df)),"/",
+                   "Sum(",openxlsx::int2col(cur_col),"$",(startRow),":",
+                   openxlsx::int2col(cur_col),"$",(startRow+nrow(y_var_df)),")"),
+            paste0("Sum(",openxlsx::int2col(length(var_list)+8),"$",(startRow),":",
+                   openxlsx::int2col(length(var_list)+8),"$",(startRow+nrow(y_var_df)),")")),
+            startRow=startRow,startCol=length(var_list)+8)
+
+          #YTD share
+          if(include_YTD){
+
+            openxlsx::writeFormula(wb,sheet,c(#Heading
+              paste0("\"Share \"&",openxlsx::int2col(cur_col+1),startRow),
+              #Formulas
+              paste0(openxlsx::int2col(cur_col+1),(startRow+1):(startRow+nrow(y_var_df)),"/",
+                     "Sum(",openxlsx::int2col(cur_col+1),(startRow),":",
+                     openxlsx::int2col(cur_col+1),"$",(startRow+nrow(y_var_df)),")"),
+              paste0("Sum(",openxlsx::int2col(length(var_list)+9),"$",(startRow),":",
+                     openxlsx::int2col(length(var_list)+9),"$",(startRow+nrow(y_var_df)),")")),
+              startRow=startRow,startCol=length(var_list)+9)
+          }
+            openxlsx::addStyle(wb, sheet, pstyle,gridExpand = T,
+                               rows=(startRow+1):(startRow+nrow(y_var_df)+1),
+                               cols=(length(var_list)+5):(length(var_list)+9))
+
+          gt<-data.frame(Total=c("Grand Total",rep("",length(var_list)-1),
+
+                                 paste0("Sum(",openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list)+1)),
+                                        startRow+1,":",
+                                        openxlsx::int2col((startCol+length(var_list)):(startCol+ncol(y_var_df)-length(var_list)+1)),
+                                        startRow+nrow(y_var_df),")")))
+          gt$rn<-rownames(gt)
+          gt<-as.data.frame(pivot_wider(gt,values_from=Total,names_from=rn))
+          for (i in colnames(gt)[(length(var_list)+1):ncol(gt)]) class(gt[,i])<-c(class(gt[,i]),"formula")
+          openxlsx::writeData(wb,sheet=sheet,
+                    gt,
+                    startRow=startRow+nrow(y_var_df)+1,
+                    startCol=startCol,
+                    colNames=FALSE
+          )
+        }
+
+
+
+        openxlsx::addStyle(wb, sheet, numstyle,gridExpand = T,
+                 rows=(startRow+1):(startRow+nrow(y_var_df)+1),
+                 cols=(startCol+length(var_list)):(startCol+ncol(y_var_df)+2-length(var_list)))
+
+
+        startRow<-startRow+nrow(y_var_df)+4 #Header row, total row, check_sum_row, blank row
+      }
+      openxlsx::freezePane(wb,sheet,firstActiveRow = 2,firstActiveCol = 1+length(var_list))
+
+      openxlsx::saveWorkbook(wb,file=(file.path(path,xlsx)),overwrite = TRUE)
+      rm(wb)
+    }
+  }
+
+  output_log_plot(plot=plot,  then_year_df,y_var_df,filename=filename,
+           xlsx=xlsx,sheet=sheet,path=path,
+           width=width,height=height,
+           output_doc_svg=output_doc_svg,output_doc_png=output_doc_png,
+           slide_width=slide_width, slide_height=slide_height,slide_size=slide_size,
+           output_slide_svg=output_slide_svg, output_slide_png=output_slide_png,
+           suppress_doc_svg_text=suppress_doc_svg_text,
+           startRow=startRow,startCol=startCol,
+           x_var=x_var,y_var=y_var,var_list=var_list,
+           csv_then_year=csv_then_year,
+           excel_then_year=excel_then_year,
+           excel_y_var=excel_y_var,excel_share=excel_share,
+           excel_formulas=excel_formulas,
+           hist_year=hist_year, cur_year=cur_year,
+           group_unlabeled_facets=group_unlabeled_facets
+  )
+  if (!is.na(second_path))
+    output_log_plot(plot=plot,  then_year_df,y_var_df,filename=filename,
+             xlsx=xlsx,sheet=sheet,path=second_path,
+             width=width,height=height,
+             output_doc_svg=output_doc_svg,output_doc_png=output_doc_png,
+             slide_width=slide_width, slide_height=slide_height,slide_size=slide_size,
+             output_slide_svg=output_slide_svg, output_slide_png=output_slide_png,
+             suppress_doc_svg_text=suppress_doc_svg_text,
+             startRow=startRow,startCol=startCol,
+             x_var=x_var,y_var=y_var,var_list=var_list,
+             csv_then_year=csv_then_year,
+             excel_then_year=excel_then_year,
+             excel_y_var=excel_y_var,excel_share=excel_share,
+             excel_formulas=excel_formulas,
+             hist_year=hist_year, cur_year=cur_year,
+             group_unlabeled_facets=group_unlabeled_facets
+    )
 }
 
 #***********************Get Base Folder
@@ -1775,17 +2506,16 @@ group_by_list<-function(x,key){
 #'
 #' @param folder
 #'
-#' @return "../[folder]" or "[folder]" depending on the relative position.
+#' @return "../../[folder]", "../[folder]", or "[folder]" depending on the relative position.
 #'
 #' @details When a project is open, R files use the base of the repository
 #' as the working directory. RMD files use their own position, typically
 #' script or analysis.
 #'
-#' @examples
-#'
 #' @export
 get_base_folder<-function(folder){
   if(dir.exists(folder)) return(folder)
-  else if(dir.exists(file.path("..",folder))) return(paste("..",folder,sep="/"))
+  else if(dir.exists(file.path("..",folder))) return(file.path("..",folder))
+  else if(dir.exists(file.path("..","..",folder))) return(file.path("..","..",folder))
   else stop("Directory not found, is it present in repository base and are you in a project?")
 }

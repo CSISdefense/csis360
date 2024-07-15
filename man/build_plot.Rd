@@ -19,7 +19,10 @@ build_plot(
   column_key = NULL,
   format = FALSE,
   ytextposition = FALSE,
-  reverse_color = FALSE
+  first_color_on_bottom = TRUE,
+  alpha_var = NULL,
+  invert_bool = NULL,
+  suppress_x_var_newline = TRUE
 )
 }
 \arguments{
@@ -51,7 +54,13 @@ build_plot(
 
 \item{ytextposition}{If TRUE, add ytextposition to allow for geom_text overlays.}
 
-\item{reverse_color}{If TRUE, the}
+\item{alpha_var}{Variable for setting the transparency of bars or line type of lines, coded to be used with year to ate.}
+
+\item{invert_bool}{Used to create population pyramid or import/export charts, specifies when to show data in the negative space of the y-axis.}
+
+\item{suppress_x_var_newline}{For categorical x-axis variables, remove any new line from the character string}
+
+\item{reverse_color}{If TRUE, the order of the color variable is flipped}
 }
 \value{
 A ggplot object including user-specified geom layer

@@ -14,10 +14,13 @@ format_data_for_plot(
   color_var = "None",
   facet_var = "None",
   second_var = NULL,
+  alpha_var = NULL,
+  invert_bool = NULL,
   labels_and_colors = NULL,
   group = TRUE,
   drop_missing_labels = TRUE,
-  add_ytextposition = FALSE
+  add_ytextposition = FALSE,
+  suppress_x_var_newline = FALSE
 )
 }
 \arguments{
@@ -39,6 +42,10 @@ format_data_for_plot(
 
 \item{second_var}{Facet variable, as string}
 
+\item{alpha_var}{Variable for setting the transparency of bars or line type of lines, coded to be used with year to ate.}
+
+\item{invert_bool}{Used to create population pyramid or import/export charts, specifies when to show data in the negative space of the y-axis.}
+
 \item{labels_and_colors}{A csis360 lookup data.frame with factor information}
 
 \item{group}{If TRUE aggregate}
@@ -46,6 +53,8 @@ format_data_for_plot(
 \item{drop_missing_labels}{If TRUE, drop levels to avoid residual levels from labels_and_colors.}
 
 \item{add_ytextposition}{If TRUE, add a ytextposition numerical position to aid in adding text to a graph}
+
+\item{suppress_x_var_newline}{For categorical x-axis variables, remove any new line from the character string}
 }
 \value{
 Returns a tibble of formatted data

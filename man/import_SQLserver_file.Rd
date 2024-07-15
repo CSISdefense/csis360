@@ -13,6 +13,9 @@ import_SQLserver_file(Path, prefix, file.name)
 
 \item{file.name}{file name, sans any prefix.}
 }
+\value{
+Comparison dataframe
+}
 \description{
 Import a comparison file from SQL server.
 }

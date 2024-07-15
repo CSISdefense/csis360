@@ -25,10 +25,12 @@
 #' as an extension instead of .txt or .csv. This checks if the base file is available and if
 #' not it handles opening the zip file instead.
 #'
-#' @examples swap_in_zip(filename="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv)
+#' @examples swap_in_zip(filename="Defense_Contract_SP_ContractSampleCriteriaDetailsCustomer.csv")
 #'
+#' @export
 swap_in_zip<-function(filename,path,directory=""){
-  input<-paste(path,directory,filename,sep="")
+  input<-file.path(path,directory,filename)
+  if (path=="") input<-file.path(path,directory,filename)
   #File.exist seems only to work for local files.
   if(!file.exists(input) & !tolower(substr(input,1,4)) %in% c("http","ftp:") ){
     zip_file<-paste(substring(input,1,nchar(input)-3),"zip",sep="")
@@ -55,14 +57,21 @@ swap_in_zip<-function(filename,path,directory=""){
 #'
 #' @examples get_local_lookup_path()
 #'
+#' @export
 get_local_lookup_path<-function(){
   local_path<-"C:\\Users\\Present\\Documents\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
-  local_path<-"K:\\Users\\Greg\\Repositories\\Lookup-Tables\\"
+  local_path<-"C:\\Users\\grego\\Repos\\Lookup-Tables\\"
+  if(file.exists(local_path))
+    return(local_path)
+    local_path<-"K:\\Users\\Greg\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
   local_path<-"C:\\Users\\gsand\\Repositories\\Lookup-Tables\\"
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-"D:\\Users\\Greg\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
   local_path<-"F:\\Users\\Greg\\Repositories\\Lookup-Tables\\"
@@ -86,6 +95,54 @@ get_local_lookup_path<-function(){
   stop("Could not find local path. Update the list in Apply_Lookups.R")
 }
 
+
+
+#' A kludge, that should someday be replaced by using Microsoft365 repo.
+#'
+#'' @param site Which site. The DIIG sharepoint folder is the default.
+#'
+#' @return The path, if a known one exists. Otherwise it will throw an error.
+#'
+#' @details This is strictly for internal CSIS usage, as the user will need to
+#' separately be syncing sharepoint to their drive. The intent is to update,
+#' particularly via log_path,
+#'
+#' @examples get_local_sharepoint_path()
+#'
+#' @export
+get_local_sharepoint_path<-function(site="DIIG - Documents"){
+  local_path<-file.path("C:\\Users\\Present\\Documents\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("K:\\Users\\Greg\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("C:\\Users\\gsand\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("D:\\Users\\Greg\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("F:\\Users\\Greg\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    local_path<-file.path("F:\\Users\\Greg\\Center Strategic Intl Studies Inc CSIS",site)
+  local_path<-file.path("F:\\Users\\gsanders\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    local_path<-file.path("F:\\Users\\gsanders\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("D:\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("F:\\Users\\gsanders\\Documents\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("C:\\Users\\grego\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  stop("Could not find local path. Update the list in Apply_Lookups.R")
+}
+
 #' Turn a factor  into a number
 #'
 #' @param x The factor or character string
@@ -95,6 +152,8 @@ get_local_lookup_path<-function(){
 #' @details Returns the variable after removing $s and ,s.
 #'
 #' @examples FactorToNumber("5")
+#'
+#' @export
 FactorToNumber<-function(x){
   warning("Deprecated in favor of text_to_number")
   if ((is.factor(x))||(is.character(x))){
@@ -115,6 +174,8 @@ FactorToNumber<-function(x){
 #' @details Returns ',' for csv and '/t' for txt files. Creates an error for other file types.
 #'
 #' @examples get_delim("test.csv")
+#'
+#' @export
 get_delim<-function(filename){
   delim<-NULL
   extension<-substring(filename,nchar(filename)-2,nchar(filename))
@@ -316,17 +377,18 @@ read_and_join<-function(
     data<-replace_nas_with_unlabeled(data,
                                      replace_na_var)
   }
-
+  pathdir=file.path(path,directory)
+  if(path=="") pathdir<-directory
   #This doesn't  work for URLs. Worth trying again later with some parsing
-  # if (!file.exists(paste(path,directory,lookup_file,sep=""))){
-  # stop(paste(path,directory,lookup_file," does not exist.",sep=""))
+  # if (!file.exists(file.path(pathdir,lookup_file))){
+  # stop(paste(file.path(pathdir,lookup_file)," does not exist.",sep=""))
   # }
 
   #Read in the lookup file
   lookup<-read.csv(
-    paste(path,directory,lookup_file,sep=""),
+    file.path(pathdir,lookup_file),
     header=TRUE,
-    sep=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
+    sep=if_else(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
     na.strings=c("NA","NULL"),
     quote = "\"",#Necessary because there are some 's in the names.
     dec=".",
@@ -483,19 +545,27 @@ read_and_join_experiment<-function(
     missing_file=NULL,
     create_lookup_rdata=FALSE,
     lookup_char_as_factor=FALSE,
-    guess_max=NULL
+    guess_max=NULL,
+    join_type="left",
+    prefix=""
 ){
   if(!is.null(names(by)))
     left_by<-names(by)
   else left_by<-by
+
   # read.delim doesn't like \\
   path<-gsub("\\\\","//",path)
   directory<-gsub("\\\\","//",directory)
+
   if(tolower(substr(path,1,4))=="http"&!RCurl::url.exists(file.path(path,directory,lookup_file))
      || path=="offline"){
     warning("Using offline path")
     path<-get_local_lookup_path()
   }
+
+  #Prevent "" from sending the path back to the \ directory rather than the root for the project.
+  pathdir=file.path(path,directory)
+  if(path=="") pathdir<-directory
 
 
   case_match<-function(name, list){
@@ -520,47 +590,53 @@ read_and_join_experiment<-function(
 
   #If the  file specified is an RDA
   if(tolower(substring(lookup_file,nchar(lookup_file)-3))==".rda"){
-    if (!file.exists(paste(path,directory,lookup_file,sep="")))
-      stop(paste(path,directory,rdata_file," does not exist",sep=""))
-    load(paste(path,directory,rdata_file,sep=""))
+    if (!file.exists(file.path(pathdir,lookup_file)))
+      stop(paste0(file.path(pathdir,lookup_file)," does not exist"))
+    load(file.path(pathdir,lookup_file))
   }
   #If there exists an rda variant of the file passed.
-  else if (file.exists(paste(path,directory,substring(lookup_file,1,nchar(lookup_file)-3),"rda", sep="")))
-    load(paste(path,directory,substring(lookup_file,1,nchar(lookup_file)-3),"rda", sep=""))
+  else if (file.exists(file.path(pathdir,paste0(substring(lookup_file,1,nchar(lookup_file)-3),"rda"))))
+    load(file.path(pathdir,paste0(substring(lookup_file,1,nchar(lookup_file)-3),"rda")))
 
   else{ if(!is.null(zip_file)){
     #Case sensitivity fix for zip filename
-    # dir_list<-list.files(paste(path,directory,sep=""))
+    # dir_list<-list.files(file.path(pathdir))
     # zip_file<-case_match(zip_file,dir_list)
 
     #Read in the lookup file
-    if (!file.exists(paste(path,directory,zip_file,sep=""))){
-      stop(paste(path,directory,zip_file," does not exist",sep=""))
+    if (!file.exists(file.path(pathdir,zip_file))){
+      stop(paste(file.path(pathdir,zip_file),"does not exist"))
     }
-    file_size<-file.info(paste(path,directory,zip_file,sep=""))$size
+    file_size<-file.info(file.path(pathdir,zip_file))$size
     if (file_size>200000000){
       stop(paste("Zip file size (",file_size,") exceeds 200 megabytes and unz can't handle this. Current solution is to unzip in file system and read in directly."))
     }
 
     #Case sensitivity fix for data filename
-    file_list<-unzip(paste(path,directory,zip_file,sep=""),list=TRUE)
+    file_list<-unzip(file.path(pathdir,zip_file),list=TRUE)
     lookup_file<-case_match(lookup_file,file_list$Name)
     if(!lookup_file %in% (file_list$Name)){
       print(file_list)
       stop(paste(lookup_file,"not present in",zip_file))
     }
-    input<-paste(path,directory,zip_file,sep="")#unz(description=paste(path,directory,zip_file,sep=""),filename=lookup_file)
+    input<-file.path(pathdir,zip_file)#unz(description=paste(pathdir,zip_file,sep=""),filename=lookup_file)
 
   }
     else{#No zip file
-      input<-swap_in_zip(lookup_file,path,directory)
+      input<-swap_in_zip(lookup_file,pathdir)
     }
+    na_list<-c("NA","NULL")
+    #Known case where na=c("NA","NULL") will cause errors.
+    if(lookup_file=="Location_CountryCodes.csv"){
+      na_list<-"NULL"
+    }
+
     if(is.null(guess_max)){
       lookup<-readr::read_delim(
         input,
         col_names=TRUE,
-        delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
-        na=c("NA","NULL"),
+        delim=if_else(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
+        na=na_list,
         trim_ws=TRUE,
         col_types=col_types
       )
@@ -568,13 +644,25 @@ read_and_join_experiment<-function(
       lookup<-readr::read_delim(
         input,
         col_names=TRUE,
-        delim=ifelse(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
-        na=c("NA","NULL"),
+        delim=if_else(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
+        na=na_list,
         trim_ws=TRUE,
         col_types=col_types,
         guess_max =guess_max
       )
+
     }
+
+    if(prefix!=""){
+      if (is.null(by))
+        names(lookup)<-paste0(prefix,names(lookup))
+      else
+        names(lookup)[!names(lookup) %in% by]<-
+          paste0(prefix,names(lookup)[!names(lookup) %in% by])
+      add_var<-paste0(prefix,add_var)
+      skip_check_var<-paste0(prefix,skip_check_var)
+    }
+
 
     #Convert character strings to factors
     if (lookup_char_as_factor==TRUE){
@@ -583,8 +671,8 @@ read_and_join_experiment<-function(
     }
 
     if (create_lookup_rdata==TRUE)
-      save(lookup,file=paste(path,directory,
-                             substring(lookup_file,1,nchar(lookup_file)-3),"rda",sep="")
+      save(lookup,file=file.path(pathdir,
+                                 paste0(substring(lookup_file,1,nchar(lookup_file)-3),"rda"))
       )
   }
   #Remove byte order marks present in UTF encoded files
@@ -668,11 +756,18 @@ read_and_join_experiment<-function(
       add_var<-colnames(lookup)[!colnames(lookup) %in% colnames(data)]
     left_by<-colnames(lookup)[colnames(lookup) %in% colnames(data)]
 
-
-    data<- dplyr::left_join(
-      data,
-      lookup
-    )
+    if(join_type=="left"){
+      data<- dplyr::left_join(
+        data,
+        lookup
+      )
+    } else if(join_type=="full"){
+      data<- dplyr::full_join(
+        data,
+        lookup
+      )
+    }
+    else stop("Unrecognized join_type")
   }
   else{
     if(case_sensitive==FALSE){
@@ -690,12 +785,21 @@ read_and_join_experiment<-function(
       }
     }
 
+    if(join_type=="left"){
+      data<- dplyr::left_join(
+        data,
+        lookup,
+        by=by
+      )
+    } else if(join_type=="full"){
+      data<- dplyr::full_join(
+        data,
+        lookup,
+        by=by
+      )
+    }
+    else stop("Unrecognized join_type")
 
-    data<- dplyr::left_join(
-      data,
-      lookup,
-      by=by
-    )
 
     if(case_sensitive==FALSE){
       #Switch back the by variables to their pre-tolower value
@@ -765,13 +869,13 @@ deflate <- function(
     money_var = "Amount",
     fy_var = "Fiscal_Year",
     deflator_file = "Lookup_Deflators.csv",
-    deflator_var="OMB24_GDP22",
+    deflator_var="OMB25_GDP23",
     path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
     directory="economic/",
     deflator_dropped=TRUE
 ){
   #Default deflator if none passed.
-  if(is.null(deflator_var)) deflator_var<-"OMB24_GDP22"
+  if(is.null(deflator_var)) deflator_var<-"OMB25_GDP23"
 
   #Tibbles run into trouble with the [[]] new variable specifying.
   data<-as.data.frame(data)
@@ -802,6 +906,12 @@ deflate <- function(
 
 
   data[[money_var]] <- as.numeric(data[[money_var]])
+
+  if(tolower(substr(path,1,4))=="http"&!RCurl::url.exists(file.path(path,directory,deflator_file))
+     || path=="offline"){
+    warning("Using offline path")
+    path<-get_local_lookup_path()
+  }
 
   cat(paste("\n Applying\n", deflator_var, "\n in \n", deflator_file, "\n from\n", path, "\n"))
   deflators_retrieved <- readr::read_csv(file.path(path, directory,deflator_file))
@@ -867,6 +977,45 @@ text_to_number<-function(x){
   x
 }
 
+
+
+#' Get Column Key based on the names in a data frame
+#'
+#' @param x Text / numerical expression of a bit
+#'
+#' @return A 0,1,NULL value.
+#'
+#' @details Converts from character/number to bit
+#'
+#' @examples
+#'
+#' text_to_bit(c('Y','1','$20.00'))
+#'
+#' @export
+text_to_bit<-function(x){
+  x<-as.character(x)
+  yes_list<-c("Y","YES","Y: YES","Y:",
+              "1","TRUE","TRUE:","T")
+  no_list<-c("N","NO","N: NO",": NO",
+              "0","FALSE","FALSE:","F")
+  na_list<-c("",":")
+  b<-
+                 case_when(str_to_upper(x) %in% yes_list ~
+                             1,
+                           str_to_upper(x) %in% no_list ~
+                             0,
+                           str_to_upper(x) %in% na_list~
+                             NA,
+                 )
+  if(any(!x %in% c(yes_list,no_list,na_list) & !is.na(x))){
+    stop(paste0("text_to_bit does not know how to handle ",
+                x[!x %in% c(yes_list,no_list,na_list) & !is.na(x)]))
+  }
+  x<-as.integer(b)
+  x
+}
+
+
 #' Get Column Key based on the names in a data frame
 #'
 #' @param x A date.
@@ -884,8 +1033,531 @@ text_to_number<-function(x){
 get_fiscal_year<-function(
     x){
 
-  lubridate::year(x)+ifelse(lubridate::month(x)<10,0,+1)
+  lubridate::year(x)+if_else(lubridate::month(x)<10,0,+1)
   # ymd(paste(          ,"-10-1",sep=""))
+}
+
+
+#' Label Top X entries in a data frame
+#'
+#' @param df A data frame.
+#' @param col The column to be evaluated.
+#' @param weight The variable summed to determine top entries, by default Action_Obligation_OMB25_GDP23
+#' @param top_name The new column that will include
+#' @param group Sub groupings by which to rank, by default not included
+#' @param time The variable used for when considering recent top entries, by default Fiscal_Year
+#' @param recent Value used to give extra weight to recently top entries rather than just the overall period
+#' @param retain_rank Retain any ranked variables created in processing.
+#' @param write_file File name in which to record the calculations underlying the labeling. Default is not to record.
+#'
+#' @return The revised data frame with the new variable
+#'
+#' @details Add column variants, including summaries, and deflated dollars,
+#' to a contract dataset.
+#'
+#'
+#' @export
+#'
+label_top<-function(df,
+                    col,
+                    n=5,
+                    weight="Action_Obligation_OMB25_GDP23",
+                    top_name=NA,
+                    group_list=NA,
+                    time="Fiscal_Year",
+                    recent=NA,
+                    retain_rank=FALSE,
+                    write_file=NA){
+
+
+  agg_list<-col
+  if(!col %in% colnames(df))
+    stop(paste(col,"is not founds in the columns of df"))
+  if(!weight %in% colnames(df))
+    stop(paste(weight,"is not founds in the columns of df"))
+  if(!is.na(group_list)){
+    agg_list<-c(col,group_list)
+    for(g in group_list){
+      if(!g %in% colnames(df))
+        stop(paste(g,"is not founds in the columns of df"))
+    }
+  }
+
+  if(is.na(top_name)) top_name<-paste0("Top_",col)
+  if(top_name %in% colnames(df)){
+    warning(paste(top_name,"already present in df, removing."))
+    df<-df[,colnames(df)!=top_name]
+  }
+
+  if(is.na(recent)){
+    #Just overall
+    if(length(agg_list) == 1){
+      agg_df <- df %>%
+        dplyr::group_by(!! as.name(agg_list)) %>%
+        summarize_(
+          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), weight = as.name(weight)))
+      agg_df<- agg_df %>% mutate(
+        rank_total=rank(desc(agg_val))) %>%
+        arrange(desc(agg_val))
+    } else {
+      agg_df <- df %>%
+        dplyr::group_by_(.dots = c(agg_list)) %>%
+        summarize_(
+          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(weight)))
+      agg_df<- agg_df %>% dplyr::group_by_(.dots = c(group_list)) %>%
+        mutate(
+          rank_total=rank(desc(agg_val))) %>%
+        arrange(desc(agg_val))
+    }
+    agg_df[,top_name]<-NA
+    agg_df[agg_df$rank_total<=n,top_name]<-
+      agg_df[agg_df$rank_total<=n,col]
+
+  } else{
+    #Recent
+    agg_df<-df
+    if("recent" %in% colnames(agg_df))
+      stop("'recent' is a column in agg_df and that name is needed.")
+
+    agg_df$recent_weight<-if_else(agg_df[,time]>=recent,agg_df[,weight],NA)
+    recent_weight<-"recent_weight"
+
+    if(length(agg_list) == 1){
+      agg_df <- agg_df %>%
+        dplyr::group_by(!! as.name(agg_list)) %>%
+        summarize_(
+          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(weight)),
+          agg_val_recent = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(recent_weight))
+        )
+      agg_df<- agg_df %>% mutate(
+        rank_total=rank(desc(agg_val)),
+        rank_recent=rank(desc(agg_val_recent))) %>%
+        arrange(desc(agg_val))
+    } else {
+      agg_df <- agg_df %>%
+        dplyr::group_by_(.dots = c(agg_list)) %>%
+        summarize_(
+          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(weight)),
+          agg_val_recent = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(recent_weight)))
+      agg_df<- agg_df %>% dplyr::group_by_(.dots = c(group_list)) %>%
+        mutate(
+          rank_total=rank(desc(agg_val)),
+          rank_recent=rank(desc(agg_val_recent))) %>%
+        arrange(desc(agg_val))
+
+    }
+    agg_df[,top_name]<-NA
+    agg_df[agg_df$rank_total<=n|agg_df$rank_recent<=n ,top_name]<-
+      agg_df[agg_df$rank_total<=n|agg_df$rank_recent<=n,col]
+
+  }
+
+
+  if(retain_rank){
+    rank_total_name<-paste0(top_name,"_rank_total")
+    if(rank_total_name %in% colnames(df)){
+      warning(paste(rank_total_name,"already present in df, removing."))
+      df<-df[,colnames(df)!=rank_total_name]
+    }
+    colnames(agg_df)[colnames(agg_df)=="rank_total"]<-rank_total_name
+    if(!is.na(recent)){
+      rank_recent_name<-paste0(top_name,"_rank_recent")
+      if(rank_recent_name %in% colnames(df)){
+        warning(paste(rank_recent_name,"already present in df, removing."))
+        df<-df[,colnames(df)!=rank_recent_name]
+      }
+      colnames(agg_df)[colnames(agg_df)=="rank_recent"]<-rank_recent_name
+    }
+  }
+
+  if(!is.na(write_file))
+    write.csv(agg_df,file=write_file,row.names = FALSE)
+
+  df<-left_join(df,agg_df[,!colnames(agg_df) %in% c(weight,"rank_total","rank_recent")],
+                by=c(agg_list))
+
+
+  # agg_df<-df %>% group_by (Project.Name,PlatformPortfolio) %>%
+  #             # Action_Obligation_2022=sum(if_else(Fiscal_Year>=2022,Action_Obligation_OMB24_GDP22,0)))%>%
+  #   summarise(Action_Obligation_OMB25_GDP23=sum(Action_Obligation_OMB25_GDP23),
+  #   group_by (PlatformPortfolio) %>%
+  #   mutate(rank_total=rank(desc(Action_Obligation_OMB25_GDP23)),
+  #          # rank_2022=rank(desc(Action_Obligation_2022)))
+  # agg_df %>% arrange(desc(Action_Obligation_OMB25_GDP23))
+
+  df[is.na(df[,top_name]) & !is.na(df[,col]),top_name]<-
+    "Other Labeled"
+  df
+}
+
+
+#' Add column variants, including summaries, and deflated dollars, to a contract dataset.
+#'
+#' @param df A data frame.
+#' @param ISOalpha3_col="ISOalpha3" The column with country codes in 3 letter ISO format
+#' @param drop_col=FALSE If true drop many of the supporting columns, by default FALSE.
+#' @param prefix=NULL If provided, add to the start of all the added variables (e.g. Place, Vendor, Origin). Default NULL.
+#' @param purge_unprefixed=FALSE If TRUE, drop all columns previously added by this function that lack a prefix. Used to avoid adding the same columns repeatedly.
+#' @param skip_name=FALSE If true, do not add the country name field
+#' @param path The path or url for the column key.  By default, checks
+#' the CSISdefense Github lookups repository at CSISdefense/Lookup/master/
+#'
+#' @return The fiscal year of the date.
+#'
+#' @details Add column variants, including summaries, and deflated dollars,
+#' to a contract dataset.
+#'
+#'
+#' @export
+add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL,purge_unprefixed=FALSE,skip_name=FALSE,
+                       path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/"){
+  df<-as.data.frame(df)
+  if(!file.exists(file.path(path,"location/","SOSA.csv")) || path=="offline"){
+    warning("Using offline path")
+    path<-get_local_lookup_path()
+  }
+
+
+  if(purge_unprefixed)
+    df<-df[,!colnames(df) %in%
+           c("NATOyear","MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear","SEATOendYear","RioTreatyEndYear",
+             "FiveEyes","OtherTreatyName","OtherTreatyStartYear","OtherTreatyEndYear",
+             "RDPyear","SOSAyear","RDPsosa",
+             "StateRegion","AcquisitionCooperation","MutualDefense","MutualAcquisition",
+             "isforeign","EUentryYear","EUexitYear")]
+
+  if("MutualDefense" %in%  colnames(df)) stop("Add Alliance has already been run on the data.frame")
+
+  if(any(duplicated(colnames(df)))) stop("Duplicate Column Names")
+  #Add ISOalpha3 column if it does not already exist
+  if(!is.null(ISOalpha3_col)){
+    if(!ISOalpha3_col %in% colnames(df)) stop(paste("ISOalpha3_col,",ISOalpha3_col,"is missing."))
+    if("alpha-3" %in% colnames(df)) stop("Already alpha-3 in column names")
+    if(!is.null(prefix)) if(prefix %in% colnames(df) & !skip_name) stop(paste("Already",prefix,"in column names"))
+    colnames(df)[colnames(df)==ISOalpha3_col]<-"alpha-3"
+    df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
+                                dir="location/",
+                                add_var = c("name", "StateRegion","NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear",	"SEATOendYear",	"RioTreatyStartYear","RioTreatyEndYear"	,"FiveEyes"	,"NTIByear"	,"OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),#"USAIDregion",
+                                by="alpha-3",
+                                skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),
+                                missing_file="missing_DSCA_iso.csv"
+    )
+    colnames(df)[colnames(df)=="alpha-3"]<-ISOalpha3_col
+    if(skip_name) df <- df %>% dplyr::select(-name)
+    else if(!is.null(prefix)) colnames(df)[colnames(df)=="name"]<-prefix
+    else if("CountryName" %in% colnames(df)) stop(paste("Already CountryName in column names"))
+    else colnames(df)[colnames(df)=="name"]<-"CountryName"
+  }
+  if(any(duplicated(colnames(df)))) stop(paste("Duplicate Column Names",colnames(df)[duplicated(colnames(df))]))
+
+
+  if("dtDelivYear" %in% colnames(df)) compare_year<-year(df$dtDelivYear)
+  else if("year" %in% colnames(df)) compare_year<-df$year
+  else if("Delivery.year" %in% colnames(df)) compare_year<-df$Delivery.year
+  else if("Fiscal_Year" %in% colnames(df)) compare_year<-df$Fiscal_Year
+  else stop("Unkown comparison year")
+
+  if(!all(c("MajorNonNATOentryYear","MajorNonNATOexitYear","NATOyear","NTIByear") %in% colnames(df))) stop("Missing Columns. Run Read And Join")
+
+
+  ###### defense acquisition cooperation
+  # major non-nato ally
+  # afghanistan added 2012,  tunisia added 2015
+
+  rdp_qa<-as.data.frame(readr::read_csv(file.path(
+    path,"location/","RDP_QA.csv")))
+  rdp_qa$Agreement_Start<-as.Date(rdp_qa$Agreement_Start,format="%m/%d/%Y")
+  if(any(is.na(rdp_qa$Agreement_Start)))
+    stop("NA Agreement_Start after import in location/RDO_QA.csv")
+  rdp_qa<-rdp_qa %>% filter(IsRDP==TRUE) %>%
+    group_by(ISOalpha3) %>%
+    dplyr::summarise(RDPyear=min(lubridate::year(Agreement_Start)))
+  rdp_by<-"ISOalpha3"
+  names(rdp_by)<-ISOalpha3_col
+  df<-left_join(df,rdp_qa,by=rdp_by)
+
+  if(any(duplicated(colnames(df)))) stop(paste("Duplicate Column Names",colnames(df)[duplicated(colnames(df))]))
+  rm(rdp_by)
+
+
+  sosa<-as.data.frame(readr::read_csv(file.path(
+    path,"location/","SOSA.csv")))
+  sosa$Agreement_Start<-as.Date(sosa$Agreement_Start,format="%m/%d/%Y")
+  if(any(is.na(sosa$Agreement_Start)))
+    stop("NA Agreement_Start after import in location/SOSA.csv")
+  sosa<-sosa %>%
+    group_by(ISOalpha3) %>%
+    dplyr::summarise(SOSAyear=min(lubridate::year(Agreement_Start)))
+  sosa_by<-"ISOalpha3"
+  names(sosa_by)<-ISOalpha3_col
+  df<-left_join(df,sosa,by=sosa_by)
+
+  if(any(duplicated(colnames(df)))) stop(paste("Duplicate Column Names",colnames(df)[duplicated(colnames(df))]))
+  rm(sosa_by)
+
+
+  df$AcquisitionCooperation<-NA
+  df$AcquisitionCooperation[!is.na(df$MajorNonNATOentryYear)&
+                             df$MajorNonNATOentryYear<=compare_year&
+                              (is.na(df$MajorNonNATOexitYear)|
+                                 df$MajorNonNATOexitYear>compare_year)
+                              ] <- "Major Non-NATO"
+
+  if("Buyer" %in% colnames(df)){
+    if("dtDelivYear" %in% colnames(df))
+      df %>% group_by(AcquisitionCooperation,Buyer,RDPyear) %>%
+      summarise(MinYear=min(dtDelivYear),
+                MaxYear=max(dtDelivYear))
+    else if("year" %in% colnames(df))
+      df %>% group_by(AcquisitionCooperation,Buyer,RDPyear) %>%
+      summarise(MinYear=min(year),
+                MaxYear=max(year))
+    else if("Delivery.year" %in% colnames(df))
+      df %>% group_by(AcquisitionCooperation,Buyer,RDPyear) %>%
+      summarise(MinYear=min(Delivery.year),
+                MaxYear=max(Delivery.year))
+    else if("Fiscal_Year" %in% colnames(df))
+      df %>% group_by(AcquisitionCooperation,Buyer,RDPyear) %>%
+      summarise(MinYear=min(Fiscal_Year),
+                MaxYear=max(Fiscal_Year))
+
+  }
+
+  # df$EUtrade[!is.na(df$EUentryYear)&df$name %in%
+  #            !is.na(df$EUtrade) &
+  #             df$EUentryYear>compare_year]<- "Future EU"
+
+
+  # nato for ac
+  # montengro nato after 2017
+  df$AcquisitionCooperation[!is.na(df$NATOyear)&
+                             df$NATOyear<=compare_year] <- "NATO"
+
+  # NTIB for cooperation
+  df$AcquisitionCooperation[!is.na(df$NTIByear)&
+                             df$NTIByear<=compare_year] <- "NTIB"
+
+
+  # EU
+  df$EUtrade<-NA
+  df$EUtrade[!is.na(df$EUentryYear)&
+              df$EUentryYear<=compare_year &
+              (is.na(df$EUexitYear) | df$EUexitYear>compare_year)]<- "EU"
+  # df$EUtrade[is.na(df$EUtrade) & !is.na(df$EUentryYear)&
+  #             df$EUentryYear>compare_year]<- "Future EU"
+  # df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("GBR")]<-"Post-Brexit UK"
+  df$EUtrade[is.na(df$EUtrade) & (df$AcquisitionCooperation=="NATO" | df[,ISOalpha3_col] %in% c("GBR","CAN"))]<-"Other NATO"
+  # df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN","TWN"
+  df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("KOR")]<-"South Korea" #"JPN","TWN"
+  df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("RUS","CHN")]<-"PRC and Russia"
+  df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("UKR")]<-"Ukraine"
+  df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("USA")]<-"United States"
+  df$EUtrade[is.na(df$EUtrade) & df[,ISOalpha3_col] %in% c("@QW","@QZ","@QS")]<-"Unspecified extra-union"
+  df$EUtrade[is.na(df$EUtrade) & (is.na(df$StateRegion)|df$StateRegion=="Unlabeled")]<-"Unlabeled"
+  df$EUtrade[is.na(df$EUtrade)]<-"Rest of World"
+
+
+  # NATO
+  df$NATOtrade<-NA
+  df$NATOtrade[!is.na(df$EUentryYear)&
+               df$EUentryYear<=compare_year &
+               (is.na(df$EUexitYear) | df$EUexitYear>compare_year)&
+                 (df$AcquisitionCooperation=="NATO" & !is.na(df$AcquisitionCooperation))
+                 ]<- "EU & NATO"
+  # df$NATOtrade[is.na(df$NATOtrade) & !is.na(df$EUentryYear)&
+  #             df$EUentryYear>compare_year]<- "Future EU"
+  # df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("GBR")]<-"Post-Brexit UK"
+  df$NATOtrade[is.na(df$NATOtrade) & (df$AcquisitionCooperation=="NATO" | df[,ISOalpha3_col] %in% c("GBR","CAN"))]<-"Other NATO"
+  df$NATOtrade[!is.na(df$EUentryYear)&
+                 df$EUentryYear<=compare_year &
+                 (is.na(df$EUexitYear) | df$EUexitYear>compare_year)&
+                 (df$AcquisitionCooperation!="NATO" & !is.na(df$AcquisitionCooperation))
+  ]<- "EU Outside NATO"
+  # df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN","TWN"
+  df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("KOR")]<-"South Korea" #"JPN","TWN"
+  # df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("RUS","CHN")]<-"PRC and Russia"
+  df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("UKR")]<-"Ukraine"
+  df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("USA")]<-"United States"
+  df$NATOtrade[is.na(df$NATOtrade) & df[,ISOalpha3_col] %in% c("@QW","@QZ","@QS")]<-"Unspecified extra-union"
+  df$NATOtrade[is.na(df$NATOtrade) & (is.na(df$StateRegion)|df$StateRegion=="Unlabeled")]<-"Unlabeled"
+  df$NATOtrade[is.na(df$NATOtrade)]<-"Rest of World"
+
+  # NTIB
+  df$NTIBtrade<-NA
+  df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("USA")]<-"United States"
+  df$NTIBtrade[!is.na(df$EUentryYear)&
+                 df$EUentryYear<=compare_year &
+                 (is.na(df$NTIByear) | df$NTIByearWill>compare_year)&
+                 (df$AcquisitionCooperation=="NATO" & !is.na(df$AcquisitionCooperation))
+  ]<- "EU & NATO"
+
+  df$NTIBtrade[!is.na(df$EUentryYear)&
+                 df$EUentryYear<=compare_year &
+                 (is.na(df$EUexitYear) | df$EUexitYear>compare_year)&
+                 (df$AcquisitionCooperation=="NATO" & !is.na(df$AcquisitionCooperation))
+  ]<- "EU & NATO"
+  # df$NTIBtrade[is.na(df$NTIBtrade) & !is.na(df$EUentryYear)&
+  #             df$EUentryYear>compare_year]<- "Future EU"
+  # df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("GBR")]<-"Post-Brexit UK"
+  df$NTIBtrade[is.na(df$NTIBtrade) & (df$AcquisitionCooperation=="NATO" | df[,ISOalpha3_col] %in% c("GBR","CAN"))]<-"Other NATO"
+  df$NTIBtrade[!is.na(df$EUentryYear)&
+                 df$EUentryYear<=compare_year &
+                 (is.na(df$EUexitYear) | df$EUexitYear>compare_year)&
+                 (df$AcquisitionCooperation!="NATO" & !is.na(df$AcquisitionCooperation))
+  ]<- "EU Outside NATO"
+  df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("ISR","KOR","CHE")]<-"Switzerland, Israel, & South Korea" #"JPN","TWN"
+  # df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("RUS","CHN")]<-"PRC and Russia"
+  df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("UKR")]<-"Ukraine"
+
+  df$NTIBtrade[is.na(df$NTIBtrade) & df[,ISOalpha3_col] %in% c("@QW","@QZ","@QS")]<-"Unspecified extra-union"
+  df$NTIBtrade[is.na(df$NTIBtrade) & (is.na(df$StateRegion)|df$StateRegion=="Unlabeled")]<-"Unlabeled"
+  df$NTIBtrade[is.na(df$NTIBtrade)]<-"Rest of World"
+
+  #RDPsosa
+  df$RDPsosa<-NA
+  df$RDPsosa[is.na(df$RDPyear) |  df$RDPyear>compare_year] <- "None"
+  df$RDPsosa[!is.na(df$RDPyear)& df$RDPyear<=compare_year] <- "RDP"
+  df$RDPsosa[!is.na(df$SOSAyear)&
+              df$SOSAyear<=compare_year] <- paste(
+                df$RDPsosa[!is.na(df$SOSAyear)&
+                            df$SOSAyear<=compare_year] ,"and SOSA")
+
+  df$RDPsosa[df$RDPsosa=="None and SOSA"]<-"SOSA alone"
+  summary(factor(df$RDPsosa))
+
+  #RDP
+  df$AcquisitionCooperation[!is.na(df$RDPyear)&
+                             df$RDPyear<=compare_year] <- paste(
+                               df$AcquisitionCooperation[!is.na(df$RDPyear)&
+                                                          df$RDPyear<=compare_year] ,"and RDP")
+
+  df$AcquisitionCooperation[df$AcquisitionCooperation=="NA and RDP"]<-"RDP alone"
+
+  df$AcquisitionCooperation[df$Buyer=="United States"] <- "United States"
+
+  df$AcquisitionCooperation<-ifelse(is.na(df$AcquisitionCooperation), "Rest of World", df$AcquisitionCooperation)
+
+
+  #Mutual Defense Categories
+  if(any(!complete.cases(df %>% dplyr::filter(!StateRegion %in% "Non-Regional" & !is.na(StateRegion)) %>% group_by() %>%
+                         dplyr::select(ISOalpha3_col,"AcquisitionCooperation"))))
+    stop(paste("Missing AcquisitionCooperation:",
+               paste(unique(df[df$StateRegion !="Non-Regional" & !complete.cases(df %>% group_by() %>%
+                                                         dplyr::select(ISOalpha3_col,"AcquisitionCooperation")),
+                               ISOalpha3_col]),
+                     collapse=", ")
+    ))
+
+
+  # assigning values - reverse priority
+  #### mutual defense agreements
+  # Southeast asia
+  df$MutualDefense<-NA
+  df$MutualDefense[!is.na(df$SEATOendYear) & compare_year<=df$SEATOendYear] <- "Southeast Asia"
+
+  # rio
+  df$MutualDefense[compare_year>=df$RioTreatyStartYear &
+                    (df$RioTreatyEndYear>compare_year |
+                       is.na(df$RioTreatyEndYear))
+  ]<-"Rio Treaty"
+
+  # nato
+  # montengro nato after 2017
+  df$MutualDefense[!is.na(df$NATOyear)&
+                    df$NATOyear<=compare_year] <- "NATO"
+
+  # Other Treaties for cooperation
+  # ANZUS
+  df$MutualDefense[!is.na(df$OtherTreatyStartYear)& df$OtherTreatyName=="ANZUS" &
+                    df$OtherTreatyStartYear<=compare_year&
+                    (df$OtherTreatyEndYear>compare_year |
+                       is.na(df$OtherTreatyEndYear))] <- "ANZUS"
+
+  # Bilateral
+  df$MutualDefense[!is.na(df$OtherTreatyStartYear)& df$OtherTreatyName!="ANZUS" &
+                    df$OtherTreatyStartYear<=compare_year&
+                    (df$OtherTreatyEndYear>compare_year |
+                       is.na(df$OtherTreatyEndYear))] <- "Bilateral Mutual Defense"
+
+  df$MutualDefense<-ifelse(is.na(df$MutualDefense), "Rest of World", df$MutualDefense)
+  summary(factor(df$MutualDefense))
+
+  #Mutual Defense Categories
+  if(any(!complete.cases(df %>% dplyr::filter(!StateRegion %in% c("Non-Regional") & !is.na(StateRegion)) %>%
+                         group_by %>% dplyr::select(ISOalpha3_col,"MutualDefense"))))
+    stop(paste("Missing MutualDefense:",
+               paste(unique(df[df$StateRegion !="Non-Regional" & !complete.cases(df %>% group_by() %>%
+                                                                                   dplyr::select(ISOalpha3_col,"MutualDefense")),
+                               ISOalpha3_col]),
+                     collapse=", ")
+    ))
+
+
+  # Combined Category
+  df$MutualAcquisition<-factor(df$MutualDefense)
+
+
+
+  levels(df$MutualAcquisition)<-
+    list("NATO"=c("NATO"),
+         "Major Non-NATO & Treaty Ally"=c("Major Non-NATO & Treaty Ally"),
+         "Other Treaty Ally"=c("Other Treaty Ally","ANZUS","Southeast Asia","Bilateral Mutual Defense"),
+         "Other Major Non-NATO"=c("Other Major Non-NATO"),
+         "Rest of World"=c("Rest of World","Rio Treaty"))
+
+
+  df$MutualAcquisition[df$MutualAcquisition=="Other Treaty Ally" &
+                         !is.na(df$MajorNonNATOentryYear)&
+                         df$MajorNonNATOentryYear<=compare_year&
+                         (is.na(df$MajorNonNATOexitYear)|
+                            df$MajorNonNATOexitYear>compare_year)] <- "Major Non-NATO & Treaty Ally"
+
+  df$MutualAcquisition[df$MutualAcquisition=="Rest of World" &
+                         !is.na(df$MajorNonNATOentryYear)&
+                         df$MajorNonNATOentryYear<=compare_year&
+                         (is.na(df$MajorNonNATOexitYear)|
+                            df$MajorNonNATOexitYear>compare_year)] <- "Other Major Non-NATO"
+
+
+  df$MutualAcquisition<-factor(df$MutualAcquisition,
+                              levels=c("NATO","Major Non-NATO & Treaty Ally",
+                                       "Other Major Non-NATO",
+                                       "Other Treaty Ally",
+                                       "Rest of World"))
+
+
+  #Mutual Acquisition Categories
+  if(any(!complete.cases(df %>% dplyr::filter(!StateRegion %in% c("Non-Regional") & !is.na(StateRegion)) %>% group_by() %>%
+                         dplyr::select(ISOalpha3_col,"MutualAcquisition"))))
+    stop(paste("Missing MutualAcquisition:",
+               paste(unique(df[df$StateRegion !="Non-Regional" & !complete.cases(df %>% group_by() %>%
+                                                                                   dplyr::select(ISOalpha3_col,"MutualAcquisition")),
+                               ISOalpha3_col]),
+                     collapse=", ")
+    ))
+
+  if(drop_col==TRUE)
+    df <- df %>% dplyr::select(-NATOyear,-EUentryYear,-EUexitYear,	-MajorNonNATOentryYear,	-MajorNonNATOexitYear,
+                          -NTIByear	,-SEATOendYear,-RioTreatyEndYear,-FiveEyes,
+                          -OtherTreatyName	,-OtherTreatyStartYear,-OtherTreatyEndYear)
+
+  if(!is.null(prefix)){
+    renamelist<-c("NATOyear","MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear","SEATOendYear",
+                  "RioTreatyStartYear","RioTreatyEndYear","FiveEyes",
+                  "OtherTreatyName","OtherTreatyStartYear","OtherTreatyEndYear",
+                  "RDPyear","SOSAyear","EUentryYear","EUexitYear","RDPsosa","EUtrade","NATOtrade","NTIBtrade")
+    colnames(df)[colnames(df)%in% renamelist]<-
+      paste(prefix,colnames(df)[colnames(df)%in%renamelist],sep="")
+    colnames(df)[colnames(df)=="StateRegion"]<-paste(prefix,"StateRegion",sep="")
+    colnames(df)[colnames(df)=="AcquisitionCooperation"]<-paste(prefix,"AcquisitionCooperation",sep="")
+    colnames(df)[colnames(df)=="MutualDefense"]<-paste(prefix,"MutualDefense",sep="")
+    colnames(df)[colnames(df)=="MutualAcquisition"]<-paste(prefix,"MutualAcquisition",sep="")
+    colnames(df)[colnames(df)=="isforeign"]<-paste(prefix,"IsForeign",sep="")
+  }
+  if(any(duplicated(colnames(df)))) stop(paste("Duplicate Column Names",colnames(df)[duplicated(colnames(df))]))
+
+  df
+
 }
 
 
@@ -894,30 +1566,101 @@ get_fiscal_year<-function(
 #' @param df A data frame.
 #' @param path The path or url for the column key.  By default, checks
 #' the CSISdefense Github lookups repository at CSISdefense/Lookup/master/
+#' @param deflator_var Specifying which deflator to use, if unspecified will pass NULL to use default of deflate function
+#' @param add_alliance=FALSE Should the function add alliance variables using country code variables? These are numerous, so left off by default.
 #'
 #' @return The fiscal year of the date.
 #'
 #' @details Add column variants, including summaries, and deflated dollars,
 #' to a contract dataset.
-#' @examples
 #'
 #'
 #' @export
 apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",
-                                  deflator_var=NULL){
+                                  deflator_var=NULL,
+                                  call_add_alliance=FALSE){
 
+  if(path=="offline"){
+    warning("Using offline path")
+    path<-get_local_lookup_path()
+  }
   df<-standardize_variable_names(df)
 
   #Clear out blank/admin/error message rows at the end of the input file.
-  if(substring(df$Fiscal_Year[nrow(df)],1,15) %in% c(
+  while(substring(df[nrow(df),1],1,15) %in% c(
     "Completion time",
-    "An error occurr"))#ed while executing batch. Error message is: One or more errors occurred
+    "An error occurr",#ed while executing batch. Error message is: One or more errors occurred
+    "Msg 208, Level ",#16, State 1, Procedure
+    "Invalid object "#Invalid object name 'contract.FDPSpartia
+  )){
+
     df<-df[-nrow(df),]
+  }
+  while(stringr::str_sub(df[nrow(df),1],-15,-1) %in% c(
+    " row affected)\r",
+    "rows affected)\r"
+  )){
+
+    df<-df[-nrow(df),]
+  }
+
+
   #Empty rows
-  if((df[nrow(df),1]=="" | is.na(df[nrow(df),1]))  & is.na(df$Fiscal_Year[nrow(df)]))
-    df<-df[-nrow(df),]
+  if("Fiscal_Year" %in% colnames(df))
+    if((df[nrow(df),1]=="" | is.na(df[nrow(df),1]))  & is.na(df$Fiscal_Year[nrow(df)]))
+      df<-df[-nrow(df),]
+
+  #### Dates #####
+  if("action_date" %in% names(df)){
+    conversion_test<- as.Date(df$action_date)
+    if(any(is.na(conversion_test)&!is.na(df$action_date))){
+      stop("Failed action_date conversion")
+    }
+    df$action_date <- conversion_test
+    rm(conversion_test)
+
+  }
+  if("signeddate" %in% names(df)){
+    conversion_test<- as.Date(df$signeddate)
+    if(any(is.na(conversion_test)&!is.na(df$signeddate))){
+      stop("Failed signeddate conversion")
+    }
+    df$signeddate <- conversion_test
+    rm(conversion_test)
+
+  }
+  if("Fiscal_Year"%in% names(df)){
+
+    df$Fiscal_Year <- text_to_number(df$Fiscal_Year)
+    df$dFYear<-as.Date(paste("1/1/",as.character(df$Fiscal_Year),sep=""),"%m/%d/%Y")
 
 
+    if("fiscal_quarter" %in% colnames(df)){
+      df$Fiscal_YQ<-NA
+      df$Fiscal_YQ[!is.na(df$fiscal_quarter)]<-text_to_number(paste(df$Fiscal_Year[!is.na(df$fiscal_quarter)],
+                                                                    text_to_number(df$fiscal_quarter[!is.na(df$fiscal_quarter)]),sep="."))
+      df$Fiscal_YQ[is.na(df$Fiscal_YQ)]<-df$Fiscal_Year[is.na(df$Fiscal_YQ)]
+      df$YTD<-if_else(df$Fiscal_Year==max(df$Fiscal_Year),"YTD","Full Year")
+    }
+    else if ("fiscal_quarter_YTD" %in% colnames(df)){
+      df$Fiscal_YQ<-NA
+      df$Fiscal_YQ[!is.na(df$fiscal_quarter_YTD)]<-text_to_number(paste(df$Fiscal_Year[!is.na(df$fiscal_quarter_YTD)],
+                                                                        text_to_number(df$fiscal_quarter_YTD[!is.na(df$fiscal_quarter_YTD)]),sep="."))
+      df$Fiscal_YQ[is.na(df$Fiscal_YQ)]<-df$Fiscal_Year[is.na(df$Fiscal_YQ)]
+    }
+
+    # df$Fiscal_Year.End <-as.Date(paste("9/30/",as.character(year(df$Fiscal_Year)),sep=""),"%m/%d/%Y")
+    # df$Fiscal_Year.Start <-as.Date(paste("10/1/",as.character(year(df$Fiscal_Year)-1),sep=""),"%m/%d/%Y")
+  } else if ("signeddate" %in% colnames(df)){
+    df$Fiscal_Year<-get_fiscal_year(df$signeddate)
+    df$Fiscal_YQ<-NA
+    df$fiscal_quarter<-lubridate::quarter(df$Fiscal_Year,fiscal_start = 10)
+    df$Fiscal_YQ[!is.na(df$fiscal_quarter)]<-text_to_number(paste(df$Fiscal_Year[!is.na(df$fiscal_quarter)],
+                                                                  text_to_number(df$fiscal_quarter[!is.na(df$fiscal_quarter)]),sep="."))
+    df$YTD<-if_else(df$Fiscal_Year==max(df$Fiscal_Year),"YTD","Full Year")
+
+    df$dFYear<-as.Date(paste("1/1/",as.character(df$Fiscal_Year),sep=""),"%m/%d/%Y")
+  }
   #
   #   #***Join relevant variables to lookup tables
   #   if("ContractingAgencyID" %in%  names(df) &
@@ -1017,8 +1760,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #
 
-  # Organization Funder ####
 
+  # Organization Funder ####
 
 
 
@@ -1046,7 +1789,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df<-read_and_join_experiment(df,
                                  path=path,
                                  "Agency_AgencyID.csv",
-                                 dir="",
+                                 directory="",
                                  by=c("fundingrequestingagencyid"="AgencyID"),
                                  add_var=c("Customer","SubCustomer","AgencyIDtext"),#Funding.Agency.ID
                                  skip_check_var=c("Platform","Customer","SubCustomer","AgencyIDtext"),
@@ -1061,7 +1804,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
       df<-read_and_join_experiment(df,
                                    path=path,
-                                   dir="office\\",
+                                   directory="office\\",
                                    lookup_file = "MajComID.csv",
                                    by =c("Fiscal_Year"="Fiscal_Year",
                                          "fundingrequestingagencyid"="Contracting_Agency_ID",
@@ -1070,7 +1813,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
       df<-read_and_join_experiment(df,
                                    path=path,
-                                   dir="office\\",
+                                   directory="office\\",
                                    lookup_file = "MajComSum.csv")
 
       colnames(df)[colnames(df)=="MajorCommandID"]<-"FundingMajorCommandID"
@@ -1093,25 +1836,25 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #   df<-replace_nas_with_unlabeled(df,"Customer","Uncategorized")
   #
   #   #     debug(read_and_join_experiment)
-  #   df<-csis360::read_and_join_experiment(df,
+  #   df<-read_and_join_experiment(df,
   #                                         "SubCustomer.csv",
   #                                         by=c("Customer"="Customer","SubCustomer"="SubCustomer"),
   #                                         add_var=c("SubCustomer.platform","SubCustomer.sum"),
   #                                         path=path,
-  #                                         dir="office/"
+  #                                         directory="office/"
   #   )
   # }
   # else if ("FundingCustomer" %in% names(df) & "FundingSubCustomer" %in% names(df)){
   #   df<-replace_nas_with_unlabeled(df,"FundingSubCustomer","Uncategorized")
-  #   df<-csis360::read_and_join_experiment(df,
+  #   df<-read_and_join_experiment(df,
   #                                         "SubCustomer.csv",
   #                                         by=c("FundingCustomer"="Customer","FundingSubCustomer"="SubCustomer"),
   #                                         add_var=c("SubCustomer.platform","SubCustomer.sum"),
   #                                         path=path,
-  #                                         dir="office/")
+  #                                         directory="office/")
   # }
 
-  # Organization Contracting ####
+  # Organization Awarding ####
   if("agencyid" %in% names(df) &
      "PIID" %in% names(df) &
      "idvagencyid" %in% names(df) &
@@ -1120,8 +1863,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   {
 
     df<-df%>% mutate(derived_link=paste("https://www.usaspending.gov/award/CONT_AWD_",PIID,"_",agencyid,"_",
-                                        ifelse(is.na(idvpiid)|idvpiid=="","-NONE-",idvpiid),"_",
-                                        ifelse(is.na(idvagencyid)|idvagencyid=="","-NONE-",idvagencyid),"/",sep=""))
+                                        if_else(is.na(idvpiid)|idvpiid=="","-NONE-",idvpiid),"_",
+                                        if_else(is.na(idvagencyid)|idvagencyid=="","-NONE-",idvagencyid),"/",sep=""))
   }
 
   if("Contracting_Agency_ID" %in% names(df))
@@ -1148,7 +1891,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df<-read_and_join_experiment(df,
                                  path=path,
                                  "Agency_AgencyID.csv",
-                                 dir="",
+                                 directory="",
                                  by=c("Contracting_Agency_ID"="AgencyID"),
                                  add_var=c("Customer","SubCustomer","AgencyIDtext"),#Contracting.Agency.ID
                                  skip_check_var=c("Platform","Customer","SubCustomer","AgencyIDtext"),
@@ -1159,7 +1902,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
       df<-read_and_join_experiment(df,
                                    path=path,
-                                   dir="office\\",
+                                   directory="office\\",
                                    lookup_file = "MajComID.csv",
                                    by =c("Fiscal_Year"="Fiscal_Year",
                                          "Contracting_Agency_ID"="Contracting_Agency_ID",
@@ -1168,7 +1911,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
       df<-read_and_join_experiment(df,
                                    path=path,
-                                   dir="office\\",
+                                   directory="office\\",
                                    lookup_file = "MajComSum.csv")
 
 
@@ -1176,6 +1919,43 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
     }
   }
+
+  # if("awarding_agency_code" %in% names(df))
+  # {
+  #
+  #   df<-read_and_join_experiment(df,
+  #                                path=path,
+  #                                "Awarding_Agency_Code.csv",
+  #                                directory="office",
+  #                                by=c("awarding_agency_code"="awarding_agency_code"),
+  #                                add_var=c("Customer","SubCustomer","AgencyIDtext"),#Contracting.Agency.ID
+  #                                skip_check_var=c("Platform","Customer","SubCustomer","AgencyIDtext"),
+  #                                guess_max=2000)
+  #   colnames(df)[colnames(df)=="AgencyIDtext"]<-"ContractingAgencyName"
+  #
+  #   if("ContractingOfficeID" %in% names(df) & !"MajorCommandID" %in% names(df)){
+  #
+  #     df<-read_and_join_experiment(df,
+  #                                  path=path,
+  #                                  directory="office\\",
+  #                                  lookup_file = "MajComID.csv",
+  #                                  by =c("Fiscal_Year"="Fiscal_Year",
+  #                                        "Contracting_Agency_ID"="Contracting_Agency_ID",
+  #                                        "ContractingOfficeID"="ContractingOfficeID"),
+  #                                  skip_check_var = "MajorCommandID")
+  #
+  #     df<-read_and_join_experiment(df,
+  #                                  path=path,
+  #                                  directory="office\\",
+  #                                  lookup_file = "MajComSum.csv")
+  #
+  #
+  #
+  #
+  #   }
+  # }
+
+
   if("Customer" %in% names(df) && "SubCustomer" %in% names(df)){
     if("SubCustomer.sum"%in% names(df)){
       df<-subset(df, select=-c(SubCustomer.sum))
@@ -1186,22 +1966,23 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df<-replace_nas_with_unlabeled(df,"Customer","Uncategorized")
 
     #     debug(read_and_join_experiment)
-    df<-csis360::read_and_join_experiment(df,
+    df<-read_and_join_experiment(df,
                                           "SubCustomer.csv",
                                           by=c("Customer"="Customer","SubCustomer"="SubCustomer"),
                                           add_var=c("SubCustomer.platform","SubCustomer.sum"),
                                           path=path,
-                                          dir="office/"
+                                          directory="office/"
     )
   }
   else if ("ContractingCustomer" %in% names(df) & "ContractingSubCustomer" %in% names(df)){
+    df$ContractingCustomer[df$ContractingCustomer==""]<-NA
     df<-replace_nas_with_unlabeled(df,"ContractingSubCustomer","Uncategorized")
-    df<-csis360::read_and_join_experiment(df,
+    df<-read_and_join_experiment(df,
                                           "SubCustomer.csv",
                                           by=c("ContractingCustomer"="Customer","ContractingSubCustomer"="SubCustomer"),
                                           add_var=c("SubCustomer.platform","SubCustomer.sum"),
                                           path=path,
-                                          dir="office/")
+                                          directory="office/")
   }
 
   # else if ("SubCustomer" %in% names(df)){
@@ -1224,37 +2005,71 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   # classify competition
   if("CompetitionClassification" %in% names(df) & "ClassifyNumberOfOffers" %in% names(df) )
   {
-    df<-csis360::read_and_join_experiment(df,
-                               "CompetitionClassification.csv",
-                               by=c("CompetitionClassification","ClassifyNumberOfOffers"),
-                               replace_na_var="ClassifyNumberOfOffers",
-                               add_var=c("Competition.sum",
-                                         "Competition.multisum",
-                                         "Competition.effective.only",
-                                         "No.Competition.sum"),
-                               path=path,
-                               dir="contract/"
+    df<-read_and_join_experiment(df,
+                                          "CompetitionClassification.csv",
+                                          by=c("CompetitionClassification","ClassifyNumberOfOffers"),
+                                          replace_na_var="ClassifyNumberOfOffers",
+                                          add_var=c("Competition.sum",
+                                                    "Competition.multisum",
+                                                    "Competition.effective.only",
+                                                    "No.Competition.sum"),
+                                          path=path,
+                                          directory="contract/"
     )
   }
   if("Vehicle" %in% names(df) ){
-    df<-csis360::read_and_join_experiment(df,
+    df<-read_and_join_experiment(df,
                                           "Vehicle.csv",
                                           by=c("Vehicle"="Vehicle.detail"),
                                           add_var=c("Vehicle.sum","Vehicle.sum7","Vehicle.AwardTask"),
                                           path=path,
                                           # path="K:/Users/Greg/Repositories/Lookup-Tables/",
-                                          dir="contract/"
+                                          directory="contract/"
     )
   }
 
+  # Mechanism Type ####
+  if("assistance_type_code" %in% names(df) ){
+    df<-df %>% mutate(cfda_num=if_else(
+      nchar(cfda_number)>6,
+      round(text_to_number(cfda_number),3),
+      cfda_number))
+    if(any(!is.na(df$cfda_number)&is.na(df$cfda_num)))
+      stop("Mangled CFDA number")
+    df<-read_and_join_experiment(df,directory="assistance//",lookup_file="assistance_type_code.csv",
+                                 by="assistance_type_code",path=path)
+  }
+
+  if("assistance_type_code" %in% names(df) ){
+    df<-read_and_join_experiment(data=df
+                                 ,"assistance_type_code.csv"
+                                 ,path=path
+                                 ,directory="assistance//"
+                                 ,by="assistance_type_code",
+                                 ,add_var = c("assistance_type_description"),
+                                 # ,skip_check_var = c("PricingInflation","TypeOfContractPricingText")
+                                 ,lookup_char_as_factor = TRUE
+                                 # ,new_var_checked=FALSE
+                                 # ,create_lookup_rdata=TRUE
+                                 # ,col_types="dddddddddccc"
+    )
+  }
+  if("costaccountingstandardsclause" %in% names(df))
+    df$costaccountingstandardsclause[df$costaccountingstandardsclause==""]<-NA
+  if("costorpricingdata" %in% names(df))
+    df$costorpricingdata[df$costorpricingdata==""]<-NA
+
 
   if("TypeOfContractPricing" %in% names(df) ){
+    if("PricingMechanism" %in% names(df))
+      df<-df %>% select(-PricingMechanism)
 
     df<-read_and_join_experiment(data=df
                                  ,"contract.TypeOfContractPricing.csv"
                                  ,path=path
-                                 ,dir="contract/"
-                                 ,add_var = c("PricingInflation","TypeOfContractPricingText")
+                                 ,directory="contract/"
+                                 ,add_var = c("TypeOfContractPricingText","PricingFee",
+                                              "PricingInflation","Pricing.sum")
                                  ,skip_check_var = c("PricingInflation","TypeOfContractPricingText")
                                  # ,by=c("informationtechnologycommercialitemcategory"="informationtechnologycommercialitemcategory")
                                  # ,new_var_checked=FALSE
@@ -1263,6 +2078,17 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
     df$PricingInflation<-factor(df$PricingInflation)
     df$TypeOfContractPricingText<-factor(df$TypeOfContractPricingText)
+
+    if("PricingUCA" %in% names(df)){
+      df$PricingUCA<-as.character(df$PricingUCA)
+      df$PricingUCA[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)]<-
+        df$PricingFee[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)]
+      df$PricingUCA.sum<-as.character(df$Pricing.sum)
+      df$PricingUCA.sum[df$PricingUCA=="UCA"|is.na(df$PricingUCA)]<-"Crosscutting"
+      df$PricingUCA<-factor(df$PricingUCA)
+      df$PricingUCA.sum<-factor(df$PricingUCA.sum)
+
+    }
   }
 
   if("PricingUCA" %in% names(df) & !"PricingUCA.sum" %in% names(df) ){
@@ -1270,19 +2096,17 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df$PricingUCA.sum<-factor(df$PricingUCA)
     df<-replace_nas_with_unlabeled(df,"PricingUCA.sum")
     levels(df$PricingUCA.sum)<-
-      list("FFP"="FFP",
-           "Less Common"=c("Other FP","T&M/LH/FPLOE"),
-           "Incentive"="Incentive",
-           "Other CB"="Other CB",
-           "UCA"="UCA",
-           "Unclear"=c("Combination/Other","Unlabeled"))
+      list("Fixed-Price"=c("FFP","Other FP","FP-Econ. Price Adj."),
+           "Incentive"=c("Incentive","FP-Incentive","CB-Incentive"),
+           "Cost or Effort-Based"=c("Other CB","T&M/LH/FPLOE"),
+           "Crosscutting"=c("UCA","Combination or Other","Unlabeled"))
   }
 
   if("informationtechnologycommercialitemcategory" %in% names(df)){
     df<-read_and_join_experiment(data=df
                                  ,"InformationTechnologyCommercialItemCategory.csv"
                                  ,path=path
-                                 ,dir="productorservice/"
+                                 ,directory="productorservice/"
                                  ,by=c("informationtechnologycommercialitemcategory"="informationtechnologycommercialitemcategory")
                                  # ,new_var_checked=FALSE
                                  # ,create_lookup_rdata=TRUE
@@ -1297,7 +2121,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #                                      "Agency_AgencyID.csv",
   #                                      by=c("Contracting.Agency.ID"="AgencyID"),
   #                                      path=path,
-  #                                      dir="")
+  #                                      directory="")
   #
   #     # NA.check.df<-subset(df, is.na(Contracting.Agency.Name) , select=c("Contracting.Agency.ID"))
   #     # if(nrow(NA.check.df)>0){
@@ -1428,41 +2252,70 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #   }
   #
-  #   colnames(df)[colnames(df) %in% c("ProdServ","Product.or.Service.Code")]<-"ProductOrServiceCode"
-  if("ProductOrServiceCode" %in% names(df))
+  #If there's existing productorservce descriptions, these may be more precise than
+  #What we can provide via lookup tables.
+  #### PSC / NAICS / Project ####
+  if("ProductOrServiceCode" %in% names(df) & !"Product.or.Service.Description" %in% names(df)&
+     !"ProductOrServiceCodeText" %in% names(df))
   {
     if(is.integer(df$ProductOrServiceCode)){
       df$ProductOrServiceCode<-factor(df$ProductOrServiceCode)
     }
     df$ProductOrServiceCode[df$ProductOrServiceCode==""]<-NA
 
-    if("Product.or.Service.Description" %in% names(df)){
-      df<-subset(df, select=-c(Product.or.Service.Description))
-    }
-    if("SimpleArea" %in% names(df)){
-      df<-subset(df, select=-c(SimpleArea))
-    }
-
-    #           debug(read_and_join_experiment)
-    df<-csis360::read_and_join_experiment(df,
+    df<-read_and_join_experiment(df,
                                           "ProductOrServiceCodes.csv",
                                           by=c("ProductOrServiceCode"="ProductOrServiceCode"),
-                                          add_var=c("CrisisProductOrServiceArea","Simple","ProductOrServiceArea","ProductServiceOrRnDarea",
-                                                    "ProductOrServiceCodeText"),
+                                          add_var=c("ProductOrServiceCodeText"),
                                           path=path,
-                                          skip_check_var = c("CrisisProductOrServiceArea","Simple"),
-                                          dir=""
+                                          skip_check_var = c("ProductServiceOrRnDarea"),
+                                          directory=""
     )
-    # df<-read_and_join_experiment(df,
-    #                       "ProductOrServiceCodes.csv",
-    #                       path=path,
-    #                       directory="",
-    #                       by="ProductOrServiceCode")
-    #         NA.check.df<-subset(df, is.na(ProductOrServiceArea), select=c("Product.or.Service.Code"))
-    #         if(nrow(NA.check.df)>0){
-    #             print(unique(NA.check.df))
-    #             stop(paste(nrow(NA.check.df),"rows of NAs generated in ProductOrServiceArea"))
-    #         }
+  }
+  #We can be more precise
+  if("ProductOrServiceCode" %in% names(df) &
+     !"ProductServiceOrRnDarea" %in% names(df) &
+     "Fiscal_Year"  %in% names(df))
+  {
+    if(is.integer(df$ProductOrServiceCode)){
+      df$ProductOrServiceCode<-factor(df$ProductOrServiceCode)
+    }
+    df$ProductOrServiceCode[df$ProductOrServiceCode==""]<-NA
+
+    df<-df %>% mutate(Fiscal_Year_gt_2020=if_else(Fiscal_Year>2020,1,0))
+    df<-read_and_join_experiment(df,
+                                          "PSCAtransition.csv",
+                                          directory="ProductOrService/",
+                                          by=c("ProductOrServiceCode"="ProductOrServiceCode",
+                                               "Fiscal_Year_gt_2020"="Fiscal_Year_gt_2020"),
+                                          add_var=c("ProductServiceOrRnDarea"),
+                                          path=path,
+                                          skip_check_var = c("ProductServiceOrRnDarea",
+                                                             "TransitionProductServiceOrRnDarea"),
+    )
+    colnames(df)[colnames(df)=="ProductServiceOrRnDarea"]<-"TransitionProductServiceOrRnDarea"
+
+    df<-read_and_join_experiment(df,
+                                          "ProductOrServiceCodes.csv",
+                                          by=c("ProductOrServiceCode"="ProductOrServiceCode"),
+                                          add_var=c("Simple","ProductOrServiceArea","ProductServiceOrRnDarea"),
+                                          path=path,
+                                          skip_check_var = c("ProductServiceOrRnDarea"),
+                                          directory=""
+
+    )
+    df$ProductServiceOrRnDarea[is.na(df$ProductServiceOrRnDarea)]<-
+      df$TransitionProductServiceOrRnDarea[is.na(df$ProductServiceOrRnDarea)]
+    #Manual check because we have to draw from two sources
+    NA.check.df<-subset(df, is.na(ProductServiceOrRnDarea)&!is.na(ProductOrServiceCode),
+                        select=c("ProductOrServiceCode","TransitionProductServiceOrRnDarea","ProductServiceOrRnDarea"))
+    if(nrow(NA.check.df)>0){
+      print(unique(NA.check.df))
+      warning(paste(nrow(NA.check.df),"rows of NAs generated in ProductServiceOrRnDarea"))
+    }
+
+    df<-df %>% dplyr::select(-Fiscal_Year_gt_2020,-TransitionProductServiceOrRnDarea)
+
   }
   else if("ProductServiceOrRnDarea" %in% names(df))
   {
@@ -1489,14 +2342,14 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     #     debug(read_and_join_experiment)
 
     #Classify Product or Service Codes
-    df<-csis360::read_and_join_experiment(df,
-                               "ProductServiceOrRnDarea.csv",
-                               # by="ProductOrServiceArea",
-                               by="ProductServiceOrRnDarea",
-                               replace_na_var="ProductServiceOrRnDarea",
-                               add_var=c("ProductServiceOrRnDarea.sum","ServicesCategory.detail","ServicesCategory.sum"),
-                               path=path,
-                               dir="productorservice/"
+    df<-read_and_join_experiment(df,
+                                          "ProductServiceOrRnDarea.csv",
+                                          # by="ProductOrServiceArea",
+                                          by="ProductServiceOrRnDarea",
+                                          replace_na_var="ProductServiceOrRnDarea",
+                                          add_var=c("ProductServiceOrRnDarea.sum","ServicesCategory.detail","ServicesCategory.sum"),
+                                          path=path,
+                                          directory="productorservice/"
     )
 
 
@@ -1578,7 +2431,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
       df<-read_and_join_experiment(df,
                                    lookup_file="ProjectID.txt",
-                                   path=path,dir="project/",
+                                   path=path,directory="project/",
                                    add_var = c("IsRemotelyOperated"),
                                    by=c("ProjectID"),
                                    # missing_file="missing_iso.csv",
@@ -1600,7 +2453,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
     df<-read_and_join_experiment(df,
                                  lookup_file="ProjectID.txt",
-                                 path=path,dir="project/",
+                                 path=path,directory="project/",
                                  add_var = c("ProjectName","IsUnknown","IsRemotelyOperated"),
                                  by=c("ProjectID"),
                                  # missing_file="missing_iso.csv",
@@ -1790,15 +2643,35 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #   }
   #
   #
+
+  if("principalnaicscode" %in% names(df))
+  {
+    df$principalnaicscode[df$principalnaicscode==""]<-NA
+    if(any(is.na(text_to_number(df$principalnaicscode))&!is.na(df$principalnaicscode)))
+      stop(paste("Text in principalnaicscode:",
+                 levels(factor(df$principalnaicscode[is.na(text_to_number(df$principalnaicscode))&!is.na(df$principalnaicscode)]))))
+    df$principalnaicscode<-text_to_number(df$principalnaicscode)
+
+    df<-read_and_join_experiment(df,
+                                          "Lookup_PrincipalNAICScode.csv",
+                                          by=c("principalnaicscode"="principalnaicscode"),
+                                          add_var=c("principalnaicscodeText"),
+                                          path=path,
+                                          skip_check_var = c("principalnaicscodeText"),
+                                          directory="economic"
+    )
+  }
+
+  #### Vendor Size and Location####
   if("VendorSize" %in% names(df)){
     df<-replace_nas_with_unlabeled(df,"VendorSize")
 
-    df<-csis360::read_and_join_experiment(df,
+    df<-read_and_join_experiment(df,
                                           "VendorSize.csv",
                                           by=c("VendorSize"="VendorSize"),
                                           add_var="Shiny.VendorSize",
                                           path=path,
-                                          dir="vendor/"
+                                          directory="vendor/"
     )
 
     # df<-read_and_join_experiment(df,"LOOKUP_Contractor_Size.csv")
@@ -1874,12 +2747,12 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     #   "Large+" = "Large Vendor",
     #   "Large+" = "Large: Big 5 JV"))%>%
 
-    df<-csis360::read_and_join_experiment(df,
+    df<-read_and_join_experiment(df,
                                           "EntitySizeCode.csv",
                                           by=c("EntitySizeCode"="EntitySizeCode"),
                                           add_var=c("EntitySizeText","EntitySmall","EntitySizeText.sum"),
                                           path=path,
-                                          dir="vendor/")
+                                          directory="vendor/")
     df<-replace_nas_with_unlabeled(df,"EntitySizeText",replacement="Unlabeled Vendor")
     df<-replace_nas_with_unlabeled(df,"EntitySizeText.sum",replacement="Unlabeled Vendor")
     df<-replace_nas_with_unlabeled(df,"EntitySmall",replacement="Unlabeled Vendor")
@@ -1893,7 +2766,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df<-deflate(df,
                   money_var = "Action_Obligation",
                   fy_var="Fiscal_Year",
-                  deflator_var=deflator_var
+                  deflator_var=deflator_var,
+                  path=path
       )
     }
   }
@@ -1901,8 +2775,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   if("fundedbyforeignentity" %in% colnames(df) &
      !"foreign_funding_description" %in% colnames(df)){
     df$fundedbyforeignentity[df$fundedbyforeignentity==""]<-NA
-    df %<>% read_and_join_experiment(lookup_file="Budget_FundedByForeignEntity.csv",
-                                     path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",dir="budget/",
+    df<-   read_and_join_experiment(df,lookup_file="Budget_FundedByForeignEntity.csv",
+                                     path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",directory="budget/",
                                      add_var = c("foreign_funding_description"),
                                      by=c("fundedbyforeignentity")
                                      # missing_file="missing_iso.csv",
@@ -1927,15 +2801,45 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
   if("PlaceOfManufacture" %in% colnames(df)){
     #Place of manufacture
-    df<-csis360::read_and_join_experiment(df,
+    df<-read_and_join_experiment(df,
                                           "Location_PlaceOfManufacture.csv",
                                           by="PlaceOfManufacture",
-                                          add_var=c("PlaceOfManufactureText","PlaceOfManufacture_Sum"),
-                                          skip_check_var = c("PlaceOfManufactureText","PlaceOfManufacture_Sum"),
+                                          add_var=c("PlaceOfManufactureText","PlaceOfManufacture_Sum","PlaceOfManufacture_DoD",
+                                                    "MFGorPerformIsForeign","MFGisForeign"),
+                                          skip_check_var = c("PlaceOfManufactureText","PlaceOfManufacture_Sum","PlaceOfManufacture_DoD",
+                                                             "MFGorPerformIsForeign","MFGisForeign"),
                                           path=path,
-                                          dir="location/",
+                                          directory="location/",
                                           case_sensitive = FALSE
     )
+  }
+
+  if("ManufacturingOrganizationType" %in% colnames(df)){
+    #ManufacturingOrganizationType
+    df<-read_and_join_experiment(df,
+                                 "ManufacturingOrganizationType.csv",
+                                 by="ManufacturingOrganizationType",
+                                 add_var=c("ManufacturingOrganizationText","ManufacturingOrganizationText_sum",
+                                           "ManufacturingOrganizationParentHQisForeign"),
+                                 skip_check_var = c("ManufacturingOrganizationText","ManufacturingOrganizationText_sum",
+                                                    "ManufacturingOrganizationParentHQisForeign"),
+                                 path="offline",
+                                 directory="location/",
+                                 case_sensitive = FALSE
+    )
+  }
+  if("VendorAddressCountry" %in% colnames(df) & !"VendorAddressISOalpha3" %in% colnames(df)){
+    if("ISOalpha3" %in% colnames(df))
+      df<-subset(df,select=-c(ISOalpha3))
+    df$VendorAddressCountry[df$VendorAddressCountry==""]<-NA
+    df<-read_and_join_experiment(df,lookup_file="Location_CountryName.csv",
+                                 path=path,directory="location/",
+                                 add_var = c("ISOalpha3"),
+                                 by=c("VendorAddressCountry"="CountryName"),
+                                 # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                 missing_file="missing_VendorAddressCountry.csv",
+                                 case_sensitive = FALSE)
+    colnames(df)[colnames(df)=="ISOalpha3"]<-"VendorAddressISOalpha3"
   }
 
 
@@ -1943,26 +2847,101 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   if("PlaceISOalpha3" %in% colnames(df)){
     if("PlaceIsForeign" %in% colnames(df))
       df<-subset(df,select=-c(PlaceIsForeign))
-    df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
-                                 path=path,dir="location/",
-                                 add_var = c("isforeign"),#"USAID region",
-                                 by=c("PlaceISOalpha3"="alpha-3"),
-                                 # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
-                                 missing_file="missing_DSCA_iso.csv")
-    colnames(df)[colnames(df)=="isforeign"]<-"PlaceIsForeign"
+
+    if(call_add_alliance)
+      df <- df %>% add_alliance(ISOalpha3_col= "PlaceISOalpha3", drop_col = TRUE,prefix="Place")
+    else{
+      df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
+                                   path=path,directory="location/",
+                                   add_var = c("isforeign"),#"USAIDregion",
+                                   by=c("PlaceISOalpha3"="alpha-3"),
+                                   # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                   missing_file="missing_DSCA_iso.csv")
+      colnames(df)[colnames(df)=="isforeign"]<-"PlaceIsForeign"
+    }
   }
+
+  if("OriginISOalpha3" %in% colnames(df)){
+    if("OriginIsForeign" %in% colnames(df))
+      df<-subset(df,select=-c(OriginIsForeign))
+    if(call_add_alliance){
+      df$OriginISOalpha3[df$OriginISOalpha3=="~NJ"]<-NA
+      df <- df %>% add_alliance(ISOalpha3_col= "OriginISOalpha3", drop_col = TRUE,prefix="Origin")
+    }
+    else{
+      df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
+                                   path=path,directory="location/",
+                                   add_var = c("isforeign"),#"USAIDregion",
+                                   by=c("OriginISOalpha3"="alpha-3"),
+                                   # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                   missing_file="missing_DSCA_iso.csv")
+      colnames(df)[colnames(df)=="isforeign"]<-"OriginIsForeign"
+    }
+    # if("MFGorPerformIsForeign" %in% colnames(df)){
+    #   df <- df %>% mutate(MFGorPerformIsForeign=case_when(
+    #     MFGorPerformIsForeign==1~1,
+    #     OriginIsForeign=1~1,
+    #     TRUE~MFGorPerformIsForeign
+    #   ))
+    # }
+    # if("MFGisForeign" %in% colnames(df)){
+    #   df <- mutate(MFGisForeign=case_when(
+    #     ~is.na(MFGisForeign)==1~1,
+    #     OriginIsForeign=1~1,
+    #     TRUE~MFGorPerformIsForeign
+    #   ))
+    # }
+  }
+
 
   if("VendorISOalpha3" %in% colnames(df)){
     if("VendorIsForeign" %in% colnames(df))
       df<-subset(df,select=-c(VendorIsForeign))
-    df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
-                                 path=path,dir="location/",
-                                 add_var = c("isforeign"),#"USAID region",
-                                 by=c("VendorISOalpha3"="alpha-3"),
-                                 # skip_check_var=c("NATOyear",	"MajorNonNATOyear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
-                                 missing_file="missing_DSCA_iso.csv")
-    colnames(df)[colnames(df)=="isforeign"]<-"VendorIsForeign"
+
+    df$VendorISOalpha3[df$VendorISOalpha3=="~NJ"]<-NA
+    if(call_add_alliance){
+      df <- df %>% add_alliance(ISOalpha3_col= "VendorISOalpha3", drop_col = TRUE,prefix="Vendor")
+    } else {
+      df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
+                                   path=path,directory="location/",
+                                   add_var = c("isforeign"),#"USAIDregion",
+                                   by=c("VendorISOalpha3"="alpha-3"),
+                                   # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                   missing_file="missing_DSCA_iso.csv")
+      colnames(df)[colnames(df)=="isforeign"]<-"VendorIsForeign"
+    }
+    # if("ParentHQisForeign" %in% colnames(df)){
+    #   df <- mutate(ParentHQisForeign=case_when(
+    #     ParentHQisForeign==1~1,
+    #     VendorIsForeign==1~1,
+    #     TRUE~ParentHQisForeign
+    #   ))
+    # }
   }
+
+  if("VendorAddressISOalpha3" %in% colnames(df)){
+    if("VendorAddressIsForeign" %in% colnames(df))
+      df<-subset(df,select=-c(VendorIsForeign))
+    if(call_add_alliance){
+      df <- df %>% add_alliance(ISOalpha3_col= "VendorAddressISOalpha3", drop_col = TRUE,prefix="VendorAddress")
+    } else {
+      df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
+                                   path=path,directory="location/",
+                                   add_var = c("isforeign"),#"USAIDregion",
+                                   by=c("VendorAddressISOalpha3"="alpha-3"),
+                                   # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                   missing_file="missing_iso.csv")
+      colnames(df)[colnames(df)=="isforeign"]<-"VendorAddressIsForeign"
+    }
+    # if("ParentHQisForeign" %in% colnames(df)){
+    #   df <- mutate(MFGorPerformIsForeign=case_when(
+    #     ParentHQisForeign==1~1,
+    #     VendorAddressIsForeign==1~1,
+    #     TRUE~ParentHQisForeign
+    #   ))
+    #}
+  }
+
   if ("Shiny.VendorSize" %in% colnames(df) & "VendorIsForeign" %in% colnames(df)){
     df$VendorSize_Intl<-factor(df$Shiny.VendorSize)
     levels(df$VendorSize_Intl)<-list(
@@ -1977,9 +2956,6 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df$VendorSize_Intl[is.na(df$VendorIsForeign)]<-"Unlabeled"
 
   }
-
-
-
 
   #### Duration ####
   if("CurrentDurationCategory" %in% colnames(df)){
@@ -2116,12 +3092,12 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #   ){
   #
   #
-  #     df$ResidualOutlay.2013<-ifelse(is.na(df$OutlayNoOffsetAccount.2013)
+  #     df$ResidualOutlay.2013<-if_else(is.na(df$OutlayNoOffsetAccount.2013)
   #                                        ,0
   #                                        ,df$OutlayNoOffsetAccount.2013
   #     )
   #
-  #     df$ResidualOutlay.2013<-df$ResidualOutlay.2013-ifelse(is.na(df$ContractObligatedAmount.2013)
+  #     df$ResidualOutlay.2013<-df$ResidualOutlay.2013-if_else(is.na(df$ContractObligatedAmount.2013)
   #                                                                   ,0
   #                                                                   ,df$ContractObligatedAmount.2013
   #     )
@@ -2138,7 +3114,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #     if("Fed_Grant_Funding_Amount.2013" %in% names(df))
   #     {
   #
-  #       df$ResidualOutlay.2013<-df$ResidualOutlay.2013-ifelse(is.na(df$Fed_Grant_Funding_Amount.2013)
+  #       df$ResidualOutlay.2013<-df$ResidualOutlay.2013-if_else(is.na(df$Fed_Grant_Funding_Amount.2013)
   #                                                                     ,0
   #                                                                     ,df$Fed_Grant_Funding_Amount.2013
   #       )
@@ -2370,14 +3346,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #
   #
-  if("Fiscal_Year"%in% names(df)){
 
-    df$Fiscal_Year <- text_to_number(df$Fiscal_Year)
-    df$dFYear<-as.Date(paste("1/1/",as.character(df$Fiscal_Year),sep=""),"%m/%d/%Y")
-    # df$Fiscal_Year <-as.Date(paste("1/1/",as.character(df$Fiscal_Year),sep=""),"%m/%d/%Y")
-    # df$Fiscal_Year.End <-as.Date(paste("9/30/",as.character(year(df$Fiscal_Year)),sep=""),"%m/%d/%Y")
-    # df$Fiscal_Year.Start <-as.Date(paste("10/1/",as.character(year(df$Fiscal_Year)-1),sep=""),"%m/%d/%Y")
-  }
   #
   #   if("Date.Signed"%in% names(df)){
   #

@@ -16,7 +16,7 @@
 #' @import ggplot2
 #' @export
 jitter_binary<-function(a, jitt = 0.05){
-  ifelse(a==0,runif(length(a),0,jitt),runif(length(a),1-jitt,1))
+  if_else(a==0,runif(length(a),0,jitt),runif(length(a),1-jitt,1))
 }
 
 
@@ -38,14 +38,14 @@ jitter_binary<-function(a, jitt = 0.05){
 #' @export
 get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
   #Make sure Open Sans is available.
-  if(!"Open Sans" %in% sysfonts::font_families()) sysfonts::font_add_google("Open Sans")
+  # if(!"Open Sans" %in% sysfonts::font_families()) sysfonts::font_add_google("Open Sans")
   t<-theme(
     panel.background = element_rect(fill = "#F4F4F4"),
     strip.background = element_rect(fill ="#E0E0E0"),
     plot.background = element_rect(fill = "white", color="white"),
     panel.grid.major.y = element_line(size=.1, color="gray"),
     panel.grid.minor.y = element_line(size=.1, color="lightgray"),
-    plot.margin = margin(t=0,r=0.1,b=0.1,l=0.1,"inches")
+    plot.margin = margin(t=0,r=0.25,b=0.1,l=0.1,"inches")
     )
   if(blank_x_lines==TRUE){
   t<-t+theme(
@@ -67,8 +67,8 @@ get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
     margin=margin(0.1,0,0.1,0,"inch"),
     hjust = 0.5))
   t<-t+theme(axis.text.x = element_text(
-    family = "Open Sans",
-    margin = margin(0,0,0,0)
+    family = "Open Sans"#,
+    # margin = margin(0,0,0,0)
     ))
   t<-t+theme(axis.text.y = element_text(
     family = "Open Sans",
@@ -122,7 +122,10 @@ get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
 #' @param column_key A csis360 lookup data.frame with column information
 #' @param format If TRUE, summarize the data.frame
 #' @param ytextposition If TRUE, add ytextposition to allow for geom_text overlays.
-#' @param reverse_color If TRUE, the
+#' @param reverse_color If TRUE, the order of the color variable is flipped
+#' @param alpha_var Variable for setting the transparency of bars or line type of lines, coded to be used with year to ate.
+#' @param invert_bool Used to create population pyramid or import/export charts, specifies when to show data in the negative space of the y-axis.
+#' @param suppress_x_var_newline For categorical x-axis variables, remove any new line from the character string
 #'
 #'
 #'
@@ -131,7 +134,6 @@ get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
 #' @details Intended to handle ggplot settings that depend on user input.
 #'Settings that apply universally should be added in server.R.
 #'
-#' @examples
 #'
 #' @import ggplot2
 #' @import stringr
@@ -153,7 +155,10 @@ build_plot <- function(
   column_key=NULL,
   format=FALSE,
   ytextposition=FALSE,
-  reverse_color=FALSE
+  first_color_on_bottom=TRUE,
+  alpha_var=NULL,
+  invert_bool=NULL,
+  suppress_x_var_newline=TRUE
 ){
   if(all(!is.null(second_var),facet_var==second_var | second_var=="None")) second_var<-NULL
   #To add, check for missing labels and colors
@@ -167,8 +172,11 @@ build_plot <- function(
                                  color_var=color_var,
                                  facet_var=facet_var,
                                  second_var=second_var,
+                                 alpha_var=alpha_var,
+                                 invert_bool=invert_bool,
                                  labels_and_colors=labels_and_colors,
-                                 add_ytextposition=ytextposition)
+                                 add_ytextposition=ytextposition,
+                                 suppress_x_var_newline=suppress_x_var_newline)
 
   #Nested if because its evaluating the second statement even if the first is false.
   if(color_var!="None")
@@ -182,10 +190,9 @@ build_plot <- function(
   if(!is.null(labels_and_colors) & !is.numeric(labels_and_colors$Display.Order)){
     labels_and_colors$Display.Order<-as.numeric(as.character(labels_and_colors$Display.Order))
     labels_and_colors<-labels_and_colors[order(labels_and_colors$column,labels_and_colors$Display.Order),]
-
   }
-  #Primarily for bar plots, sometimes we want the first in order on the bottom so it is easier to track movements.
-  if(reverse_color){
+  #Primarily for bar plots, we want the first in order on the bottom so it is easier to track movements.
+  if(first_color_on_bottom){
     labels_and_colors$Display.Order[labels_and_colors$column==color_var]<-
       -1*labels_and_colors$Display.Order[labels_and_colors$column==color_var]
     labels_and_colors<-labels_and_colors[order(labels_and_colors$column,labels_and_colors$Display.Order),]
@@ -193,45 +200,124 @@ build_plot <- function(
   data<-as.data.frame(data)
   mainplot <- ggplot(data = data)
   #Assume 1st row if no x_var provided.
-if(is.null(x_var)) x_var<-names(data)[1]
+  if(is.null(x_var)) x_var<-names(data)[1]
 
   # add a line layer, broken out by color if requested
   if(chart_geom == "Line Chart"){
+    #There must be a better way to do this than 4 branches to cover variable nulls
+    #Line plots need duplication, otherwise the YTD year is left out because it's only one point.
+    if(!is.null(alpha_var)){
+      if(alpha_var=="YTD" & x_var %in% c("Fiscal_Year","Mixed_Year","dFYear")){
+        max_full_year<-max(data[data$YTD=="Full Year",x_var])
+        data<-rbind(data,
+                    data[data[,x_var]==max_full_year,] %>%
+                      mutate(YTD="YTD"))
+      }
+        #Need to renew the data link here.
+        if(color_var!="None"){
+          data$coloralpha<-paste(data[,color_var],data[,alpha_var])
+          group_var<-"coloralpha"
+        }
+        mainplot <- ggplot(data = data)
+    }
     if(color_var == "None"){
-      mainplot <- mainplot +
-        geom_line(aes_q(
-          x = as.name(x_var),
-          y = as.name(y_var)
-        ))
+      if(is.null(alpha_var))
+        mainplot <- mainplot +
+          geom_line(aes_q(
+            x = as.name(x_var),
+            y = as.name(y_var)))
+      else{
+        mainplot <- mainplot +
+          geom_line(aes_q(
+            x = as.name(x_var),
+            y = as.name(y_var),
+            group = as.name(alpha_var),
+            linetype= as.name(alpha_var)
+          ))
+        if(alpha_var=="YTD"){
+          mainplot<-mainplot+scale_linetype_discrete(breaks=c(1,3),labels=c("Full Year","YTD"))+
+            theme(axis.text.x = element_text(margin = margin(t = 1, unit = "pt")))
+        }
+      }
     } else {
-      mainplot <- mainplot +
-        geom_line(aes_q(
-          x = as.name(x_var),
-          y = as.name(y_var),
-          color = as.name(color_var)
-        )) +
-        guides(color = guide_legend(override.aes = list(size = 1)))+
-        theme(legend.key = element_rect(fill = "white"))
+      if(is.null(alpha_var)){
+        mainplot <- mainplot +
+          geom_line(aes_q(
+            x = as.name(x_var),
+            y = as.name(y_var),
+            color = as.name(color_var)
+          ))+
+          guides(color = guide_legend(override.aes = list(size = 1)))+
+          theme(legend.key = element_rect(fill = "white"))
+      }
+      else{
+        mainplot <- mainplot +
+          geom_line(aes_q(
+            x = as.name(x_var),
+            y = as.name(y_var),
+            color = as.name(color_var),
+            # alpha = as.name(alpha_var)
+            linetype= as.name(alpha_var)
+          ))+
+          guides(color = guide_legend(override.aes = list(linewidth = 1)))+
+          theme(legend.key = element_rect(fill = "white"))
+        if(alpha_var=="YTD"){
+          mainplot<-mainplot+scale_linetype_discrete(breaks=c(1,3),labels=c("Full Year","YTD"))+
+            theme(axis.text.x = element_text(margin = margin(t = 1, unit = "pt")))
+        }
+      }
     }
   }
 
   # add a bar layer, broken out by color if requested
   else if(chart_geom == "Bar Chart"){
+    #There must be a better way to do this
     if(color_var == "None"){
-      mainplot <- mainplot +
-        geom_bar(aes_q(
-          x = as.name(names(data)[1]),
-          y = as.name(y_var)
-        ),
-        stat = "identity")
+      if(is.null(alpha_var))
+        mainplot <- mainplot +
+          geom_bar(aes_q(
+            x = as.name(x_var),
+            y = as.name(y_var)),
+            stat = "identity")
+      else{
+        mainplot <- mainplot +
+          geom_bar(aes_q(
+            x = as.name(x_var),
+            y = as.name(y_var),
+            alpha = as.name(alpha_var)
+          ),
+          stat = "identity")
+        if(alpha_var=="YTD"){
+          mainplot<-mainplot+scale_alpha_ordinal(labels=c("Full Year","YTD"),range=c(1,0.5))+
+            theme(axis.text.x = element_text(margin = margin(t = 1, unit = "pt")))
+        }
+      }
     } else {
-      mainplot <- mainplot +
-        geom_bar(aes_q(
-          x = as.name(x_var),
-          y = as.name(y_var),
-          fill = as.name(color_var)
-        ),
-        stat = "identity")
+      if(is.null(alpha_var))
+        mainplot <- mainplot +
+          geom_bar(aes_q(
+            x = as.name(x_var),
+            y = as.name(y_var),
+            fill = as.name(color_var)
+          ),
+          stat = "identity")
+      else{
+        mainplot <- mainplot +
+          geom_bar(aes_q(
+            x = as.name(x_var),
+            y = as.name(y_var),
+            fill = as.name(color_var),
+            alpha = as.name(alpha_var)
+          ),
+          stat = "identity")
+        if(alpha_var=="YTD"){
+          mainplot<-mainplot+scale_alpha_ordinal(labels=c("Full Year","YTD"),range=c(1,0.5))+
+            theme(axis.text.x = element_text(margin = margin(t = 1, unit = "pt")))
+        }
+      }
+    }
+    if(!is.null(invert_bool)){
+      mainplot<-mainplot+geom_hline(yintercept=0, colour = 'black', size=0.5, linetype='solid')
     }
   }
 
@@ -327,8 +413,8 @@ if(is.null(x_var)) x_var<-names(data)[1]
           facet_grid(as.formula(paste0("`",facet_var, "` ~ `", second_var, "`"))) +
           theme(strip.background = element_rect(fill = "white"))
       }
-      # theme(strip.background = element_rect(colour = "#554449", fill = "white", size=0.5),
-      #       panel.border = element_rect(colour = "#554449", fill=NA, size=0.5))
+      # theme(strip.background = element_rect(colour = "#554449", fill = "white", linewidth=0.5),
+      #       panel.border = element_rect(colour = "#554449", fill=NA, linewidth=0.5))
     }
     else{
       mainplot <- mainplot +
@@ -445,7 +531,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
 
   if(caption==TRUE)
     #+labs(y="",
-    mainplot<-mainplot+labs(caption = "Source: FPDS; CSIS analysis."
+    mainplot<-mainplot+labs(caption = "Source: FPDS and CSIS analysis."
     )
 
 
@@ -454,7 +540,7 @@ if(is.null(x_var)) x_var<-names(data)[1]
 }
 
 
-#' @title A legacy function for graphs that allows primary and s econdary facets and
+#' @title A legacy function for graphs that allows primary and secondary facets and
 #'
 #' @param VAR.color.legend.label Label for the fill legend
 #' @param VAR.main.label Main title for the graph
@@ -480,8 +566,6 @@ if(is.null(x_var)) x_var<-names(data)[1]
 #' @return A ggplot object following user-specified parameters.
 #'
 #' @details This should really be integrated into build_plot
-#'
-#' @examples
 #'
 #' @import ggplot2
 #' @import dplyr
@@ -844,17 +928,19 @@ if (caption==TRUE)
 #' @param units Output measurement unit as per ggsave
 #' @param size New text size
 #' @param caption_fraction Ratio of caption to the rest of text
+#' @param path for output, defaults to NA for legacy reasons
+#' @param second_path for output, typically to save to sharepoint
 #' @return Does not return, outptus to file
-#'
-#'
-#'
-#'
 #'
 #' @import ggplot2
 #' @export
 ggsave600dpi<-function(filename,gg,width,height,units="in",size=12,lineheight=0.13,
-                       caption_fraction=10/12,...){
-  ggsave(filename, gg+
+                       caption_fraction=10/12,path=NA,
+                       second_path=NA,...){
+
+  if(!is.na(path)) path.file<-file.path(path,filename)
+  else path.file<-filename
+  ggsave(path.file, gg+
          theme(text=element_text(size=size,lineheight=lineheight),
                legend.spacing.x = unit(0.1, 'cm'),
                plot.caption = element_text(size=round(size * caption_fraction,0))
@@ -864,6 +950,9 @@ ggsave600dpi<-function(filename,gg,width,height,units="in",size=12,lineheight=0.
                  # font("legend.text", size = 45) +
                  # theme(text = element_text(size = 45+
                 width=width, height= height, units=units,dpi=600,...)
+  if(!is.na(second_path))
+    ggsave600dpi(filename,gg,width,height,units,size,lineheight,
+                           caption_fraction,path=second_path,...)
 }
 
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/Cross-Footing.R
 \name{LimitScope}
 \alias{LimitScope}
-\title{Match up yeaers between two datasets to limit the scope.}
+\title{Match up years between two datasets to limit the scope.}
 \usage{
 LimitScope(FPDS.gov, main.DF)
 }
@@ -11,8 +11,11 @@ LimitScope(FPDS.gov, main.DF)
 
 \item{main.DF}{Comparison  data frame.}
 }
+\value{
+Updata dataframe
+}
 \description{
-Match up yeaers between two datasets to limit the scope.
+Match up years between two datasets to limit the scope.
 }
 \details{
 Quality control function

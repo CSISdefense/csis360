@@ -134,7 +134,7 @@ read.tables <- function(file.names, file.type="csv",...) {
 #' @param customer character string; choose from "Defense", "DHS", "State and IAP", or ""; defaults to "" for all
 #' @param big.ProdServ character string; choose from "Products", "Services", or ""; defaults to "" for all
 #'
-#' @return
+#' @return updated dataframe
 #'
 #' @details Quality control function
 #'
@@ -226,12 +226,12 @@ FPDS.gov<-subset(FPDS.gov,select=-c(Filename))
 }
 
 
-#' @title Match up yeaers between two datasets to limit the scope.
+#' @title Match up years between two datasets to limit the scope.
 #'
 #' @param FPDS.gov FPDS.gov data frame
 #' @param main.DF Comparison  data frame.
 #'
-#' @return
+#' @return Updata dataframe
 #'
 #' @details Quality control function
 #'
@@ -254,7 +254,7 @@ LimitScope <- function(FPDS.gov, main.DF) {
 #' @param prefix prefix to add to file name, e.g. defense
 #' @param file.name file name, sans any prefix.
 #'
-#' @return
+#' @return Comparison dataframe
 #'
 #' @details Quality control function
 #'
@@ -309,9 +309,9 @@ import_SQLserver_file <- function(Path
 #' @param Path File path
 #' @param df data frame
 #'
-#' @return
+#' @return updata datframe
 #'
-#' @details
+#' @details There are a few adjustments we make to the main contract.fpds dataset. This function applies this to our fpds.gov data as well.
 #'
 #' @export
 append_contract_fixes<- function(Path = "https://github.com/CSISdefense/R-scripts-and-data/blob/master/Lookups/",df){

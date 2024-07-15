@@ -11,8 +11,11 @@ ggsave600dpi(
   width,
   height,
   units = "in",
-  size = 60,
+  size = 12,
   lineheight = 0.13,
+  caption_fraction = 10/12,
+  path = NA,
+  second_path = NA,
   ...
 )
 }
@@ -28,6 +31,12 @@ ggsave600dpi(
 \item{units}{Output measurement unit as per ggsave}
 
 \item{size}{New text size}
+
+\item{caption_fraction}{Ratio of caption to the rest of text}
+
+\item{path}{for output, defaults to NA for legacy reasons}
+
+\item{second_path}{for output, typically to save to sharepoint}
 }
 \value{
 Does not return, outptus to file
