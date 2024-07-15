@@ -89,6 +89,12 @@ get_local_lookup_path<-function(){
   local_path<-"F:\\Repositories\\Lookup-Tables"
   if(file.exists(local_path))
     return(local_path)
+  local_path<-"E:\\Repository\\Lookup-Tables\\"
+  if(file.exists(local_path))
+    return(local_path)
+
+
+
   stop("Could not find local path. Update the list in Apply_Lookups.R")
 }
 
@@ -549,6 +555,7 @@ read_and_join_experiment<-function(
   if(!is.null(names(by)))
     left_by<-names(by)
   else left_by<-by
+
   # read.delim doesn't like \\
   path<-gsub("\\\\","//",path)
   directory<-gsub("\\\\","//",directory)
@@ -621,12 +628,18 @@ read_and_join_experiment<-function(
     else{#No zip file
       input<-swap_in_zip(lookup_file,pathdir)
     }
+    na_list<-c("NA","NULL")
+    #Known case where na=c("NA","NULL") will cause errors.
+    if(lookup_file=="Location_CountryCodes.csv"){
+      na_list<-"NULL"
+    }
+
     if(is.null(guess_max)){
       lookup<-readr::read_delim(
         input,
         col_names=TRUE,
         delim=if_else(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
-        na=c("NA","NULL"),
+        na=na_list,
         trim_ws=TRUE,
         col_types=col_types
       )
@@ -635,12 +648,14 @@ read_and_join_experiment<-function(
         input,
         col_names=TRUE,
         delim=if_else(substring(lookup_file,nchar(lookup_file)-3)==".csv",",","\t"),
-        na=c("NA","NULL"),
+        na=na_list,
         trim_ws=TRUE,
         col_types=col_types,
         guess_max =guess_max
       )
+
     }
+
     if(prefix!=""){
       if (is.null(by))
         names(lookup)<-paste0(prefix,names(lookup))

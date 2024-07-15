@@ -206,7 +206,7 @@ build_plot <- function(
   if(chart_geom == "Line Chart"){
     #There must be a better way to do this than 4 branches to cover variable nulls
     #Line plots need duplication, otherwise the YTD year is left out because it's only one point.
-    if(!is_null(alpha_var)){
+    if(!is.null(alpha_var)){
       if(alpha_var=="YTD" & x_var %in% c("Fiscal_Year","Mixed_Year","dFYear")){
         max_full_year<-max(data[data$YTD=="Full Year",x_var])
         data<-rbind(data,

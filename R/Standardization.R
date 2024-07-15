@@ -2223,6 +2223,8 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
         then_year_y_var<-"Amount_Then_Year"
       else if(y_var %in% c("delivery_BEA22"))
         then_year_y_var<-"delivery_Then_Year"
+      else if(y_var %in% c("delivery_BEA23"))
+        then_year_y_var<-"delivery_Then_Year"
       else if(y_var %in% c("DefenseObligated_OMB25_GDP23"))
         then_year_y_var<-"DefenseObligated_Then_Year"
       else if(y_var %in% c("value_2015")){
