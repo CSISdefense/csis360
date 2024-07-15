@@ -86,7 +86,7 @@ get_local_lookup_path<-function(){
   local_path<-"C:\\Users\\grego\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
-  local_path<-"F:\\Repositories\\Lookup-Tables"
+  local_path<-"F:\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
   local_path<-"E:\\Repository\\Lookup-Tables\\"
