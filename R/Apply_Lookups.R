@@ -150,6 +150,9 @@ get_local_sharepoint_path<-function(site="DIIG - Documents"){
   local_path<-file.path("C:\\Users\\AAldisert\\Center Strategic Intl Studies Inc CSIS",site)
   if(file.exists(local_path))
     return(local_path)
+  local_path<-file.path("C:\\Users\\HHolopainen\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
   stop("Could not find local path. Update the list in Apply_Lookups.R")
 }
 
