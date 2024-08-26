@@ -2102,10 +2102,10 @@ export_worksheet <- function(df,xlsx,sheet,path="..\\output",
 
 #' Save a csv in two locations
 #'
-#' @param df a ggplot object
+#' @param data a ggplot object
 #' @param first_path the primary storage path
 #' @param second_path the second path, typically sharepoint
-#' @param dir  what directory for the output
+#' @param dir=""  what directory for the output, defaults to none.
 #' @param file filename
 #' @param write_csv=TRUE Use write_csv by default, write.csv otherwise
 #' @param ... allow for other parameters
@@ -2114,7 +2114,7 @@ export_worksheet <- function(df,xlsx,sheet,path="..\\output",
 
 #'
 #' @export
-write_twice<-function(data,first_path,second_path,dir,file,write_csv=TRUE,...){
+write_twice<-function(data,first_path,second_path,dir="",file,write_csv=TRUE,...){
   if(write_csv){
     write_csv(file=file.path(first_path,dir,file),data,...)
     write_csv(file=file.path(second_path,dir,file),data,...)
