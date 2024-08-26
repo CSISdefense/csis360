@@ -86,6 +86,16 @@ get_local_lookup_path<-function(){
   local_path<-"C:\\Users\\grego\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
+  local_path<-"F:\\Repositories\\Lookup-Tables\\"
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-"E:\\Repository\\Lookup-Tables\\"
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-"F:\\REPOs\\Lookup-Tables"
+  if(file.exists(local_path))
+    return(local_path)
+
   stop("Could not find local path. Update the list in Apply_Lookups.R")
 }
 
@@ -132,6 +142,15 @@ get_local_sharepoint_path<-function(site="DIIG - Documents"){
   if(file.exists(local_path))
     return(local_path)
   local_path<-file.path("C:\\Users\\grego\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("C:\\Users\\HCarroll\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("C:\\Users\\AAldisert\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("C:\\Users\\HHolopainen\\Center Strategic Intl Studies Inc CSIS",site)
   if(file.exists(local_path))
     return(local_path)
   stop("Could not find local path. Update the list in Apply_Lookups.R")
