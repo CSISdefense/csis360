@@ -4,20 +4,28 @@
 \alias{write_twice}
 \title{Save a csv in two locations}
 \usage{
-write_twice(data, first_path, second_path, dir, file, write_csv = TRUE, ...)
+write_twice(
+  data,
+  first_path,
+  second_path,
+  dir = "",
+  file,
+  write_csv = TRUE,
+  ...
+)
 }
 \arguments{
+\item{data}{a ggplot object}
+
 \item{first_path}{the primary storage path}
 
 \item{second_path}{the second path, typically sharepoint}
-
-\item{dir}{what directory for the output}
 
 \item{file}{filename}
 
 \item{...}{allow for other parameters}
 
-\item{df}{a ggplot object}
+\item{dir=""}{what directory for the output, defaults to none.}
 
 \item{write_csv=TRUE}{Use write_csv by default, write.csv otherwise}
 }
