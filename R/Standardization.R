@@ -2126,6 +2126,27 @@ write_twice<-function(data,first_path,second_path,dir="",file,write_csv=TRUE,...
 }
 
 
+#' Remove unlabeled data, if it's less than 1 percent of total
+#'
+#' @param df
+#' @param col_list list of columns to strip out unlabeled
+#' @param threshold Percent of data that must be labeled, defaults 0.99
+#'
+#' @return df
+#'
+#' @export
+remove_unlabeled<-function(df,value_var,var_list,threshold=0.99){
+  original_total=sum(df[,value_var],na.rm=TRUE)
+    labeled_df<-df
+    for(v in var_list){
+      labeled_df<-labeled_df[!is.na(labeled_df[,v])& labeled_df[,v]!="Unlabeled",]
+    }
+    labeled_total<-sum(labeled_df[,value_var],na.rm = TRUE)
+    if(labeled_total<(threshold * original_total))
+      stop(paste(labeled_total/original_total*100," percent unlabeled, below ",threshold,"percent threshold"))
+    return(labeled_df)
+}
+
 #' Save a copy of the plot, a current dollars csv, and an excel copy
 #'
 #' @param plot a ggplot object
