@@ -1091,7 +1091,7 @@ label_top<-function(df,
     stop(paste(col,"is not founds in the columns of df"))
   if(!weight %in% colnames(df))
     stop(paste(weight,"is not founds in the columns of df"))
-  if(!is.na(group_list)){
+  if(any(!is.na(group_list))){
     agg_list<-c(col,group_list)
     for(g in group_list){
       if(!g %in% colnames(df))
