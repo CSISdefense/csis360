@@ -2227,7 +2227,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
     if(excel_then_year | csv_then_year){
       #Add other constant dollar here variables
       if(y_var %in% c("Then_Year_Dollars","Action_Obligation_Then_Year",
-                      "TIV_delivery_value") &
+                      "TIV_delivery_value","measurement") &
          excel_y_var==FALSE)
         then_year_y_var<-y_var
 
