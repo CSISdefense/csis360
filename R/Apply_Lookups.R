@@ -2859,6 +2859,24 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   }
 
 
+  if("PrincipalPlaceofPerformanceCountryCode" %in% colnames(df)){
+    if("PlaceIsForeign" %in% colnames(df))
+      df<-subset(df,select=-c(PlaceIsForeign))
+
+    if(call_add_alliance)
+      df <- df %>% add_alliance(ISOalpha3_col= "PrincipalPlaceofPerformanceCountryCode", drop_col = TRUE,prefix="Place")
+    else{
+      df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
+                                   path=path,directory="location/",
+                                   add_var = c("isforeign"),#"USAIDregion",
+                                   by=c("PrincipalPlaceofPerformanceCountryCode"="alpha-3"),
+                                   # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                   missing_file="missing_DSCA_iso.csv")
+      colnames(df)[colnames(df)=="isforeign"]<-"PlaceIsForeign"
+    }
+  }
+
+
 
   if("PlaceISOalpha3" %in% colnames(df)){
     if("PlaceIsForeign" %in% colnames(df))
