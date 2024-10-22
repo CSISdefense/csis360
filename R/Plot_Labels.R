@@ -140,6 +140,10 @@ prepare_labels_and_colors<-function(data
 
     if(nrow(labels_category_data)==0) stop(paste("No matching levels for:",column_key$column[v]))
 
+    if(any(is.na(labels_category_data$Label)))
+      stop(paste("NA(s) in label field:",paste(labels_category_data %>% dplyr::filter(is.na(Label)) %>% dplyr::select(variable,coloration.key)),
+           collapse=", "),collapse="; ")
+
     #Error checking for duplicates in lookup_coloration.csv
     if(anyDuplicated(labels_category_data$variable)>0){
       print(labels_category_data$variable[
