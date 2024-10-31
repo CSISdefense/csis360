@@ -162,6 +162,9 @@ get_local_sharepoint_path<-function(site="DIIG - Documents"){
   local_path<-file.path("C:\\Users\\HHolopainen\\Center Strategic Intl Studies Inc CSIS",site)
   if(file.exists(local_path))
     return(local_path)
+  local_path<-file.path("C:\\Users\\GSanders\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
   local_path<-file.path("C:\\Users\\GSanders\\OneDrive - Center Strategic Intl Studies Inc CSIS",site)
   if(file.exists(local_path))
     return(local_path)
@@ -1574,6 +1577,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
     colnames(df)[colnames(df)%in% renamelist]<-
       paste(prefix,colnames(df)[colnames(df)%in%renamelist],sep="")
     colnames(df)[colnames(df)=="StateRegion"]<-paste(prefix,"StateRegion",sep="")
+    colnames(df)[colnames(df)=="CombatantCommand"]<-paste(prefix,"CombatantCommand",sep="")
     colnames(df)[colnames(df)=="AcquisitionCooperation"]<-paste(prefix,"AcquisitionCooperation",sep="")
     colnames(df)[colnames(df)=="MutualDefense"]<-paste(prefix,"MutualDefense",sep="")
     colnames(df)[colnames(df)=="MutualAcquisition"]<-paste(prefix,"MutualAcquisition",sep="")
