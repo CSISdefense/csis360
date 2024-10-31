@@ -1254,18 +1254,18 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
   if("MutualDefense" %in%  colnames(df)) stop("Add Alliance has already been run on the data.frame")
 
   if(any(duplicated(colnames(df)))) stop("Duplicate Column Names")
-  #Add ISOalpha3 column if it does not already exist
+
+  if(!ISOalpha3_col %in% colnames(df)) stop(paste("ISOalpha3_col,",ISOalpha3_col,"is missing."))
   if(!is.null(ISOalpha3_col)){
-    if(!ISOalpha3_col %in% colnames(df)) stop(paste("ISOalpha3_col,",ISOalpha3_col,"is missing."))
     if("alpha-3" %in% colnames(df)) stop("Already alpha-3 in column names")
     if(!is.null(prefix)) if(prefix %in% colnames(df) & !skip_name) stop(paste("Already",prefix,"in column names"))
     colnames(df)[colnames(df)==ISOalpha3_col]<-"alpha-3"
     df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                 dir="location/",
-                                add_var = c("name", "StateRegion","NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear",	"SEATOendYear",	"RioTreatyStartYear","RioTreatyEndYear"	,"FiveEyes"	,"NTIByear"	,"OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),#"USAIDregion",
+                                add_var = c("name", "StateRegion","CombatantCommand","NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear",	"SEATOendYear",	"RioTreatyStartYear","RioTreatyEndYear"	,"FiveEyes"	,"NTIByear"	,"OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),#"USAIDregion",
                                 by="alpha-3",
                                 skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),
-                                missing_file="missing_DSCA_iso.csv"
+                                missing_file="missing_CoutryCode_iso.csv"
     )
     colnames(df)[colnames(df)=="alpha-3"]<-ISOalpha3_col
     if(skip_name) df <- df %>% dplyr::select(-name)
