@@ -95,10 +95,13 @@ get_local_lookup_path<-function(){
   local_path<-"F:\\REPOs\\Lookup-Tables"
   if(file.exists(local_path))
     return(local_path)
-  local_path<-"F:\\Users\\gsanders\\Repositories\\Lookup-Tables"
+  local_path<-"F:\\Users\\gsanders\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
   local_path<-"/Users/henrycarroll/Desktop/CSIS Work"
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-"C:\\Users\\GSanders\\Repos\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
 
@@ -157,6 +160,12 @@ get_local_sharepoint_path<-function(site="DIIG - Documents"){
   if(file.exists(local_path))
     return(local_path)
   local_path<-file.path("C:\\Users\\HHolopainen\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("C:\\Users\\GSanders\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("C:\\Users\\GSanders\\OneDrive - Center Strategic Intl Studies Inc CSIS",site)
   if(file.exists(local_path))
     return(local_path)
   stop("Could not find local path. Update the list in Apply_Lookups.R")
@@ -1248,18 +1257,18 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
   if("MutualDefense" %in%  colnames(df)) stop("Add Alliance has already been run on the data.frame")
 
   if(any(duplicated(colnames(df)))) stop("Duplicate Column Names")
-  #Add ISOalpha3 column if it does not already exist
+
+  if(!ISOalpha3_col %in% colnames(df)) stop(paste("ISOalpha3_col,",ISOalpha3_col,"is missing."))
   if(!is.null(ISOalpha3_col)){
-    if(!ISOalpha3_col %in% colnames(df)) stop(paste("ISOalpha3_col,",ISOalpha3_col,"is missing."))
     if("alpha-3" %in% colnames(df)) stop("Already alpha-3 in column names")
     if(!is.null(prefix)) if(prefix %in% colnames(df) & !skip_name) stop(paste("Already",prefix,"in column names"))
     colnames(df)[colnames(df)==ISOalpha3_col]<-"alpha-3"
     df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                 dir="location/",
-                                add_var = c("name", "StateRegion","NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear",	"SEATOendYear",	"RioTreatyStartYear","RioTreatyEndYear"	,"FiveEyes"	,"NTIByear"	,"OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),#"USAIDregion",
+                                add_var = c("name", "StateRegion","CombatantCommand","NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear",	"SEATOendYear",	"RioTreatyStartYear","RioTreatyEndYear"	,"FiveEyes"	,"NTIByear"	,"OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),#"USAIDregion",
                                 by="alpha-3",
                                 skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),
-                                missing_file="missing_DSCA_iso.csv"
+                                missing_file="missing_CoutryCode_iso.csv"
     )
     colnames(df)[colnames(df)=="alpha-3"]<-ISOalpha3_col
     if(skip_name) df <- df %>% dplyr::select(-name)
@@ -1568,6 +1577,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
     colnames(df)[colnames(df)%in% renamelist]<-
       paste(prefix,colnames(df)[colnames(df)%in%renamelist],sep="")
     colnames(df)[colnames(df)=="StateRegion"]<-paste(prefix,"StateRegion",sep="")
+    colnames(df)[colnames(df)=="CombatantCommand"]<-paste(prefix,"CombatantCommand",sep="")
     colnames(df)[colnames(df)=="AcquisitionCooperation"]<-paste(prefix,"AcquisitionCooperation",sep="")
     colnames(df)[colnames(df)=="MutualDefense"]<-paste(prefix,"MutualDefense",sep="")
     colnames(df)[colnames(df)=="MutualAcquisition"]<-paste(prefix,"MutualAcquisition",sep="")
