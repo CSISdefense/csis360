@@ -208,7 +208,7 @@ build_plot <- function(
     labels_and_colors<-labels_and_colors[order(labels_and_colors$column,labels_and_colors$Display.Order),]
   }
   #Primarily for bar plots, we want the first in order on the bottom so it is easier to track movements.
-  if(first_color_on_bottom & !is.null(labels_and_colors){
+  if(first_color_on_bottom & !is.null(labels_and_colors)){
     labels_and_colors$Display.Order[labels_and_colors$column==color_var]<-
       -1*labels_and_colors$Display.Order[labels_and_colors$column==color_var]
     labels_and_colors<-labels_and_colors[order(labels_and_colors$column,labels_and_colors$Display.Order),]
