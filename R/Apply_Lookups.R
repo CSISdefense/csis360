@@ -101,6 +101,9 @@ get_local_lookup_path<-function(){
   local_path<-"/Users/henrycarroll/Desktop/CSIS Work"
   if(file.exists(local_path))
     return(local_path)
+  local_path<-"C:\\Users\\HCarroll\\Repositories\\Lookup-Tables"
+  if(file.exists(local_path))
+    return(local_path)
   local_path<-"C:\\Users\\GSanders\\Repos\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
@@ -154,6 +157,9 @@ get_local_sharepoint_path<-function(site="DIIG - Documents"){
   if(file.exists(local_path))
     return(local_path)
   local_path<-file.path("C:\\Users\\HCarroll\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("C:\\Users\\HCarroll\\OneDrive - Center Strategic Intl Studies Inc CSIS",site)
   if(file.exists(local_path))
     return(local_path)
   local_path<-file.path("C:\\Users\\AAldisert\\Center Strategic Intl Studies Inc CSIS",site)
