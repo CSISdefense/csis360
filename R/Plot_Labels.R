@@ -91,7 +91,7 @@ prepare_labels_and_colors<-function(data
   #Read in coloration
   coloration<-read.csv(
 
-    paste(path,"Lookup_Coloration.csv",sep=""),
+    file.path(path,"Lookup_Coloration.csv"),
     header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
     stringsAsFactors=FALSE,encoding="UTF-8"
   )
