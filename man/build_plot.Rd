@@ -22,7 +22,8 @@ build_plot(
   first_color_on_bottom = TRUE,
   alpha_var = NULL,
   invert_bool = NULL,
-  suppress_x_var_newline = TRUE
+  suppress_x_var_newline = TRUE,
+  hide_unlabeled = FALSE
 )
 }
 \arguments{
@@ -60,7 +61,7 @@ build_plot(
 
 \item{suppress_x_var_newline}{For categorical x-axis variables, remove any new line from the character string}
 
-\item{reverse_color}{If TRUE, the order of the color variable is flipped}
+\item{hide_unlabeled}{If true, check that unlabeled variables are 1% of the date or less and if so hide them.}
 }
 \value{
 A ggplot object including user-specified geom layer

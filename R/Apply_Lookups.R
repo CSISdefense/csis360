@@ -1271,6 +1271,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
     colnames(df)[colnames(df)==ISOalpha3_col]<-"alpha-3"
     df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                 dir="location/",
+                                path=path,
                                 add_var = c("name", "StateRegion","CombatantCommand","NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear",	"SEATOendYear",	"RioTreatyStartYear","RioTreatyEndYear"	,"FiveEyes"	,"NTIByear"	,"OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),#"USAIDregion",
                                 by="alpha-3",
                                 skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),
