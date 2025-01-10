@@ -91,7 +91,7 @@ prepare_labels_and_colors<-function(data
   #Read in coloration
   coloration<-read.csv(
 
-    paste(path,"Lookup_Coloration.csv",sep=""),
+    file.path(path,"Lookup_Coloration.csv"),
     header=TRUE, sep=",", na.strings="", dec=".", strip.white=TRUE,
     stringsAsFactors=FALSE,encoding="UTF-8"
   )
@@ -139,6 +139,10 @@ prepare_labels_and_colors<-function(data
                                    column_key$coloration.key[v] )
 
     if(nrow(labels_category_data)==0) stop(paste("No matching levels for:",column_key$column[v]))
+
+    if(any(is.na(labels_category_data$Label)))
+      stop(paste("NA(s) in label field:",paste(labels_category_data %>% dplyr::filter(is.na(Label)) %>% dplyr::select(variable,coloration.key)),
+           collapse=", "),collapse="; ")
 
     #Error checking for duplicates in lookup_coloration.csv
     if(anyDuplicated(labels_category_data$variable)>0){
@@ -226,7 +230,7 @@ prepare_labels_and_colors<-function(data
     labels_category_data$Display.Order<-as.numeric(as.character(labels_category_data$Display.Order))
     labels_category_data<-labels_category_data[order(labels_category_data$Display.Order),]
     labels_category_data$column<-c
-    warning(c)
+    # warning(c)
     names.data<-rbind(names.data,labels_category_data)
   }
   names.data

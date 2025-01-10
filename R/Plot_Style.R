@@ -122,11 +122,10 @@ get_plot_theme<-function(erase_legend_title=TRUE,blank_x_lines=TRUE){
 #' @param column_key A csis360 lookup data.frame with column information
 #' @param format If TRUE, summarize the data.frame
 #' @param ytextposition If TRUE, add ytextposition to allow for geom_text overlays.
-#' @param reverse_color If TRUE, the order of the color variable is flipped
 #' @param alpha_var Variable for setting the transparency of bars or line type of lines, coded to be used with year to ate.
 #' @param invert_bool Used to create population pyramid or import/export charts, specifies when to show data in the negative space of the y-axis.
 #' @param suppress_x_var_newline For categorical x-axis variables, remove any new line from the character string
-#'
+#' @param hide_unlabeled If true, check that unlabeled variables are 1% of the date or less and if so hide them.
 #'
 #'
 #' @return A ggplot object including user-specified geom layer
@@ -158,7 +157,8 @@ build_plot <- function(
   first_color_on_bottom=TRUE,
   alpha_var=NULL,
   invert_bool=NULL,
-  suppress_x_var_newline=TRUE
+  suppress_x_var_newline=TRUE,
+  hide_unlabeled=FALSE
 ){
   if(all(!is.null(second_var),facet_var==second_var | second_var=="None")) second_var<-NULL
   #To add, check for missing labels and colors
@@ -186,13 +186,29 @@ build_plot <- function(
   if(ytextposition==TRUE & format==FALSE) stop("ytextposition requires format=TRUE")
   if(all(is.na(data[,x_var]))) stop("Missing x_var after formatting")
 
+  if(hide_unlabeled){
+    y_var_total=sum(data[,y_var],na.rm=TRUE)
+    labeled_total<-data[!is.na(data[,x_var]) & data[,x_var]!="Unlabeled",]
+    if(color_var!="None")
+      labeled_total<-labeled_total[!is.na(data[,color_var])& labeled_total[,color_var]!="Unlabeled",]
+    if(facet_var!="None")
+      labeled_total<-labeled_total[!is.na(labeled_total[,facet_var])& labeled_total[,facet_var]!="Unlabeled",]
+    if(!is.null(second_var))
+      labeled_total<-labeled_total[!is.na(labeled_total[,second_var])& labeled_total[,second_var]!="Unlabeled",]
+    if(!is.null(alpha_var))
+      labeled_total<-labeled_total[!is.na(labeled_total[,alpha_var])& labeled_total[,alpha_var]!="Unlabeled",]
+    if(sum(labeled_total[,y_var],na.rm = TRUE)<0.99 * y_var_total)
+      stop("More than 1 percent is unlabeled")
+    data<-labeled_total
+    rm(labeled_total)
+  }
   #Legacy bug fix. The sorting in some labels_and_colors is off  because display.order was a factor/character, not a number.
   if(!is.null(labels_and_colors) & !is.numeric(labels_and_colors$Display.Order)){
     labels_and_colors$Display.Order<-as.numeric(as.character(labels_and_colors$Display.Order))
     labels_and_colors<-labels_and_colors[order(labels_and_colors$column,labels_and_colors$Display.Order),]
   }
   #Primarily for bar plots, we want the first in order on the bottom so it is easier to track movements.
-  if(first_color_on_bottom){
+  if(first_color_on_bottom & !is.null(labels_and_colors)){
     labels_and_colors$Display.Order[labels_and_colors$column==color_var]<-
       -1*labels_and_colors$Display.Order[labels_and_colors$column==color_var]
     labels_and_colors<-labels_and_colors[order(labels_and_colors$column,labels_and_colors$Display.Order),]

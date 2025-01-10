@@ -95,7 +95,21 @@ get_local_lookup_path<-function(){
   local_path<-"F:\\REPOs\\Lookup-Tables"
   if(file.exists(local_path))
     return(local_path)
+
   local_path<-"C:\\Users\\WRumbaugh\\OneDrive - Center Strategic Intl Studies Inc CSIS\\Documents\\Lookup-Tables"
+  if(file.exists(local_path))
+    return(local_path)
+
+  local_path<-"F:\\Users\\gsanders\\Repositories\\Lookup-Tables\\"
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-"/Users/henrycarroll/Desktop/CSIS Work"
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-"C:\\Users\\HCarroll\\Repositories\\Lookup-Tables"
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-"C:\\Users\\GSanders\\Repos\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
 
@@ -150,6 +164,9 @@ get_local_sharepoint_path<-function(site="DIIG - Documents"){
   local_path<-file.path("C:\\Users\\HCarroll\\Center Strategic Intl Studies Inc CSIS",site)
   if(file.exists(local_path))
     return(local_path)
+  local_path<-file.path("C:\\Users\\HCarroll\\OneDrive - Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
   local_path<-file.path("C:\\Users\\AAldisert\\Center Strategic Intl Studies Inc CSIS",site)
   if(file.exists(local_path))
     return(local_path)
@@ -157,6 +174,12 @@ get_local_sharepoint_path<-function(site="DIIG - Documents"){
   if(file.exists(local_path))
     return(local_path)
   local_path<-file.path("C:\\Users\\WRumbaugh\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("C:\\Users\\GSanders\\Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("C:\\Users\\GSanders\\OneDrive - Center Strategic Intl Studies Inc CSIS",site)
   if(file.exists(local_path))
     return(local_path)
   stop("Could not find local path. Update the list in Apply_Lookups.R")
@@ -1094,7 +1117,7 @@ label_top<-function(df,
     stop(paste(col,"is not founds in the columns of df"))
   if(!weight %in% colnames(df))
     stop(paste(weight,"is not founds in the columns of df"))
-  if(!is.na(group_list)){
+  if(any(!is.na(group_list))){
     agg_list<-c(col,group_list)
     for(g in group_list){
       if(!g %in% colnames(df))
@@ -1248,18 +1271,19 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
   if("MutualDefense" %in%  colnames(df)) stop("Add Alliance has already been run on the data.frame")
 
   if(any(duplicated(colnames(df)))) stop("Duplicate Column Names")
-  #Add ISOalpha3 column if it does not already exist
+
+  if(!ISOalpha3_col %in% colnames(df)) stop(paste("ISOalpha3_col,",ISOalpha3_col,"is missing."))
   if(!is.null(ISOalpha3_col)){
-    if(!ISOalpha3_col %in% colnames(df)) stop(paste("ISOalpha3_col,",ISOalpha3_col,"is missing."))
     if("alpha-3" %in% colnames(df)) stop("Already alpha-3 in column names")
     if(!is.null(prefix)) if(prefix %in% colnames(df) & !skip_name) stop(paste("Already",prefix,"in column names"))
     colnames(df)[colnames(df)==ISOalpha3_col]<-"alpha-3"
     df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                 dir="location/",
-                                add_var = c("name", "StateRegion","NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear",	"SEATOendYear",	"RioTreatyStartYear","RioTreatyEndYear"	,"FiveEyes"	,"NTIByear"	,"OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),#"USAIDregion",
+                                path=path,
+                                add_var = c("name", "StateRegion","CombatantCommand","NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear",	"SEATOendYear",	"RioTreatyStartYear","RioTreatyEndYear"	,"FiveEyes"	,"NTIByear"	,"OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),#"USAIDregion",
                                 by="alpha-3",
                                 skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),
-                                missing_file="missing_DSCA_iso.csv"
+                                missing_file="missing_CoutryCode_iso.csv"
     )
     colnames(df)[colnames(df)=="alpha-3"]<-ISOalpha3_col
     if(skip_name) df <- df %>% dplyr::select(-name)
@@ -1568,6 +1592,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
     colnames(df)[colnames(df)%in% renamelist]<-
       paste(prefix,colnames(df)[colnames(df)%in%renamelist],sep="")
     colnames(df)[colnames(df)=="StateRegion"]<-paste(prefix,"StateRegion",sep="")
+    colnames(df)[colnames(df)=="CombatantCommand"]<-paste(prefix,"CombatantCommand",sep="")
     colnames(df)[colnames(df)=="AcquisitionCooperation"]<-paste(prefix,"AcquisitionCooperation",sep="")
     colnames(df)[colnames(df)=="MutualDefense"]<-paste(prefix,"MutualDefense",sep="")
     colnames(df)[colnames(df)=="MutualAcquisition"]<-paste(prefix,"MutualAcquisition",sep="")
@@ -2859,6 +2884,24 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  missing_file="missing_VendorAddressCountry.csv",
                                  case_sensitive = FALSE)
     colnames(df)[colnames(df)=="ISOalpha3"]<-"VendorAddressISOalpha3"
+  }
+
+
+  if("PrincipalPlaceofPerformanceCountryCode" %in% colnames(df)){
+    if("PlaceIsForeign" %in% colnames(df))
+      df<-subset(df,select=-c(PlaceIsForeign))
+
+    if(call_add_alliance)
+      df <- df %>% add_alliance(ISOalpha3_col= "PrincipalPlaceofPerformanceCountryCode", drop_col = TRUE,prefix="Place")
+    else{
+      df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
+                                   path=path,directory="location/",
+                                   add_var = c("isforeign"),#"USAIDregion",
+                                   by=c("PrincipalPlaceofPerformanceCountryCode"="alpha-3"),
+                                   # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                   missing_file="missing_DSCA_iso.csv")
+      colnames(df)[colnames(df)=="isforeign"]<-"PlaceIsForeign"
+    }
   }
 
 
