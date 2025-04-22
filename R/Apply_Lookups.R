@@ -2112,7 +2112,17 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   if("costorpricingdata" %in% names(df))
     df$costorpricingdata[df$costorpricingdata==""]<-NA
 
-
+  if("LetterContract" %in% names(df) ){
+    if("IsUndefinitizedAction" %in% names(df))
+      df<-df %>% select(-PricingMechanism)
+    df<-read_and_join_experiment(data=df
+                                 ,"LetterContract.csv"
+                                 ,path=path
+                                 ,directory="contract/"
+                                 ,add_var = c("IsUndefinitizedAction")
+                                 ,skip_check_var = c("IsUndefinitizedAction")
+    )
+  }
   if("TypeOfContractPricing" %in% names(df) ){
     if("PricingMechanism" %in% names(df))
       df<-df %>% select(-PricingMechanism)
@@ -2123,7 +2133,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  ,directory="contract/"
                                  ,add_var = c("TypeOfContractPricingText","PricingFee",
                                               "PricingInflation","Pricing.sum")
-                                 ,skip_check_var = c("PricingInflation","TypeOfContractPricingText")
+                                 ,skip_check_var = c("TypeOfContractPricingText","PricingFee",
+                                                     "PricingInflation","TypeOfContractPricingText")
                                  # ,by=c("informationtechnologycommercialitemcategory"="informationtechnologycommercialitemcategory")
                                  # ,new_var_checked=FALSE
                                  # ,create_lookup_rdata=TRUE
@@ -2132,7 +2143,15 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df$PricingInflation<-factor(df$PricingInflation)
     df$TypeOfContractPricingText<-factor(df$TypeOfContractPricingText)
 
-    if("PricingUCA" %in% names(df)){
+
+
+    if("IsUndefinitizedAction" %in% names(df) & !"PricingUCA" %in% names(df) ){
+      df$PricingUCA<-df$PricingFee
+      df$PricingUCA[df$IsUndefinitizedAction==1]<-"UCA"
+
+    }
+
+    else if("PricingUCA" %in% names(df)){
       df$PricingUCA<-as.character(df$PricingUCA)
       df$PricingUCA[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)]<-
         df$PricingFee[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)]
@@ -2143,7 +2162,6 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
     }
   }
-
   if("PricingUCA" %in% names(df) & !"PricingUCA.sum" %in% names(df) ){
 
     df$PricingUCA.sum<-factor(df$PricingUCA)
