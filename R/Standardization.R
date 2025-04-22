@@ -1946,7 +1946,9 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                       "TIV_delivery_value","measurement") &
          excel_y_var==FALSE)
         then_year_y_var<-y_var
-
+      else if(y_var %in% c("TIV_delivery_value") &
+         excel_y_var==TRUE)
+        stop("TIV_delivery_value does not have a then year counterpart. Set excel_y_var or (excel_then _year and csv_then_year) to false")
 
       else if(y_var %in% c("Dollars_OMB25_GDP23"))
         then_year_y_var<-"Dollars_Then_Year"
