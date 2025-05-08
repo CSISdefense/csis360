@@ -92,24 +92,19 @@ get_local_lookup_path<-function(){
   local_path<-"E:\\Repository\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
-  local_path<-"F:\\REPOs\\Lookup-Tables"
+  local_path<-"F:\\REPOs\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
-  local_path<-"C:\\Users\\HCarroll\\Repositories\\Lookup-Tables"
+  local_path<-"C:\\Users\\HCarroll\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
-
-  local_path<-"C:\\Users\\WRumbaugh\\OneDrive - Center Strategic Intl Studies Inc CSIS\\Documents\\Lookup-Tables"
-  if(file.exists(local_path))
-    return(local_path)
-
   local_path<-"F:\\Users\\gsanders\\Repositories\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
-  local_path<-"/Users/henrycarroll/Desktop/CSIS Work"
+  local_path<-"C:\\Users\\WRumbaugh\\OneDrive - Center Strategic Intl Studies Inc CSIS\\Documents\\Lookup-Tables"
   if(file.exists(local_path))
     return(local_path)
-  local_path<-"C:\\Users\\HCarroll\\Repositories\\Lookup-Tables"
+  local_path<-"\\Users\\henrycarroll\\Desktop\\CSIS Work\\"
   if(file.exists(local_path))
     return(local_path)
   local_path<-"C:\\Users\\GSanders\\Repos\\Lookup-Tables\\"
@@ -561,6 +556,10 @@ read_and_join<-function(
 #' @param zip_file The source zip file.
 #' @param missing_file Filename to output any unmatched variables for easy of processing
 #' @param create_lookup_rdata Whether to create a rdata file using the lookup for ease of future inputing
+#' @param lookup_char_as_factor Whether to treat character strings as a factor
+#' @param guess_max Default null, but if not null the number of rows to consider when guessing column types.
+#' @param guess_max How to join the data file and the lookup_file. Default is left, keeping all rows from the data and matches from the lookup
+#' @param prefix What characters to include before any added variable, default none. Helpful when joining a single lookup table with multiple variables, e.g. country codes.
 #'
 #' @return The data frame plus new columns from the lookup file. If new_var_checked is
 #' true and only new columns listed in add_var will be kept. Note to self, should
@@ -1846,7 +1845,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  by=c("fundingrequestingagencyid"="AgencyID"),
                                  add_var=c("Customer","SubCustomer","AgencyIDtext"),#Funding.Agency.ID
                                  skip_check_var=c("Platform","Customer","SubCustomer","AgencyIDtext"),
-                                 guess_max=2000)
+                                 guess_max=2000,
+                                 lookup_char_as_factor = TRUE
+                                 )
     colnames(df)[colnames(df)=="AgencyIDtext"]<-"FundingAgencyName"
 
     if("fundingrequestingofficeid" %in% names(df) & !"FundingMajorCommandID" %in% names(df)){
@@ -1867,7 +1868,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df<-read_and_join_experiment(df,
                                    path=path,
                                    directory="office\\",
-                                   lookup_file = "MajComSum.csv")
+                                   lookup_file = "MajComSum.csv",
+                                   lookup_char_as_factor = TRUE)
 
       colnames(df)[colnames(df)=="MajorCommandID"]<-"FundingMajorCommandID"
       colnames(df)[colnames(df)=="MajorCommandCode"]<-"FundingMajorCommandCode"
@@ -1948,7 +1950,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  by=c("Contracting_Agency_ID"="AgencyID"),
                                  add_var=c("Customer","SubCustomer","AgencyIDtext"),#Contracting.Agency.ID
                                  skip_check_var=c("Platform","Customer","SubCustomer","AgencyIDtext"),
-                                 guess_max=2000)
+                                 guess_max=2000,
+                                 lookup_char_as_factor = TRUE)
     colnames(df)[colnames(df)=="AgencyIDtext"]<-"ContractingAgencyName"
 
     if("ContractingOfficeID" %in% names(df) & !"MajorCommandID" %in% names(df)){
@@ -1960,12 +1963,14 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                    by =c("Fiscal_Year"="Fiscal_Year",
                                          "Contracting_Agency_ID"="Contracting_Agency_ID",
                                          "ContractingOfficeID"="ContractingOfficeID"),
-                                   skip_check_var = "MajorCommandID")
+                                   skip_check_var = "MajorCommandID",
+                                   lookup_char_as_factor = TRUE)
 
       df<-read_and_join_experiment(df,
                                    path=path,
                                    directory="office\\",
-                                   lookup_file = "MajComSum.csv")
+                                   lookup_file = "MajComSum.csv",
+                                   lookup_char_as_factor = TRUE)
 
 
 
@@ -2024,7 +2029,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           by=c("Customer"="Customer","SubCustomer"="SubCustomer"),
                                           add_var=c("SubCustomer.platform","SubCustomer.sum"),
                                           path=path,
-                                          directory="office/"
+                                          directory="office/",
+                                 lookup_char_as_factor = TRUE
     )
   }
   else if ("ContractingCustomer" %in% names(df) & "ContractingSubCustomer" %in% names(df)){
@@ -2035,7 +2041,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           by=c("ContractingCustomer"="Customer","ContractingSubCustomer"="SubCustomer"),
                                           add_var=c("SubCustomer.platform","SubCustomer.sum"),
                                           path=path,
-                                          directory="office/")
+                                          directory="office/",
+                                 lookup_char_as_factor = TRUE)
   }
 
   # else if ("SubCustomer" %in% names(df)){
@@ -2067,7 +2074,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                                     "Competition.effective.only",
                                                     "No.Competition.sum"),
                                           path=path,
-                                          directory="contract/"
+                                          directory="contract/",
+                                 lookup_char_as_factor = TRUE
     )
   }
   if("Vehicle" %in% names(df) ){
@@ -2077,7 +2085,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           add_var=c("Vehicle.sum","Vehicle.sum7","Vehicle.AwardTask"),
                                           path=path,
                                           # path="K:/Users/Greg/Repositories/Lookup-Tables/",
-                                          directory="contract/"
+                                          directory="contract/",
+                                 lookup_char_as_factor = TRUE
     )
   }
 
@@ -2134,7 +2143,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  ,add_var = c("TypeOfContractPricingText","PricingFee",
                                               "PricingInflation","Pricing.sum")
                                  ,skip_check_var = c("TypeOfContractPricingText","PricingFee",
-                                                     "PricingInflation","TypeOfContractPricingText")
+                                                     "PricingInflation","Pricing.sum"),
+                                 lookup_char_as_factor = TRUE
                                  # ,by=c("informationtechnologycommercialitemcategory"="informationtechnologycommercialitemcategory")
                                  # ,new_var_checked=FALSE
                                  # ,create_lookup_rdata=TRUE
@@ -2178,7 +2188,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  ,"InformationTechnologyCommercialItemCategory.csv"
                                  ,path=path
                                  ,directory="productorservice/"
-                                 ,by=c("informationtechnologycommercialitemcategory"="informationtechnologycommercialitemcategory")
+                                 ,by=c("informationtechnologycommercialitemcategory"="informationtechnologycommercialitemcategory"),
+                                 lookup_char_as_factor = TRUE
                                  # ,new_var_checked=FALSE
                                  # ,create_lookup_rdata=TRUE
                                  # ,col_types="dddddddddccc"
@@ -2362,7 +2373,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           add_var=c("ProductServiceOrRnDarea"),
                                           path=path,
                                           skip_check_var = c("ProductServiceOrRnDarea",
-                                                             "TransitionProductServiceOrRnDarea"),
+                                                             "TransitionProductServiceOrRnDarea")
     )
     colnames(df)[colnames(df)=="ProductServiceOrRnDarea"]<-"TransitionProductServiceOrRnDarea"
 
@@ -2420,7 +2431,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           replace_na_var="ProductServiceOrRnDarea",
                                           add_var=c("ProductServiceOrRnDarea.sum","ServicesCategory.detail","ServicesCategory.sum"),
                                           path=path,
-                                          directory="productorservice/"
+                                          directory="productorservice/",
+                                 lookup_char_as_factor = TRUE
     )
 
 
@@ -2497,6 +2509,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     if("IsRemotelyOperated" %in% names(df)){
       df$PlatformPortfolioUAV<-as.character(df$PlatformPortfolio)
       df$PlatformPortfolioUAV[df$IsRemotelyOperated==1& !is.na(df$IsRemotelyOperated)]<-"Remotely Crewed"
+      df$PlatformPortfolioUAV<-factor(df$PlatformPortfolio)
+
     }
     else if ("ProductOrServiceCode" %in% names(df) & "ProjectID" %in% names(df)){
 
@@ -2510,6 +2524,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df$IsRemotelyOperated[df$ProductOrServiceCode==1550]<-1
       df$PlatformPortfolioUAV<-as.character(df$PlatformPortfolio)
       df$PlatformPortfolioUAV[df$IsRemotelyOperated==1& !is.na(df$IsRemotelyOperated)]<-"Remotely Crewed"
+      df$PlatformPortfolioUAV<-factor(df$PlatformPortfolio)
     }
   }
 
@@ -2528,7 +2543,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  add_var = c("ProjectName","IsUnknown","IsRemotelyOperated"),
                                  by=c("ProjectID"),
                                  # missing_file="missing_iso.csv",
-                                 skip_check_var = c("IsRemotelyOperated")
+                                 skip_check_var = c("IsRemotelyOperated"),
+                                 lookup_char_as_factor = TRUE
     )
 
     if ("SubCustomer.platform" %in% names(df) & "ProjectName" %in% names(df)){
@@ -2729,7 +2745,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           add_var=c("principalnaicscodeText"),
                                           path=path,
                                           skip_check_var = c("principalnaicscodeText"),
-                                          directory="economic"
+                                          directory="economic",
+                                 lookup_char_as_factor = TRUE
     )
   }
 
@@ -2742,7 +2759,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           by=c("VendorSize"="VendorSize"),
                                           add_var="Shiny.VendorSize",
                                           path=path,
-                                          directory="vendor/"
+                                          directory="vendor/",
+                                 lookup_char_as_factor = TRUE
     )
 
     # df<-read_and_join_experiment(df,"LOOKUP_Contractor_Size.csv")
@@ -2823,7 +2841,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           by=c("EntitySizeCode"="EntitySizeCode"),
                                           add_var=c("EntitySizeText","EntitySmall","EntitySizeText.sum"),
                                           path=path,
-                                          directory="vendor/")
+                                          directory="vendor/",
+                                 lookup_char_as_factor = TRUE)
     df<-replace_nas_with_unlabeled(df,"EntitySizeText",replacement="Unlabeled Vendor")
     df<-replace_nas_with_unlabeled(df,"EntitySizeText.sum",replacement="Unlabeled Vendor")
     df<-replace_nas_with_unlabeled(df,"EntitySmall",replacement="Unlabeled Vendor")
@@ -2849,7 +2868,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df<-   read_and_join_experiment(df,lookup_file="Budget_FundedByForeignEntity.csv",
                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",directory="budget/",
                                      add_var = c("foreign_funding_description"),
-                                     by=c("fundedbyforeignentity")
+                                     by=c("fundedbyforeignentity"),
+                                    lookup_char_as_factor = TRUE
                                      # missing_file="missing_iso.csv",
                                      # skip_check_var = "territory_capital"
     )
@@ -2881,7 +2901,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                                              "MFGorPerformIsForeign","MFGisForeign"),
                                           path=path,
                                           directory="location/",
-                                          case_sensitive = FALSE
+                                          case_sensitive = FALSE,
+                                 lookup_char_as_factor = TRUE
     )
   }
 
@@ -2896,7 +2917,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                                     "ManufacturingOrganizationParentHQisForeign"),
                                  path="offline",
                                  directory="location/",
-                                 case_sensitive = FALSE
+                                 case_sensitive = FALSE,
+                                 lookup_char_as_factor = TRUE
     )
   }
   if("VendorAddressCountry" %in% colnames(df) & !"VendorAddressISOalpha3" %in% colnames(df)){
@@ -2909,7 +2931,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  by=c("VendorAddressCountry"="CountryName"),
                                  # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
                                  missing_file="missing_VendorAddressCountry.csv",
-                                 case_sensitive = FALSE)
+                                 case_sensitive = FALSE,
+                                 lookup_char_as_factor = TRUE)
     colnames(df)[colnames(df)=="ISOalpha3"]<-"VendorAddressISOalpha3"
   }
 
@@ -2926,7 +2949,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                    add_var = c("isforeign"),#"USAIDregion",
                                    by=c("PrincipalPlaceofPerformanceCountryCode"="alpha-3"),
                                    # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
-                                   missing_file="missing_DSCA_iso.csv")
+                                   missing_file="missing_DSCA_iso.csv",
+                                   lookup_char_as_factor = TRUE)
       colnames(df)[colnames(df)=="isforeign"]<-"PlaceIsForeign"
     }
   }
@@ -2945,7 +2969,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                    add_var = c("isforeign"),#"USAIDregion",
                                    by=c("PlaceISOalpha3"="alpha-3"),
                                    # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
-                                   missing_file="missing_DSCA_iso.csv")
+                                   missing_file="missing_DSCA_iso.csv",
+                                   lookup_char_as_factor = TRUE)
       colnames(df)[colnames(df)=="isforeign"]<-"PlaceIsForeign"
     }
   }
@@ -2963,7 +2988,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                    add_var = c("isforeign"),#"USAIDregion",
                                    by=c("OriginISOalpha3"="alpha-3"),
                                    # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
-                                   missing_file="missing_DSCA_iso.csv")
+                                   missing_file="missing_DSCA_iso.csv",
+                                   lookup_char_as_factor = TRUE)
       colnames(df)[colnames(df)=="isforeign"]<-"OriginIsForeign"
     }
     # if("MFGorPerformIsForeign" %in% colnames(df)){
@@ -2996,7 +3022,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                    add_var = c("isforeign"),#"USAIDregion",
                                    by=c("VendorISOalpha3"="alpha-3"),
                                    # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
-                                   missing_file="missing_DSCA_iso.csv")
+                                   missing_file="missing_DSCA_iso.csv",
+                                   lookup_char_as_factor = TRUE)
       colnames(df)[colnames(df)=="isforeign"]<-"VendorIsForeign"
     }
     # if("ParentHQisForeign" %in% colnames(df)){
@@ -3019,7 +3046,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                    add_var = c("isforeign"),#"USAIDregion",
                                    by=c("VendorAddressISOalpha3"="alpha-3"),
                                    # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
-                                   missing_file="missing_iso.csv")
+                                   missing_file="missing_iso.csv",
+                                   lookup_char_as_factor = TRUE)
       colnames(df)[colnames(df)=="isforeign"]<-"VendorAddressIsForeign"
     }
     # if("ParentHQisForeign" %in% colnames(df)){
