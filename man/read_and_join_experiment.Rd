@@ -52,6 +52,12 @@ read_and_join_experiment(
 \item{missing_file}{Filename to output any unmatched variables for easy of processing}
 
 \item{create_lookup_rdata}{Whether to create a rdata file using the lookup for ease of future inputing}
+
+\item{lookup_char_as_factor}{Whether to treat character strings as a factor}
+
+\item{guess_max}{How to join the data file and the lookup_file. Default is left, keeping all rows from the data and matches from the lookup}
+
+\item{prefix}{What characters to include before any added variable, default none. Helpful when joining a single lookup table with multiple variables, e.g. country codes.}
 }
 \value{
 The data frame plus new columns from the lookup file. If new_var_checked is
