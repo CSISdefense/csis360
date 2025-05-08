@@ -1911,7 +1911,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                      csv_then_year=TRUE,
                      excel_then_year=TRUE,excel_y_var=FALSE,excel_share=FALSE,
                      excel_formulas=FALSE,
-                     hist_year=2020, cur_year=2023,include_YTD=TRUE,
+                     hist_year=2020, cur_year=2024,include_YTD=TRUE,
                      group_unlabeled_facets=FALSE,
                      num_format="0.00,,,\"B\""
 ) {
