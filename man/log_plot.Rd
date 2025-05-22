@@ -34,7 +34,7 @@ log_plot(
   excel_share = FALSE,
   excel_formulas = FALSE,
   hist_year = 2020,
-  cur_year = 2023,
+  cur_year = 2024,
   include_YTD = TRUE,
   group_unlabeled_facets = FALSE,
   num_format = "0.00,,,\\"B\\""
