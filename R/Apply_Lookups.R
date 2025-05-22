@@ -1293,6 +1293,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
                                 skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign","EUentryYear","EUexitYear"),
                                 missing_file="missing_CoutryCode_iso.csv"
     )
+    df$isforeign<-as.logical(df$isforeign)
     colnames(df)[colnames(df)=="alpha-3"]<-ISOalpha3_col
     if(skip_name) df <- df %>% dplyr::select(-name)
     else if(!is.null(prefix)) colnames(df)[colnames(df)=="name"]<-prefix
@@ -2035,6 +2036,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   }
   else if ("ContractingCustomer" %in% names(df) & "ContractingSubCustomer" %in% names(df)){
     df$ContractingCustomer[df$ContractingCustomer==""]<-NA
+    df$ContractingCustomer<-factor(df$ContractingCustomer)
     df<-replace_nas_with_unlabeled(df,"ContractingSubCustomer","Uncategorized")
     df<-read_and_join_experiment(df,
                                           "SubCustomer.csv",
@@ -2065,6 +2067,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   # classify competition
   if("CompetitionClassification" %in% names(df) & "ClassifyNumberOfOffers" %in% names(df) )
   {
+    df$CompetitionClassification <- as.factor(df$CompetitionClassification)
     df<-read_and_join_experiment(df,
                                           "CompetitionClassification.csv",
                                           by=c("CompetitionClassification","ClassifyNumberOfOffers"),
@@ -2079,6 +2082,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
   }
   if("Vehicle" %in% names(df) ){
+    df$Vehicle<-factor(df$Vehicle)
     df<-read_and_join_experiment(df,
                                           "Vehicle.csv",
                                           by=c("Vehicle"="Vehicle.detail"),
@@ -2116,14 +2120,14 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  # ,col_types="dddddddddccc"
     )
   }
-  if("costaccountingstandardsclause" %in% names(df))
+  if("costaccountingstandardsclause" %in% names(df)){
     df$costaccountingstandardsclause[df$costaccountingstandardsclause==""]<-NA
+    df$costaccountingstandardsclause<-as.factor(df$costaccountingstandardsclause)
+  }
   if("costorpricingdata" %in% names(df))
     df$costorpricingdata[df$costorpricingdata==""]<-NA
 
-  if("LetterContract" %in% names(df) ){
-    if("IsUndefinitizedAction" %in% names(df))
-      df<-df %>% select(-PricingMechanism)
+  if("LetterContract" %in% names(df) & !"IsUndefinitizedAction" %in% names(df) ){
     df<-read_and_join_experiment(data=df
                                  ,"LetterContract.csv"
                                  ,path=path
@@ -2132,9 +2136,19 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  ,skip_check_var = c("IsUndefinitizedAction")
     )
   }
+  if("IsUndefinitizedAction" %in% names(df)){
+    df$IsUndefinitizedAction<-as.logical(df$IsUndefinitizedAction)
+  }
+
+  if(is.character(df$AnyCommercial)){
+    df$AnyCommercial<-factor(df$AnyCommercial)
+  }
+
   if("TypeOfContractPricing" %in% names(df) ){
-    if("PricingMechanism" %in% names(df))
-      df<-df %>% select(-PricingMechanism)
+    df$TypeOfContractPricing<-factor(df$TypeOfContractPricing)
+
+    if("TypeOfContractPricingText" %in% names(df))
+      df<-df %>% select(-TypeOfContractPricingText)
 
     df<-read_and_join_experiment(data=df
                                  ,"contract.TypeOfContractPricing.csv"
@@ -2151,36 +2165,39 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  # ,col_types="dddddddddccc"
     )
     df$PricingInflation<-factor(df$PricingInflation)
+    df$PricingInFee<-factor(df$PricingInFee)
     df$TypeOfContractPricingText<-factor(df$TypeOfContractPricingText)
-
-
-
-    if("IsUndefinitizedAction" %in% names(df) & !"PricingUCA" %in% names(df) ){
-      df$PricingUCA<-df$PricingFee
-      df$PricingUCA[df$IsUndefinitizedAction==1]<-"UCA"
-
-    }
-
-    else if("PricingUCA" %in% names(df)){
-      df$PricingUCA<-as.character(df$PricingUCA)
-      df$PricingUCA[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)]<-
-        df$PricingFee[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)]
-      df$PricingUCA.sum<-as.character(df$Pricing.sum)
-      df$PricingUCA.sum[df$PricingUCA=="UCA"|is.na(df$PricingUCA)]<-"Crosscutting"
-      df$PricingUCA<-factor(df$PricingUCA)
-      df$PricingUCA.sum<-factor(df$PricingUCA.sum)
-
-    }
   }
-  if("PricingUCA" %in% names(df) & !"PricingUCA.sum" %in% names(df) ){
 
-    df$PricingUCA.sum<-factor(df$PricingUCA)
-    df<-replace_nas_with_unlabeled(df,"PricingUCA.sum")
-    levels(df$PricingUCA.sum)<-
-      list("Fixed-Price"=c("FFP","Other FP","FP-Econ. Price Adj."),
-           "Incentive"=c("Incentive","FP-Incentive","CB-Incentive"),
-           "Cost or Effort-Based"=c("Other CB","T&M/LH/FPLOE"),
-           "Crosscutting"=c("UCA","Combination or Other","Unlabeled"))
+  if("IsUndefinitizedAction" %in% colnames(df) &
+     "PricingFee" %in% colnames(df) &
+     !"PricingUCA" %in% colnames(df) ){
+    df$PricingUCA<-df$PricingFee
+    df$PricingUCA[df$IsUndefinitizedAction]<-"UCA"
+    df$PricingUCA<-factor(df$PricingUCA)
+  }
+  if("PricingUCA" %in% names(df)){
+    df$PricingUCA<-factor(df$PricingUCA)
+    #
+    #     else if("PricingUCA" %in% names(df)){
+    #       df$PricingUCA<-as.character(df$PricingUCA)
+    #       df$PricingUCA[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)]<-
+    #         df$PricingFee[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)]
+    #       df$PricingUCA.sum<-as.character(df$Pricing.sum)
+    #       df$PricingUCA.sum[df$PricingUCA=="UCA"|is.na(df$PricingUCA)]<-"Crosscutting"
+    #       df$PricingUCA<-factor(df$PricingUCA)
+    #       df$PricingUCA.sum<-factor(df$PricingUCA.sum)
+    #
+    #     }
+    if(!"PricingUCA.sum" %in% names(df) ){
+      df$PricingUCA.sum<-factor(df$PricingUCA)
+      df$PricingUCA.sum<-replace_nas_with_unlabeled(df,"PricingUCA.sum")
+      levels(df$PricingUCA.sum)<-
+        list("Fixed-Price"=c("FFP","Other FP","FP-Econ. Price Adj."),
+             "Incentive"=c("Incentive","FP-Incentive","CB-Incentive"),
+             "Cost or Effort-Based"=c("Other CB","T&M/LH/FPLOE"),
+             "Crosscutting"=c("UCA","Combination or Other","Unlabeled"))
+    }
   }
 
   if("informationtechnologycommercialitemcategory" %in% names(df)){
@@ -2340,7 +2357,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   if("ProductOrServiceCode" %in% names(df) & !"Product.or.Service.Description" %in% names(df)&
      !"ProductOrServiceCodeText" %in% names(df))
   {
-    if(is.integer(df$ProductOrServiceCode)){
+    if(is.integer(df$ProductOrServiceCode) | is.character(df$ProductOrServiceCode)){
       df$ProductOrServiceCode<-factor(df$ProductOrServiceCode)
     }
     df$ProductOrServiceCode[df$ProductOrServiceCode==""]<-NA
@@ -2351,7 +2368,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           add_var=c("ProductOrServiceCodeText"),
                                           path=path,
                                           skip_check_var = c("ProductServiceOrRnDarea"),
-                                          directory=""
+                                          directory="",
+                                 lookup_char_as_factor = TRUE
     )
   }
   #We can be more precise
@@ -2388,9 +2406,15 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
     df$ProductServiceOrRnDarea[is.na(df$ProductServiceOrRnDarea)]<-
       df$TransitionProductServiceOrRnDarea[is.na(df$ProductServiceOrRnDarea)]
+
+    df$ProductServiceOrRnDarea<-factor(df$ProductServiceOrRnDarea)
+    df$Simple<-factor(df$Simple)
+    df$ProductOrServiceArea<-factor(df$ProductOrServiceArea)
+
     #Manual check because we have to draw from two sources
     NA.check.df<-subset(df, is.na(ProductServiceOrRnDarea)&!is.na(ProductOrServiceCode),
                         select=c("ProductOrServiceCode","TransitionProductServiceOrRnDarea","ProductServiceOrRnDarea"))
+
     if(nrow(NA.check.df)>0){
       print(unique(NA.check.df))
       warning(paste(nrow(NA.check.df),"rows of NAs generated in ProductServiceOrRnDarea"))
@@ -2441,8 +2465,17 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       print(unique(NA.check.df))
       stop(paste(nrow(NA.check.df),"rows of NAs generated in ProductServiceOrRnDarea"))
     }
-
   }
+
+  if(is.character(df$gfe_gfp_code)){
+    df$gfe_gfp_code<-factor(df$gfe_gfp_code)
+  }
+
+  if(is.character(df$informationtechnologycommercialitemcategoryText)){
+    df$informationtechnologycommercialitemcategoryText<-factor(df$informationtechnologycommercialitemcategoryText)
+  }
+
+
   #   else if("ProductOrServiceArea" %in% names(df))
   #   {
   #     df<-replace_nas_with_unlabeled(df,"ProductOrServiceArea")
@@ -2490,6 +2523,10 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #
   #
   #
+  if(is.character(df$claimantprogramcode)){
+    df$claimantprogramcode<-factor(df$claimantprogramcode)
+  }
+
   if("PlatformPortfolio" %in% names(df)){
     #   {
     #
@@ -2508,8 +2545,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     #     }
     if("IsRemotelyOperated" %in% names(df)){
       df$PlatformPortfolioUAV<-as.character(df$PlatformPortfolio)
-      df$PlatformPortfolioUAV[df$IsRemotelyOperated==1& !is.na(df$IsRemotelyOperated)]<-"Remotely Crewed"
-      df$PlatformPortfolioUAV<-factor(df$PlatformPortfolio)
+      df$IsRemotelyOperated<-as.logical(df$IsRemotelyOperated)
+      df$PlatformPortfolioUAV[df$IsRemotelyOperated & !is.na(df$IsRemotelyOperated)]<-"Remotely Crewed"
+      df$PlatformPortfolioUAV<-factor(df$PlatformPortfolioUAV)
 
     }
     else if ("ProductOrServiceCode" %in% names(df) & "ProjectID" %in% names(df)){
@@ -2521,10 +2559,11 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                    by=c("ProjectID"),
                                    # missing_file="missing_iso.csv",
                                    skip_check_var = c("IsRemotelyOperated"))
-      df$IsRemotelyOperated[df$ProductOrServiceCode==1550]<-1
+      df$IsRemotelyOperated<-as.logical(df$IsRemotelyOperated)
+      df$IsRemotelyOperated[df$ProductOrServiceCode==1550]<-T
       df$PlatformPortfolioUAV<-as.character(df$PlatformPortfolio)
-      df$PlatformPortfolioUAV[df$IsRemotelyOperated==1& !is.na(df$IsRemotelyOperated)]<-"Remotely Crewed"
-      df$PlatformPortfolioUAV<-factor(df$PlatformPortfolio)
+      df$PlatformPortfolioUAV[df$IsRemotelyOperated & !is.na(df$IsRemotelyOperated)]<-"Remotely Crewed"
+      df$PlatformPortfolioUAV<-factor(df$PlatformPortfolioUAV)
     }
   }
 
@@ -2547,6 +2586,16 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  lookup_char_as_factor = TRUE
     )
 
+
+    if("IsRemotelyOperated" %in% colnames(df)){
+      df$IsRemotelyOperated<-as.logical(df$IsRemotelyOperated)
+    }
+
+    if("IsUnknown" %in% colnames(df)){
+      df$IsUnknown<-as.logical(df$IsUnknown)
+    }
+
+
     if ("SubCustomer.platform" %in% names(df) & "ProjectName" %in% names(df)){
       df$SubCustomer.JPO<-as.character(df$SubCustomer.platform)
       df$SubCustomer.JPO[df$ProjectName %in% c("JSF (F-35) ","JSF (F-35)") & !is.na(df$ProjectName)&df$SubCustomer.platform=="Navy"]<-"F-35 JPO"
@@ -2555,7 +2604,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
   } else if ("SubCustomer.platform" %in% names(df) & "IsF35" %in% names(df)){
     df$SubCustomer.JPO<-as.character(df$SubCustomer.platform)
-    df$SubCustomer.JPO[df$IsF35==1 & !is.na(df$IsF35==1)&df$SubCustomer.platform=="Navy"]<-"F-35 JPO"
+
+    df$IsF35<-as.logical(df$IsF35)
+    df$SubCustomer.JPO[df$IsF35 & !is.na(df$IsF35)&df$SubCustomer.platform=="Navy"]<-"F-35 JPO"
     df$SubCustomer.JPO<-factor(df$SubCustomer.JPO)
   }
 
@@ -2749,6 +2800,32 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  lookup_char_as_factor = TRUE
     )
   }
+  #### Budget #####
+  if("MainAccountTitle" %in% colnames(df)){
+    df$MainAccountTitle<-as.factor(df$MainAccountTitle)
+  }
+
+
+  if("foreign_funding_description" %in% colnames(df) &
+     "IsFMSml" %in% colnames(df) &
+     "IsFMSmac" %in% colnames(df)){
+    df$foreign_funding_description<-as.factor(df$foreign_funding_description)
+    df$IsFMSml<-as.logical(df$IsFMSml)
+    df$IsFMSmac<-as.logical(df$IsFMSmac)
+    df$IsFMS<-as.logical(NA)
+    df$IsFMS[df$foreign_funding_description %in% c("Foreign Funds FMS")]<-T
+    df$IsFMS[df$foreign_funding_description %in% c("Foreign Funds non-FMS", "Not Applicable")]<-F
+    df$IsFMS[is.na(df$IsFMS)]<-df$IsFMSml[is.na(df$IsFMS)]
+    df$IsFMS[is.na(df$IsFMS) & df$IsFMSmac]<-T
+    df$IsFMS[is.na(df$IsFMS) & df$IsFMSmac==F]<-F
+    if("mainaccountcode" %in% colnames(df) & "treasuryagencycode" %in% colnames(df)){
+      df$IsUnlabeledMAC<-as.logical(is.na(df$mainaccountcode) | is.na(df$treasuryagencycode))
+      df$IsFMS[is.na(df$IsFMS) & df$IsUnlabeledMAC]<-F
+    }
+  } else if ("IsFMS" %in% colnames(df)){
+    df$IsFMS<-as.logical(IsFMS)
+  }
+
 
   #### Vendor Size and Location####
   if("VendorSize" %in% names(df)){
@@ -2865,6 +2942,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   if("fundedbyforeignentity" %in% colnames(df) &
      !"foreign_funding_description" %in% colnames(df)){
     df$fundedbyforeignentity[df$fundedbyforeignentity==""]<-NA
+    if(is.character(df$fundedbyforeignentity)){
+      df$fundedbyforeignentity<-factor(df$fundedbyforeignentity)
+    }
     df<-   read_and_join_experiment(df,lookup_file="Budget_FundedByForeignEntity.csv",
                                      path="https://raw.githubusercontent.com/CSISdefense/Lookup-Tables/master/",directory="budget/",
                                      add_var = c("foreign_funding_description"),
@@ -2875,23 +2955,10 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
   }
 
-  if("foreign_funding_description" %in% colnames(df) &
-     "IsFMSml" %in% colnames(df) &
-     "IsFMSmac" %in% colnames(df)){
-    df$IsFMS<-NA
-    df$IsFMS[df$foreign_funding_description %in% c("Foreign Funds FMS")]<-1
-    df$IsFMS[df$foreign_funding_description %in% c("Foreign Funds non-FMS", "Not Applicable")]<-0
-    df$IsFMS[is.na(df$IsFMS)]<-df$IsFMSml[is.na(df$IsFMS)]
-    df$IsFMS[is.na(df$IsFMS) & df$IsFMSmac==1]<-1
-    df$IsFMS[is.na(df$IsFMS) & df$IsFMSmac==0]<-0
-    if("mainaccountcode" %in% colnames(df) & "treasuryagencycode" %in% colnames(df)){
-      df$IsUnlabeledMAC<-is.na(df$mainaccountcode) | is.na(df$treasuryagencycode)
-      df$IsFMS[is.na(df$IsFMS) & df$IsUnlabeledMAC==0]<-0
-    }
-  }
 
   if("PlaceOfManufacture" %in% colnames(df)){
     #Place of manufacture
+    df$PlaceOfManufacture<-as.factor(df$PlaceOfManufacture)
     df<-read_and_join_experiment(df,
                                           "Location_PlaceOfManufacture.csv",
                                           by="PlaceOfManufacture",
@@ -2906,8 +2973,23 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     )
   }
 
+
+
+
+  if("MFGorPerformIsForeign" %in% colnames(df)){
+    df$MFGorPerformIsForeign<-as.logical(df$MFGorPerformIsForeign)
+  }
+  if("MFGisForeign" %in% colnames(df)){
+    df$MFGisForeign<-as.logical(df$MFGisForeign)
+  }
+
+
+
   if("ManufacturingOrganizationType" %in% colnames(df)){
     #ManufacturingOrganizationType
+    if(is.character(df$ManufacturingOrganizationType)){
+      df$ManufacturingOrganizationType<-factor(df$ManufacturingOrganizationType)
+    }
     df<-read_and_join_experiment(df,
                                  "ManufacturingOrganizationType.csv",
                                  by="ManufacturingOrganizationType",
@@ -2921,43 +3003,34 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  lookup_char_as_factor = TRUE
     )
   }
-  if("VendorAddressCountry" %in% colnames(df) & !"VendorAddressISOalpha3" %in% colnames(df)){
+
+
+  if("multiyearcontract" %in% colnames(df)){
+    df$multiyearcontract<-as.logical(df$multiyearcontract)
+  }
+
+  if("ManufacturingOrganizationParentHQisForeign" %in% colnames(df)){
+    df$ManufacturingOrganizationParentHQisForeign<-as.logical(df$ManufacturingOrganizationParentHQisForeign)
+  }
+
+
+  if("PrincipalPlaceofPerformanceCountryCode" %in% colnames(df) & !"PlaceISOalpha3" %in% colnames(df)){
     if("ISOalpha3" %in% colnames(df))
       df<-subset(df,select=-c(ISOalpha3))
-    df$VendorAddressCountry[df$VendorAddressCountry==""]<-NA
-    df<-read_and_join_experiment(df,lookup_file="Location_CountryName.csv",
+    df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
                                  path=path,directory="location/",
-                                 add_var = c("ISOalpha3"),
-                                 by=c("VendorAddressCountry"="CountryName"),
+                                 add_var = c("ISOalpha3"),#"USAIDregion",
+                                 by=c("PrincipalPlaceofPerformanceCountryCode"="alpha-3"),
                                  # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
-                                 missing_file="missing_VendorAddressCountry.csv",
-                                 case_sensitive = FALSE,
+                                 missing_file="missing_DSCA_iso.csv",
                                  lookup_char_as_factor = TRUE)
-    colnames(df)[colnames(df)=="ISOalpha3"]<-"VendorAddressISOalpha3"
+    colnames(df)[colnames(df)=="PlaceISOalpha3"]<-"PlaceISOalpha3"
   }
-
-
-  if("PrincipalPlaceofPerformanceCountryCode" %in% colnames(df)){
-    if("PlaceIsForeign" %in% colnames(df))
-      df<-subset(df,select=-c(PlaceIsForeign))
-
-    if(call_add_alliance)
-      df <- df %>% add_alliance(ISOalpha3_col= "PrincipalPlaceofPerformanceCountryCode", drop_col = TRUE,prefix="Place")
-    else{
-      df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
-                                   path=path,directory="location/",
-                                   add_var = c("isforeign"),#"USAIDregion",
-                                   by=c("PrincipalPlaceofPerformanceCountryCode"="alpha-3"),
-                                   # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
-                                   missing_file="missing_DSCA_iso.csv",
-                                   lookup_char_as_factor = TRUE)
-      colnames(df)[colnames(df)=="isforeign"]<-"PlaceIsForeign"
-    }
-  }
-
-
 
   if("PlaceISOalpha3" %in% colnames(df)){
+    if(is.character(df$PlaceISOalpha3)){
+      df$PlaceISOalpha3<-factor(df$PlaceISOalpha3)
+    }
     if("PlaceIsForeign" %in% colnames(df))
       df<-subset(df,select=-c(PlaceIsForeign))
 
@@ -2974,10 +3047,23 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       colnames(df)[colnames(df)=="isforeign"]<-"PlaceIsForeign"
     }
   }
+  if ("PlaceIsForeign" %in% colnames(df))
+    df$PlaceIsForeign<-as.logical(df$PlaceIsForeign)
+
+  if(is.character(df$PlaceStateCode)){
+    df$PlaceStateCode<-factor(df$PlaceStateCode)
+  }
+  if(is.character(df$pop_state_code)){
+    df$pop_state_code<-factor(df$pop_state_code)
+  }
+
 
   if("OriginISOalpha3" %in% colnames(df)){
     if("OriginIsForeign" %in% colnames(df))
       df<-subset(df,select=-c(OriginIsForeign))
+    if(is.character(df$OriginISOalpha3)){
+      df$OriginISOalpha3<-factor(df$OriginISOalpha3)
+    }
     if(call_add_alliance){
       df$OriginISOalpha3[df$OriginISOalpha3=="~NJ"]<-NA
       df <- df %>% add_alliance(ISOalpha3_col= "OriginISOalpha3", drop_col = TRUE,prefix="Origin")
@@ -3007,13 +3093,21 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     #   ))
     # }
   }
-
+  if("OriginIsForeign" %in% colnames(df)){
+    df$OriginIsForeign<-as.logical(df$OriginIsForeign)
+  }
 
   if("VendorISOalpha3" %in% colnames(df)){
     if("VendorIsForeign" %in% colnames(df))
       df<-subset(df,select=-c(VendorIsForeign))
 
     df$VendorISOalpha3[df$VendorISOalpha3=="~NJ"]<-NA
+
+
+        if(is.character(df$VendorISOalpha3)){
+      df$VendorISOalpha3<-factor(df$VendorISOalpha3)
+    }
+
     if(call_add_alliance){
       df <- df %>% add_alliance(ISOalpha3_col= "VendorISOalpha3", drop_col = TRUE,prefix="Vendor")
     } else {
@@ -3034,6 +3128,30 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     #   ))
     # }
   }
+  if("VendorIsForeign" %in% colnames(df)){
+    df$VendorIsForeign<-as.logical(df$VendorIsForeign)
+  }
+  if(is.character(df$VendorStateCode)){
+    df$VendorStateCode<-factor(df$VendorStateCode)
+  }
+
+
+
+  if("VendorAddressCountry" %in% colnames(df) & !"VendorAddressISOalpha3" %in% colnames(df)){
+    if("ISOalpha3" %in% colnames(df))
+      df<-subset(df,select=-c(ISOalpha3))
+    df$VendorAddressCountry[df$VendorAddressCountry==""]<-NA
+    df<-read_and_join_experiment(df,lookup_file="Location_CountryName.csv",
+                                 path=path,directory="location/",
+                                 add_var = c("ISOalpha3"),
+                                 by=c("VendorAddressCountry"="CountryName"),
+                                 # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
+                                 missing_file="missing_VendorAddressCountry.csv",
+                                 case_sensitive = FALSE,
+                                 lookup_char_as_factor = TRUE)
+    colnames(df)[colnames(df)=="ISOalpha3"]<-"VendorAddressISOalpha3"
+  }
+
 
   if("VendorAddressISOalpha3" %in% colnames(df)){
     if("VendorAddressIsForeign" %in% colnames(df))
@@ -3058,6 +3176,10 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     #   ))
     #}
   }
+  if("VendorAddressIsForeign" %in% colnames(df)){
+    df$VendorAddressIsForeign<-as.logical(df$VendorAddressIsForeign)
+  }
+
 
   if ("Shiny.VendorSize" %in% colnames(df) & "VendorIsForeign" %in% colnames(df)){
     df$VendorSize_Intl<-factor(df$Shiny.VendorSize)
@@ -3076,7 +3198,8 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
   #### Duration ####
   if("CurrentDurationCategory" %in% colnames(df)){
-    df$CurrentDurationIsYear<-factor(df$CurrentDurationCategory)
+    df$CurrentDurationCategory<-factor(df$CurrentDurationCategory)
+    df$CurrentDurationIsYear<-df$CurrentDurationCategory
     levels(df$CurrentDurationIsYear)<-list(
       "<=1 year" =c("<=2 Months", ">2-7 Months"  ,">7-12 Months"),
       ">1 year"=c(">1-2 Years",   ">2-4 Years",  ">4 years")
@@ -3084,9 +3207,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     if("PricingInflation" %in% colnames(df)){
       df$PricingInflation.1year<-as.character(df$PricingInflation)
       df$PricingInflation.1year[df$CurrentDurationIsYear=="<=1 year"]<-"<=1 Year (All Types)"
-      if("PricingUCA.sum" %in% colnames(df)){
+      if("PricingUCA" %in% colnames(df)){
         df$PricingInflation.1yearUCA<-as.character(df$PricingInflation.1year)
-        df$PricingInflation.1yearUCA[df$PricingUCA.sum=="UCA"]<-"UCA"
+        df$PricingInflation.1yearUCA[df$PricingUCA=="UCA"]<-"UCA"
       }
     }
 
@@ -3099,11 +3222,13 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     if("PricingUCA.sum" %in% colnames(df)){
       df$PricingUCA.1year<-as.character(df$PricingUCA.sum)
       df$PricingUCA.1year[df$CurrentDurationIsYear=="<=1 year"]<-"<=1 Year (All Types)"
+      df$PricingUCA.1year<-as.factor(df$PricingUCA.1year)
     }
   }
 
 
   if("UnmodifiedUltimateDurationCategory" %in% colnames(df)){
+    df$UnmodifiedUltimateDurationCategory<-factor(df$UnmodifiedUltimateDurationCategory)
     df$UnmodifiedUltimateDurationIsYear<-factor(df$UnmodifiedUltimateDurationCategory)
     levels(df$UnmodifiedUltimateDurationIsYear)<-list(
       "<=1 year" =c("<=2 Months", ">2-7 Months"  ,">7-12 Months"),
@@ -3112,8 +3237,16 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   }
 
   if("recoveredmaterialclauses" %in% colnames(df)){
-    df$recoveredmaterialclauses[df$recoveredmaterialclauses==""]<-"Unlabeled"
+    df$recoveredmaterialclauses[df$recoveredmaterialclauses==""]<-NA
+    df$recoveredmaterialclauses<-as.factor(df$recoveredmaterialclauses)
   }
+
+
+  if("multiyearcontract" %in% colnames(df)){
+    df$multiyearcontract<-as.logical(df$multiyearcontract)
+  }
+
+
   #
   #   if("Fiscal_Year"%in% names(df)){
   #     df<-read_and_join_experiment(df,
