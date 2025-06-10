@@ -3187,7 +3187,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   }
 
   if("PricingUCA" %in% colnames(df) & "PricingInflation" %in% colnames(df)){
-    df$PricingInflationUCA<-as.character(df$PricingInflationUCA)
+    df$PricingInflationUCA<-as.character(df$PricingInflation)
     df$PricingInflationUCA[df$PricingUCA=="UCA"]<-"UCA"
     df$PricingInflationUCA<-as.factor(df$PricingInflationUCA)
   }
