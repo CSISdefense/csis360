@@ -2150,28 +2150,29 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  # ,create_lookup_rdata=TRUE
                                  # ,col_types="dddddddddccc"
     )
-    df$PricingInflation<-factor(df$PricingInflation)
-    df$TypeOfContractPricingText<-factor(df$TypeOfContractPricingText)
-
-
-
-    if("IsUndefinitizedAction" %in% names(df) & !"PricingUCA" %in% names(df) ){
-      df$PricingUCA<-df$PricingFee
-      df$PricingUCA[df$IsUndefinitizedAction==1]<-"UCA"
-
-    }
-
-    else if("PricingUCA" %in% names(df)){
-      df$PricingUCA<-as.character(df$PricingUCA)
-      df$PricingUCA[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)]<-
-        df$PricingFee[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)]
-      df$PricingUCA.sum<-as.character(df$Pricing.sum)
-      df$PricingUCA.sum[df$PricingUCA=="UCA"|is.na(df$PricingUCA)]<-"Crosscutting"
-      df$PricingUCA<-factor(df$PricingUCA)
-      df$PricingUCA.sum<-factor(df$PricingUCA.sum)
-
-    }
   }
+
+
+  if("IsUndefinitizedAction" %in% names(df) & !"PricingUCA" %in% names(df) &
+     "PricingFee" %in% names(df)){
+    df$PricingUCA<-as.character(df$PricingFee)
+    df$PricingUCA[df$IsUndefinitizedAction==1]<-"UCA"
+    df$PricingUCA<-factor(df$PricingUCA)
+
+  }
+  else if("PricingUCA" %in% names(df)){
+    if(is.character(df$PricingUCA))
+      df$PricingUCA<-factor(df$PricingUCA)
+    # # df$PricingUCA<-as.character(df$PricingUCA)
+    # # df$PricingUCA[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)]<-
+    # #   as.character(df$PricingFee[df$PricingUCA!="UCA"&!is.na(df$PricingUCA)])
+    # df$PricingUCA.sum<-as.character(df$Pricing.sum)
+    # df$PricingUCA.sum[df$PricingUCA=="UCA"|is.na(df$PricingUCA)]<-"Crosscutting"
+    # df$PricingUCA<-factor(df$PricingUCA)
+    # df$PricingUCA.sum<-factor(df$PricingUCA.sum)
+
+  }
+
   if("PricingUCA" %in% names(df) & !"PricingUCA.sum" %in% names(df) ){
 
     df$PricingUCA.sum<-factor(df$PricingUCA)
