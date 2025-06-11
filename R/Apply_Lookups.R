@@ -2015,28 +2015,32 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   # }
 
 
-  if("Customer" %in% names(df) && "SubCustomer" %in% names(df)){
-    if("SubCustomer.sum"%in% names(df)){
-      df<-subset(df, select=-c(SubCustomer.sum))
+  if("Customer" %in% names(df)){
+    df$Customer<-as.factor(df$Customer)
+    if("SubCustomer" %in% names(df)){
+      if("SubCustomer.sum"%in% names(df)){
+        df<-subset(df, select=-c(SubCustomer.sum))
+      }
+
+
+      df<-replace_nas_with_unlabeled(df,"SubCustomer","Uncategorized")
+      df<-replace_nas_with_unlabeled(df,"Customer","Uncategorized")
+
+      #     debug(read_and_join_experiment)
+      df<-read_and_join_experiment(df,
+                                   "SubCustomer.csv",
+                                   by=c("Customer"="Customer","SubCustomer"="SubCustomer"),
+                                   add_var=c("SubCustomer.platform","SubCustomer.sum"),
+                                   path=path,
+                                   directory="office/",
+                                   lookup_char_as_factor = TRUE
+      )
     }
-
-
-    df<-replace_nas_with_unlabeled(df,"SubCustomer","Uncategorized")
-    df<-replace_nas_with_unlabeled(df,"Customer","Uncategorized")
-
-    #     debug(read_and_join_experiment)
-    df<-read_and_join_experiment(df,
-                                          "SubCustomer.csv",
-                                          by=c("Customer"="Customer","SubCustomer"="SubCustomer"),
-                                          add_var=c("SubCustomer.platform","SubCustomer.sum"),
-                                          path=path,
-                                          directory="office/",
-                                 lookup_char_as_factor = TRUE
-    )
   }
-  else if ("ContractingCustomer" %in% names(df) & "ContractingSubCustomer" %in% names(df)){
+  else if ("ContractingCustomer" %in% names(df)){
+    df$ContractingCustomer<-as.factor(df$ContractingCustomer)
+    if("ContractingSubCustomer" %in% names(df)){
     df$ContractingCustomer[df$ContractingCustomer==""]<-NA
-    df$ContractingCustomer<-factor(df$ContractingCustomer)
     df<-replace_nas_with_unlabeled(df,"ContractingSubCustomer","Uncategorized")
     df<-read_and_join_experiment(df,
                                           "SubCustomer.csv",
@@ -2045,6 +2049,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                           path=path,
                                           directory="office/",
                                  lookup_char_as_factor = TRUE)
+    }
   }
 
   # else if ("SubCustomer" %in% names(df)){
@@ -2164,9 +2169,6 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  # ,create_lookup_rdata=TRUE
                                  # ,col_types="dddddddddccc"
     )
-    df$PricingInflation<-factor(df$PricingInflation)
-    df$PricingInFee<-factor(df$PricingInFee)
-    df$TypeOfContractPricingText<-factor(df$TypeOfContractPricingText)
   }
 
   if("IsUndefinitizedAction" %in% colnames(df) &
@@ -2804,7 +2806,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   if("MainAccountTitle" %in% colnames(df)){
     df$MainAccountTitle<-as.factor(df$MainAccountTitle)
   }
-
+  if("CrisisFunding" %in% colnames(df)){
+    df$CrisisFunding<-as.factor(df$CrisisFunding)
+  }
 
   if("foreign_funding_description" %in% colnames(df) &
      "IsFMSml" %in% colnames(df) &
@@ -3217,7 +3221,6 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df$PricingInflation.1yearUCA<-as.character(df$PricingInflationUCA)
       df$PricingInflation.1yearUCA[df$CurrentDurationIsYear=="<=1 year"]<-"<=1 Year (All Types)"
     }
-
 
     if("PricingUCA.sum" %in% colnames(df)){
       df$PricingUCA.1year<-as.character(df$PricingUCA.sum)
