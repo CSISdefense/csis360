@@ -2533,6 +2533,11 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     #       print(unique(NA.check.df))
     #       stop(paste(nrow(NA.check.df),"rows of NAs generated in PlatformPortfolio.sum"))
     #     }
+
+    if("IsEOsensor" %in% names(df)){
+      df$IsEOsensor<-as.logical(df$IsEOsensor)
+    }
+
     if("IsRemotelyOperated" %in% names(df)){
       df$PlatformPortfolioUAV<-as.character(df$PlatformPortfolio)
       df$IsRemotelyOperated<-as.logical(df$IsRemotelyOperated)
@@ -2599,6 +2604,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df$SubCustomer.JPO[df$IsF35 & !is.na(df$IsF35)&df$SubCustomer.platform=="Navy"]<-"F-35 JPO"
     df$SubCustomer.JPO<-factor(df$SubCustomer.JPO)
   }
+
 
   #
   #
@@ -2891,6 +2897,11 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   #   }
   #
   #
+
+  if("IsEntityTraditional" %in% names(df)){
+    df$IsEntityTraditional<-as.logical(df$IsEntityTraditional)
+  }
+
   if("EntitySizeCode" %in% names(df)){
 
     # EntitySizeText.detail = EntitySizeText,
