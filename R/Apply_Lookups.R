@@ -2207,6 +2207,19 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  # ,col_types="dddddddddccc"
     )
   }
+
+  if("gfe_gfp_code" %in% names(df)){
+    df$gfe_gfp_code<-factor(df$gfe_gfp_code)
+    if(!"gfe_gfp_value" %in% names(df)){
+      df$gfe_gfp_value<-factor(df$gfe_gfp_code)
+      levels(df$gfe_gfp_value)<-list(
+        "No Government Furnished"="N",
+        "Transaction uses\nGovernment Furnished\nEquipment or Property"="Y"
+      )
+    }
+  }
+
+
   #
   #
   #     df<-replace_nas_with_unlabeled(df,"Contracting.Agency.ID","Uncategorized")
