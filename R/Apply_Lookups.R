@@ -1274,7 +1274,7 @@ add_alliance<-function(df,ISOalpha3_col=  "ISOalpha3",drop_col=FALSE,prefix=NULL
                "FiveEyes","OtherTreatyName","OtherTreatyStartYear","OtherTreatyEndYear",
                "RDPyear","SOSAyear","RDPsosa",
                "StateRegion","AcquisitionCooperation","MutualDefense","MutualAcquisition",
-               "isforeign","EUentryYear","EUexitYear")]
+               "isforeign","IsForeign","EUentryYear","EUexitYear")]
 
   if("MutualDefense" %in%  colnames(df)) stop("Add Alliance has already been run on the data.frame")
 
@@ -1693,14 +1693,14 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df$Fiscal_YQ[!is.na(df$fiscal_quarter)]<-text_to_number(paste(df$Fiscal_Year[!is.na(df$fiscal_quarter)],
                                                                     text_to_number(df$fiscal_quarter[!is.na(df$fiscal_quarter)]),sep="."))
       df$Fiscal_YQ[is.na(df$Fiscal_YQ)]<-df$Fiscal_Year[is.na(df$Fiscal_YQ)]
-      df$YTD<-if_else(df$Fiscal_Year==max(df$Fiscal_Year),"YTD","Full Year")
+      df$YTD<-factor(if_else(df$Fiscal_Year==max(df$Fiscal_Year),"YTD","Full Year"))
     }
     else if ("fiscal_quarter_YTD" %in% colnames(df)){
       df$Fiscal_YQ<-NA
       df$Fiscal_YQ[!is.na(df$fiscal_quarter_YTD)]<-text_to_number(paste(df$Fiscal_Year[!is.na(df$fiscal_quarter_YTD)],
                                                                         text_to_number(df$fiscal_quarter_YTD[!is.na(df$fiscal_quarter_YTD)]),sep="."))
       df$Fiscal_YQ[is.na(df$Fiscal_YQ)]<-df$Fiscal_Year[is.na(df$Fiscal_YQ)]
-      df$YTD<-if_else(df$Fiscal_Year==max(df$Fiscal_Year),"YTD","Full Year")
+      df$YTD<-factor(if_else(df$Fiscal_Year==max(df$Fiscal_Year),"YTD","Full Year"))
     }
 
     # df$Fiscal_Year.End <-as.Date(paste("9/30/",as.character(year(df$Fiscal_Year)),sep=""),"%m/%d/%Y")
@@ -1711,7 +1711,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     df$fiscal_quarter<-lubridate::quarter(df$Fiscal_Year,fiscal_start = 10)
     df$Fiscal_YQ[!is.na(df$fiscal_quarter)]<-text_to_number(paste(df$Fiscal_Year[!is.na(df$fiscal_quarter)],
                                                                   text_to_number(df$fiscal_quarter[!is.na(df$fiscal_quarter)]),sep="."))
-    df$YTD<-if_else(df$Fiscal_Year==max(df$Fiscal_Year),"YTD","Full Year")
+    df$YTD<-factor(if_else(df$Fiscal_Year==max(df$Fiscal_Year),"YTD","Full Year"))
 
     df$dFYear<-as.Date(paste("1/1/",as.character(df$Fiscal_Year),sep=""),"%m/%d/%Y")
   }
@@ -2839,7 +2839,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
       df$IsFMS[is.na(df$IsFMS) & df$IsUnlabeledMAC]<-F
     }
   } else if ("IsFMS" %in% colnames(df)){
-    df$IsFMS<-as.logical(IsFMS)
+    df$IsFMS<-as.logical(df$IsFMS)
   }
 
 
