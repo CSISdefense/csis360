@@ -110,6 +110,9 @@ get_local_lookup_path<-function(){
   local_path<-"C:\\Users\\GSanders\\Repos\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
+  local_path <- "C:/Users/namye/Repo/Lookup-Tables"
+  if(file.exists(local_path))
+    return(local_path)
 
   stop("Could not find local path. Update the list in Apply_Lookups.R")
 }
