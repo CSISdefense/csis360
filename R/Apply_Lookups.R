@@ -1048,9 +1048,9 @@ text_to_number<-function(x){
 text_to_bit<-function(x){
   x<-trimws(str_to_upper(as.character(x)))
   yes_list<-c("Y","YES","Y: YES","Y:",
-              "1","TRUE","TRUE:","T")
-  no_list<-c("N","NO","N: NO",": NO",
-             "0","FALSE","FALSE:","F")
+              "1","TRUE","TRUE:","T","T:")
+  no_list<-c("N","NO","N: NO",": NO","N:",
+             "0","FALSE","FALSE:","F","F:")
   na_list<-c("",":")
   b<-
     case_when(x %in% yes_list ~
