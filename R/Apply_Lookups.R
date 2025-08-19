@@ -2391,7 +2391,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     if(is.integer(df$ProductOrServiceCode)){
       df$ProductOrServiceCode<-factor(df$ProductOrServiceCode)
     }
-    df$ProductOrServiceCode[df$ProductOrServiceCode==""]<-NA
+    df$ProductOrServiceCode[df$ProductOrServiceCode %in% c("","0000")]<-NA
 
     df<-df %>% mutate(Fiscal_Year_gt_2020=if_else(Fiscal_Year>2020,1,0))
     df<-read_and_join_experiment(df,
@@ -2401,8 +2401,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                       "Fiscal_Year_gt_2020"="Fiscal_Year_gt_2020"),
                                  add_var=c("ProductServiceOrRnDarea"),
                                  path=path,
-                                 skip_check_var = c("ProductServiceOrRnDarea",
-                                                    "TransitionProductServiceOrRnDarea")
+                                 skip_check_var = c("ProductServiceOrRnDarea")
     )
     colnames(df)[colnames(df)=="ProductServiceOrRnDarea"]<-"TransitionProductServiceOrRnDarea"
 
