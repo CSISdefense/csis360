@@ -2389,6 +2389,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                                     "TransitionProductServiceOrRnDarea")
     )
     colnames(df)[colnames(df)=="ProductServiceOrRnDarea"]<-"TransitionProductServiceOrRnDarea"
+    df$ProductOrServiceCode[df$ProductOrServiceCode=="0000"]<-NA
 
     df<-read_and_join_experiment(df,
                                  "ProductOrServiceCodes.csv",
@@ -3025,14 +3026,14 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   if("PrincipalPlaceofPerformanceCountryCode" %in% colnames(df) & !"PlaceISOalpha3" %in% colnames(df)){
     if("ISOalpha3" %in% colnames(df))
       df<-subset(df,select=-c(ISOalpha3))
-    df<-read_and_join_experiment(df,lookup_file="Location_CountryCodes.csv",
+    df<-read_and_join_experiment(df,lookup_file="Location_CountryName.csv",
                                  path=path,directory="location/",
                                  add_var = c("ISOalpha3"),#"USAIDregion",
-                                 by=c("PrincipalPlaceofPerformanceCountryCode"="alpha-3"),
+                                 by=c("PrincipalPlaceofPerformanceCountryCode"="CountryName"),
                                  # skip_check_var=c("NATOyear",	"MajorNonNATOentryYear","MajorNonNATOexitYear","NTIByear"	,"SEATOendYear","RioTreatyStartYear","RioTreatyEndYear","FiveEyes","OtherTreatyName"	,"OtherTreatyStartYear","OtherTreatyEndYear","isforeign"),
                                  missing_file="missing_DSCA_iso.csv",
                                  lookup_char_as_factor = TRUE)
-    colnames(df)[colnames(df)=="PlaceISOalpha3"]<-"PlaceISOalpha3"
+    colnames(df)[colnames(df)=="ISOalpha3"]<-"PlaceISOalpha3"
   }
 
   if("PlaceISOalpha3" %in% colnames(df)){
