@@ -37,7 +37,8 @@ log_plot(
   cur_year = 2024,
   include_YTD = TRUE,
   group_unlabeled_facets = FALSE,
-  num_format = "0.00,,,\\"B\\""
+  num_format = "0.00,,,\\"B\\"",
+  skip_excel_to_debug = FALSE
 )
 }
 \arguments{
@@ -98,6 +99,8 @@ log_plot(
 \item{group_unlabeled_facets=FALSE}{Combine all unlabeled facet categories into a single line in the data.}
 
 \item{num_format="0.00, , , \"B\""}{How to format data values, default "0.00,,,\"B\""}
+
+\item{skip_excel_to_debug=FALSE}{Skip over many parts the the function in order to debug an analysis file.}
 }
 \value{
 no value

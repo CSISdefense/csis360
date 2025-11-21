@@ -1896,7 +1896,7 @@ remove_unlabeled<-function(df,value_var,var_list,threshold=0.99){
 #' @param YTD=TRUE Include formulas for cur_year+1 if excel_formulas is true.
 #' @param group_unlabeled_facets=FALSE Combine all unlabeled facet categories into a single line in the data.
 #' @param num_format="0.00,,,\"B\"" How to format data values, default "0.00,,,\"B\""
-#' @param skip_excel_to_debug=TRUE Skip over many parts the the function in order to debug an analysis file.
+#' @param skip_excel_to_debug=FALSE Skip over many parts the the function in order to debug an analysis file.
 #'
 #' @return no value
 #'
@@ -1914,7 +1914,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
                      hist_year=2020, cur_year=2024,include_YTD=TRUE,
                      group_unlabeled_facets=FALSE,
                      num_format="0.00,,,\"B\"",
-                     skip_excel_to_debug=TRUE
+                     skip_excel_to_debug=FALSE
 ) {
   if(length(grep("&",sheet))>0){
     stop("Special characters in sheet names can corrupt excel files.")
