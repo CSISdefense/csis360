@@ -110,7 +110,12 @@ get_local_lookup_path<-function(){
   local_path<-"C:\\Users\\GSanders\\Repos\\Lookup-Tables\\"
   if(file.exists(local_path))
     return(local_path)
-
+  local_path <- "C:/Users/namye/Repo/Lookup-Tables"
+  if(file.exists(local_path))
+    return(local_path)
+  local_path <- "D:\\Repos\\Lookup-Tables"
+  if(file.exists(local_path))
+    return(local_path)
   stop("Could not find local path. Update the list in Apply_Lookups.R")
 }
 
@@ -184,6 +189,9 @@ get_local_sharepoint_path<-function(site="DIIG - Documents"){
   if(file.exists(local_path))
     return(local_path)
   local_path<-file.path("C:\\Users\\HCarroll\\OneDrive - Center Strategic Intl Studies Inc CSIS",site)
+  if(file.exists(local_path))
+    return(local_path)
+  local_path<-file.path("C:\\Users\\CBarrie\\OneDrive - Center Strategic Intl Studies Inc CSIS",site)
   if(file.exists(local_path))
     return(local_path)
   stop("Could not find local path. Update the list in Apply_Lookups.R")
@@ -1045,9 +1053,9 @@ text_to_number<-function(x){
 text_to_bit<-function(x){
   x<-trimws(str_to_upper(as.character(x)))
   yes_list<-c("Y","YES","Y: YES","Y:",
-              "1","TRUE","TRUE:","T")
-  no_list<-c("N","NO","N: NO",": NO",
-             "0","FALSE","FALSE:","F")
+              "1","TRUE","TRUE:","T","T:")
+  no_list<-c("N","NO","N: NO",": NO","N:",
+             "0","FALSE","FALSE:","F","F:")
   na_list<-c("",":")
   b<-
     case_when(x %in% yes_list ~
@@ -2222,6 +2230,19 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                  # ,col_types="dddddddddccc"
     )
   }
+
+  if("gfe_gfp_code" %in% names(df)){
+    df$gfe_gfp_code<-factor(df$gfe_gfp_code)
+    if(!"gfe_gfp_value" %in% names(df)){
+      df$gfe_gfp_value<-factor(df$gfe_gfp_code)
+      levels(df$gfe_gfp_value)<-list(
+        "No Government Furnished"="N",
+        "Transaction uses\nGovernment Furnished\nEquipment or Property"="Y"
+      )
+    }
+  }
+
+
   #
   #
   #     df<-replace_nas_with_unlabeled(df,"Contracting.Agency.ID","Uncategorized")
@@ -2390,7 +2411,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     if(is.integer(df$ProductOrServiceCode)){
       df$ProductOrServiceCode<-factor(df$ProductOrServiceCode)
     }
-    df$ProductOrServiceCode[df$ProductOrServiceCode==""]<-NA
+    df$ProductOrServiceCode[df$ProductOrServiceCode %in% c("","0000")]<-NA
 
     df<-df %>% mutate(Fiscal_Year_gt_2020=if_else(Fiscal_Year>2020,1,0))
     df<-read_and_join_experiment(df,
@@ -2400,8 +2421,7 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
                                       "Fiscal_Year_gt_2020"="Fiscal_Year_gt_2020"),
                                  add_var=c("ProductServiceOrRnDarea"),
                                  path=path,
-                                 skip_check_var = c("ProductServiceOrRnDarea",
-                                                    "TransitionProductServiceOrRnDarea")
+                                 skip_check_var = c("ProductServiceOrRnDarea")
     )
     colnames(df)[colnames(df)=="ProductServiceOrRnDarea"]<-"TransitionProductServiceOrRnDarea"
     df$ProductOrServiceCode[df$ProductOrServiceCode=="0000"]<-NA
@@ -3826,3 +3846,4 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
   standardize_variable_names(df)
 }
+
