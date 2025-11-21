@@ -2018,6 +2018,13 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
   if("Customer" %in% names(df)){
     df$Customer<-as.factor(df$Customer)
+    df<-read_and_join_experiment(df,
+                                 "Customer.csv",
+                                 by=c("Customer"="Customer"),
+                                 add_var=c("Customer.sum"),
+                                 path=path,
+                                 directory="office/",
+                                 lookup_char_as_factor = TRUE)
     if("SubCustomer" %in% names(df)){
       if("SubCustomer.sum"%in% names(df)){
         df<-subset(df, select=-c(SubCustomer.sum))
@@ -2040,6 +2047,14 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
   }
   else if ("ContractingCustomer" %in% names(df)){
     df$ContractingCustomer<-as.factor(df$ContractingCustomer)
+    df<-read_and_join_experiment(df,
+                                 "Customer.csv",
+                                 by=c("ContractingCustomer"="Customer"),
+                                 add_var=c("Customer.sum"),
+                                 path=path,
+                                 prefix="Contracting",
+                                 directory="office/",
+                                 lookup_char_as_factor = TRUE)
     if("ContractingSubCustomer" %in% names(df)){
     df$ContractingCustomer[df$ContractingCustomer==""]<-NA
     df<-replace_nas_with_unlabeled(df,"ContractingSubCustomer","Uncategorized")

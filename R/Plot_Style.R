@@ -188,7 +188,9 @@ build_plot <- function(
 
   if(hide_unlabeled){
     y_var_total=sum(data[,y_var],na.rm=TRUE)
-    labeled_total<-data[!is.na(data[,x_var]) & data[,x_var]!="Unlabeled",]
+    labeled_total<-data[!is.na(data[,x_var]),]
+    if(!is.Date(data[,x_var]))
+      labeled_total<-labeled_total[labeled_total[,x_var]!="Unlabeled",]
     if(color_var!="None")
       labeled_total<-labeled_total[!is.na(data[,color_var])& labeled_total[,color_var]!="Unlabeled",]
     if(facet_var!="None")
