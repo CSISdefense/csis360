@@ -1,13 +1,13 @@
 Package: csis360
 Type: Package
 Title: Toolkit for CSIS Data Processing and Visualization
-Version: 0.0.0.9100
+Version: 0.0.0.9105
 Authors@R: person("Gregory","Sanders",email="gsanders@csis.org",
                   role = c("aut", "cre"))
 Description: Tools for supporting CSIS quantitative research projects.
-Imports: ggplot2, magrittr, dplyr, lazyeval, forcats, readr, tidyverse, lubridate, stringr, scales, Hmisc, sysfonts, openxlsx2
+Imports: ggplot2, magrittr, dplyr, forcats, readr, tidyverse, lubridate, stringr, scales, Hmisc, sysfonts, openxlsx2
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.2
 Suggests: testthat
+Config/roxygen2/version: 8.1.0

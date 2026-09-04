@@ -385,10 +385,10 @@ add_labels_and_colors<-function(df,
 #'
 #' @param start First year of break sequence
 #' @param stop Last year of break sequence
-#' @by Frequency of data breaks, e.g. 1 for every year, 5 for every 5 years
-#' @fiscal_year A placeholder for future tuning by fiscal vs. calendar year
-#' @partial_year If one year of incomplete data is included, specify it with this variable
-#' @partial_label If one year of incomplete data is included, specify it with this variable
+#' @param by Frequency of data breaks, e.g. 1 for every year, 5 for every 5 years
+#' @param fiscal_year A placeholder for future tuning by fiscal vs. calendar year
+#' @param partial_year If one year of incomplete data is included, specify it with this variable
+#' @param partial_label If one year of incomplete data is included, specify it with this variable
 #'
 #' @return A plot with added color and fill scales for the column passed
 #'

@@ -1652,7 +1652,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
     "Completion time",
     "An error occurr",#ed while executing batch. Error message is: One or more errors occurred
     "Msg 208, Level ",#16, State 1, Procedure
-    "Invalid object "#Invalid object name 'contract.FDPSpartia
+    "Invalid object ",#Invalid object name 'contract.FDPSpartia
+    "Warning: Null v",
+    "1 columns"
   )){
 
     df<-df[-nrow(df),]
@@ -2178,6 +2180,9 @@ apply_standard_lookups<- function(df,path="https://raw.githubusercontent.com/CSI
 
     if("TypeOfContractPricingText" %in% names(df))
       df<-df %>% select(-TypeOfContractPricingText)
+
+    if("PricingMechanism" %in% names(df))
+      df<-df %>% select(-PricingMechanism)
 
     df<-read_and_join_experiment(data=df
                                  ,"contract.TypeOfContractPricing.csv"

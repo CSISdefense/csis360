@@ -7,6 +7,8 @@
 remove_unlabeled(df, value_var, var_list, threshold = 0.99)
 }
 \arguments{
+\item{df}{A data frame}
+
 \item{threshold}{Percent of data that must be labeled, defaults 0.99}
 
 \item{col_list}{list of columns to strip out unlabeled}

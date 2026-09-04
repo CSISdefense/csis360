@@ -1846,7 +1846,7 @@ write_twice<-function(data,first_path,second_path,dir="",file,write_csv=TRUE,...
 
 #' Remove unlabeled data, if it's less than 1 percent of total
 #'
-#' @param df
+#' @param df A data frame
 #' @param col_list list of columns to strip out unlabeled
 #' @param threshold Percent of data that must be labeled, defaults 0.99
 #'
@@ -2244,7 +2244,7 @@ log_plot <- function(plot, df,filename,xlsx,sheet,path="..\\output",
 #***********************Get Base Folder
 #' Get Base Folder
 #'
-#' @param folder
+#' @param folder The folder to check
 #'
 #' @return "../../[folder]", "../[folder]", or "[folder]" depending on the relative position.
 #'

@@ -704,8 +704,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
     VAR.long.DF<-VAR.long.DF %>% group_by(!! as.name(VAR.x.variable),
                                           !! as.name(VAR.y.series),
                                           !! as.name(VAR.facet.primary)) %>%
-      dplyr::summarise_(
-        y.variable = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(VAR.y.variable)))
+      dplyr::summarise(y.variable = sum(!!as.name(VAR.y.variable), na.rm = TRUE))
 
     colnames(VAR.long.DF)[colnames(VAR.long.DF)==VAR.x.variable]<-"x.variable"
     colnames(VAR.long.DF)[colnames(VAR.long.DF)==VAR.y.series]<-"category"
@@ -747,8 +746,7 @@ LatticePlotWrapper_csis360<-function(VAR.color.legend.label
                                            !! as.name(VAR.y.series),
                                            !! as.name(VAR.facet.primary),
                                            !! as.name(VAR.facet.secondary)) %>%
-      dplyr::summarise_(
-        y.variable = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(VAR.y.variable)))
+      dplyr::summarise(y.variable = sum(!!as.name(VAR.y.variable), na.rm = TRUE))
 
     #   aggregate(VAR.long.DF[,VAR.y.variable]
     #                        , by=list(VAR.long.DF[,VAR.x.variable]

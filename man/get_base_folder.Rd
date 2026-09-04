@@ -7,7 +7,7 @@
 get_base_folder(folder)
 }
 \arguments{
-\item{folder}{}
+\item{folder}{The folder to check}
 }
 \value{
 "../../[folder]", "../[folder]", or "[folder]" depending on the relative position.

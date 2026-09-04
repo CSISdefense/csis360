@@ -17,6 +17,14 @@ date_x_year_breaks(
 \item{start}{First year of break sequence}
 
 \item{stop}{Last year of break sequence}
+
+\item{by}{Frequency of data breaks, e.g. 1 for every year, 5 for every 5 years}
+
+\item{fiscal_year}{A placeholder for future tuning by fiscal vs. calendar year}
+
+\item{partial_year}{If one year of incomplete data is included, specify it with this variable}
+
+\item{partial_label}{If one year of incomplete data is included, specify it with this variable}
 }
 \value{
 A plot with added color and fill scales for the column passed
