@@ -170,26 +170,22 @@ group_data_for_plot <-function(
     if(length(agg_list) == 1){
       data <- data %>%
         dplyr::group_by(!! as.name(agg_list)) %>%
-        summarize_(
-          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
+        summarize(agg_val = sum(!!as.name(y_var), na.rm = TRUE))
     } else {
 
       data <- data %>%
-        dplyr::group_by_(.dots = c(agg_list)) %>%
-        summarize_(
-          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(y_var)))
+        dplyr::group_by(!!!syms(agg_list)) %>%
+        summarize(agg_val = sum(!!as.name(y_var), na.rm = TRUE))
     }
   } else if (aggregate=="mean"){
     if(length(agg_list) == 1){
       data <- data %>%
         dplyr::group_by(as.name(!! as.name(agg_list))) %>%
-        summarize_(
-          agg_val = lazyeval::interp(~mean(var, na.rm = TRUE), var = as.name(y_var)))
+        summarize(agg_val = mean(!!as.name(y_var), na.rm = TRUE))
     } else {
       data <- data %>%
-        group_by_(.dots = c(agg_list)) %>%
-        summarize_(
-          agg_val = lazyeval::interp(~mean(var, na.rm = TRUE), var = as.name(y_var)))
+        dplyr::group_by(!!!syms(agg_list)) %>%
+        summarize(agg_val = mean(!!as.name(y_var), na.rm = TRUE))
     }
   } else (stop(paste("group_data_for_plot does not know how to handle aggregate = ",aggregate)))
 
@@ -300,14 +296,12 @@ format_data_for_plot <- function(data, fy_var,
       if(length(share_list) == 1){
         shown_data <- shown_data %>%
           dplyr::group_by(!! as.name(share_list)) %>%
-          mutate_(
-            agg_val = lazyeval::interp(~var/sum(var, na.rm = TRUE), var = as.name(y_var)))
+          mutate(agg_val = !!as.name(y_var) / sum(!!as.name(y_var), na.rm = TRUE))
       } else {
 
         shown_data <- shown_data %>%
-          dplyr::group_by_(.dots = c(share_list)) %>%
-          mutate_(
-            agg_val = lazyeval::interp(~var/sum(var, na.rm = TRUE), var = as.name(y_var)))
+          dplyr::group_by(!!!syms(share_list)) %>%
+          mutate(agg_val = !!as.name(y_var) / sum(!!as.name(y_var), na.rm = TRUE))
       }
       shown_data<-shown_data[,colnames(shown_data)!=y_var]
 
@@ -443,15 +437,13 @@ format_data_for_plot <- function(data, fy_var,
       shown_data<-shown_data %>%
         dplyr::arrange(desc(!! as.name(color_var))) %>%
         dplyr::group_by(as.name(!! as.name(agg_list))) %>%
-        mutate_(
-          ytextposition = lazyeval::interp(~cumsum(var)-0.5*var, var = as.name(y_var)))
+        mutate(ytextposition = cumsum(!!as.name(y_var)) - 0.5 * !!as.name(y_var))
     } else {
 
       shown_data <- shown_data %>%
         dplyr::arrange(desc(!! as.name(color_var))) %>%
-        dplyr::group_by_(.dots = c(agg_list)) %>%
-        mutate_(
-          ytextposition = lazyeval::interp(~cumsum(var)-0.5*var, var = as.name(y_var)))
+        dplyr::group_by(!!!syms(agg_list)) %>%
+        mutate(ytextposition = cumsum(!!as.name(y_var)) - 0.5 * !!as.name(y_var))
     }
   }
 

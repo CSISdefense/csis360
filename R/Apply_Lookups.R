@@ -1152,17 +1152,15 @@ label_top<-function(df,
     if(length(agg_list) == 1){
       agg_df <- df %>%
         dplyr::group_by(!! as.name(agg_list)) %>%
-        summarize_(
-          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), weight = as.name(weight)))
+        summarize(agg_val = sum(!!as.name(weight), na.rm = TRUE))
       agg_df<- agg_df %>% mutate(
         rank_total=rank(desc(agg_val))) %>%
         arrange(desc(agg_val))
     } else {
       agg_df <- df %>%
-        dplyr::group_by_(.dots = c(agg_list)) %>%
-        summarize_(
-          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(weight)))
-      agg_df<- agg_df %>% dplyr::group_by_(.dots = c(group_list)) %>%
+        dplyr::group_by(!!!syms(agg_list)) %>%
+        summarize(agg_val = sum(!!as.name(weight), na.rm = TRUE))
+      agg_df<- agg_df %>% dplyr::group_by(!!!syms(group_list)) %>%
         mutate(
           rank_total=rank(desc(agg_val))) %>%
         arrange(desc(agg_val))
@@ -1183,9 +1181,9 @@ label_top<-function(df,
     if(length(agg_list) == 1){
       agg_df <- agg_df %>%
         dplyr::group_by(!! as.name(agg_list)) %>%
-        summarize_(
-          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(weight)),
-          agg_val_recent = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(recent_weight))
+        summarize(
+          agg_val        = sum(!!as.name(weight), na.rm = TRUE),
+          agg_val_recent = sum(!!as.name(recent_weight), na.rm = TRUE)
         )
       agg_df<- agg_df %>% mutate(
         rank_total=rank(desc(agg_val)),
@@ -1193,11 +1191,11 @@ label_top<-function(df,
         arrange(desc(agg_val))
     } else {
       agg_df <- agg_df %>%
-        dplyr::group_by_(.dots = c(agg_list)) %>%
-        summarize_(
-          agg_val = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(weight)),
-          agg_val_recent = lazyeval::interp(~sum(var, na.rm = TRUE), var = as.name(recent_weight)))
-      agg_df<- agg_df %>% dplyr::group_by_(.dots = c(group_list)) %>%
+        dplyr::group_by(!!!syms(agg_list)) %>%
+        summarize(
+          agg_val        = sum(!!as.name(weight), na.rm = TRUE),
+          agg_val_recent = sum(!!as.name(recent_weight), na.rm = TRUE))
+      agg_df<- agg_df %>% dplyr::group_by(!!!syms(group_list)) %>%
         mutate(
           rank_total=rank(desc(agg_val)),
           rank_recent=rank(desc(agg_val_recent))) %>%
