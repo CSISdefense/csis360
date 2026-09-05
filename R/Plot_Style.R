@@ -1000,7 +1000,7 @@ label_units<-function(x){
     if(abs(y) < 1e6) y_lab <- paste0(round(y/1000), "k")
     if(abs(y) < 1e5) y_lab <- paste0(round(y/1000, 1), "k")
     if(abs(y) < 1e4) y_lab <- paste0(round(y/1000, 2), "k")
-    if(abs(y) < 1000) ylab <- as.character(round(y))
+    if(abs(y) < 1000) y_lab <- as.character(round(y))
     if(abs(y) < 100) y_lab <- as.character(round(y,1))
     if(abs(y) < 10) y_lab <- as.character(round(y,2))
     return(y_lab)
